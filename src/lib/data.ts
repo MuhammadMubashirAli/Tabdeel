@@ -2,7 +2,7 @@ import type { Item, User, Testimonial, FaqItem } from './types';
 
 export const users: User[] = [
   { id: 'user-1', name: 'Ahmed Khan', avatarUrl: 'user-avatar-1', city: 'Karachi' },
-  { id: 'user-2', name: 'Fatima Ali', avatarUrl: 'user-avatar-2', city: 'Lahore' },
+  { id: 'user-2', name: 'Ahmed Ali', avatarUrl: 'user-avatar-2', city: 'Lahore' },
   { id: 'user-3', name: 'Zainab Begum', avatarUrl: 'user-avatar-3', city: 'Islamabad' },
 ];
 
