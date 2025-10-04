@@ -1,3 +1,76 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-background",
+      "description": "A vibrant marketplace scene in Pakistan",
+      "imageUrl": "https://images.unsplash.com/photo-1759172939824-5bdc9d9999e7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtYXJrZXRwbGFjZSUyMGJhemFhcnxlbnwwfHx8fDE3NTk0OTc1ODB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "marketplace bazaar"
+    },
+    {
+      "id": "user-avatar-1",
+      "description": "User avatar for Aisha R.",
+      "imageUrl": "https://images.unsplash.com/photo-1592621385612-4d7129426394?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx3b21hbiUyMHBvcnRyYWl0fGVufDB8fHx8MTc1OTUyMDY3NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman portrait"
+    },
+    {
+      "id": "user-avatar-2",
+      "description": "User avatar for Bilal S.",
+      "imageUrl": "https://images.unsplash.com/photo-1522556189639-b150ed9c4330?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTk1ODAxMjN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man portrait"
+    },
+    {
+      "id": "user-avatar-3",
+      "description": "User avatar for Sana M.",
+      "imageUrl": "https://images.unsplash.com/photo-1692736475357-7c18bfbb808b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHx3b21hbiUyMHNtaWxpbmd8ZW58MHx8fHwxNzU5NTQ4MjA5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman smiling"
+    },
+    {
+      "id": "item-cricket-ball-1",
+      "description": "A vintage leather cricket ball",
+      "imageUrl": "https://images.unsplash.com/photo-1531415074968-036ba1b575da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjcmlja2V0JTIwYmFsbHxlbnwwfHx8fDE3NTk1NTQwNTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cricket ball"
+    },
+    {
+      "id": "item-cricket-ball-2",
+      "description": "Close up of the cricket ball seam",
+      "imageUrl": "https://images.unsplash.com/photo-1607646175036-fdba5063cfed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxsZWF0aGVyJTIwc2VhbXxlbnwwfHx8fDE3NTk2MTg1ODh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "leather seam"
+    },
+    {
+      "id": "item-guitar-1",
+      "description": "A classic acoustic guitar",
+      "imageUrl": "https://images.unsplash.com/photo-1715431150006-1f03ea6e4a37?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxhY291c3RpYyUyMGd1aXRhcnxlbnwwfHx8fDE3NTk2MDM5NTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "acoustic guitar"
+    },
+    {
+      "id": "item-guitar-2",
+      "description": "Detail of the guitar headstock",
+      "imageUrl": "https://images.unsplash.com/photo-1633195234265-6dccce0d117c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxndWl0YXIlMjBoZWFkc3RvY2t8ZW58MHx8fHwxNzU5NTE0MzkxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "guitar headstock"
+    },
+    {
+      "id": "item-football-1",
+      "description": "A professional football",
+      "imageUrl": "https://images.unsplash.com/photo-1660926655800-3d11219f390d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzb2NjZXIlMjBiYWxsfGVufDB8fHx8MTc1OTYxNDIxNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "soccer ball"
+    },
+    {
+      "id": "item-books-1",
+      "description": "A set of 5 fantasy novels",
+      "imageUrl": "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxib29rJTIwc3RhY2t8ZW58MHx8fHwxNzU5NjE4NTg4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "book stack"
+    },
+    {
+      "id": "item-speaker-1",
+      "description": "A portable bluetooth speaker",
+      "imageUrl": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxibHVldG9vdGglMjBzcGVha2VyfGVufDB8fHx8MTc1OTUxMjMxOXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "bluetooth speaker"
+    },
+    {
+      "id": "item-backpack-1",
+      "description": "A men's hiking backpack",
+      "imageUrl": "https://images.unsplash.com/photo-1602845860431-35374f24f48d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxoaWtpbmclMjBiYWNrcGFja3xlbnwwfHx8fDE3NTk1ODkxODB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "hiking backpack"
+    }
+  ]
 }
