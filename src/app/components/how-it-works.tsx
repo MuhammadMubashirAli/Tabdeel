@@ -34,16 +34,16 @@ export function HowItWorks() {
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Four Simple Steps to Swap</h2>
                     </div>
                 </div>
-                <div className="mx-auto grid items-start gap-8 sm:max-w-4xl sm:grid-cols-2 md:gap-12 lg:max-w-5xl lg:grid-cols-4">
+                <div className="mx-auto grid items-stretch gap-8 sm:max-w-4xl sm:grid-cols-2 md:gap-12 lg:max-w-5xl lg:grid-cols-4">
                     {steps.map((step, index) => (
-                        <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                        <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
                             <CardHeader className="flex flex-col items-center text-center gap-4">
                                 <div className="rounded-full bg-secondary p-4">
                                     {step.icon}
                                 </div>
                                 <CardTitle>{index + 1}. {step.title}</CardTitle>
                             </CardHeader>
-                            <CardContent className="text-center text-muted-foreground">
+                            <CardContent className="text-center text-muted-foreground flex-1">
                                 {step.description}
                             </CardContent>
                         </Card>
