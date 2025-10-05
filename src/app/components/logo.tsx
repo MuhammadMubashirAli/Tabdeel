@@ -20,8 +20,9 @@ export function Wordmark() {
             <Image
                 src="https://i.postimg.cc/T1SXQZZr/Tabd-l.png"
                 alt="TabdeelHub Logo"
-                width={140}
-                height={40}
+                width={280}
+                height={80}
+                className="drop-shadow-lg"
             />
         </div>
     );
