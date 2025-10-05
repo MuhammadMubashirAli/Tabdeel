@@ -17,10 +17,10 @@ export default function SignupPage() {
     <div className="flex items-center justify-center min-h-screen bg-background">
       <Card className="mx-auto max-w-sm">
         <CardHeader>
-          <CardTitle className="text-xl text-center">
+          <CardTitle className="text-xl">
             <Link href="/"><Wordmark /></Link>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-center">
             Enter your information to create an account
           </CardDescription>
         </CardHeader>

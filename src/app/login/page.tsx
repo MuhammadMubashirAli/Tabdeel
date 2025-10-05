@@ -17,10 +17,10 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen bg-background">
         <Card className="mx-auto max-w-sm">
         <CardHeader>
-            <CardTitle className="text-2xl text-center">
+            <CardTitle className="text-2xl">
                 <Link href="/"><Wordmark /></Link>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-center">
             Enter your email below to login to your account
             </CardDescription>
         </CardHeader>

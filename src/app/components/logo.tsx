@@ -16,11 +16,13 @@ export function Logo(props: SVGProps<SVGSVGElement>) {
 
 export function Wordmark() {
     return (
-        <Image
-            src="https://i.postimg.cc/T1SXQZZr/Tabd-l.png"
-            alt="TabdeelHub Logo"
-            width={140}
-            height={40}
-        />
+        <div className="flex justify-center">
+            <Image
+                src="https://i.postimg.cc/T1SXQZZr/Tabd-l.png"
+                alt="TabdeelHub Logo"
+                width={140}
+                height={40}
+            />
+        </div>
     );
 }
