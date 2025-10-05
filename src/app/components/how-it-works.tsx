@@ -1,9 +1,8 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { ListPlus, Search, Send, CheckCircle } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
 
 const steps = [
     {
@@ -29,67 +28,42 @@ const steps = [
 ]
 
 export function HowItWorks() {
-    const [isVisible, setIsVisible] = useState(false);
-    const sectionRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsVisible(true);
-                    observer.disconnect();
-                }
-            },
-            {
-                rootMargin: "0px",
-                threshold: 0.1
-            }
-        );
-
-        const currentRef = sectionRef.current;
-        if (currentRef) {
-            observer.observe(currentRef);
-        }
-
-        return () => {
-            if (currentRef) {
-                observer.unobserve(currentRef);
-            }
-        };
-    }, []);
-
     return (
-        <section ref={sectionRef} id="how-it-works" className="w-full py-12 md:py-24 lg:py-32 overflow-x-hidden">
+        <section id="how-it-works" className="w-full py-12 md:py-24 lg:py-32">
             <div className="container mx-auto px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                     <div className="space-y-2">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Four Simple Steps to Swap</h2>
                     </div>
                 </div>
-                <div className="mx-auto grid items-stretch gap-8 sm:max-w-4xl sm:grid-cols-2 md:gap-12 lg:max-w-5xl lg:grid-cols-4">
-                    {steps.map((step, index) => (
-                        <Card key={index} className={cn(
-                            "shadow-lg hover:shadow-xl transition-all duration-700 ease-out flex flex-col transform",
-                            {
-                                "opacity-0 -translate-x-full": !isVisible,
-                                "opacity-100 translate-x-0": isVisible && index < 2,
-                                "opacity-0 translate-x-full": !isVisible,
-                                "opacity-100 translate-x-0": isVisible && index >= 2
-                            },
-                            `delay-[${index * 150}ms]`
-                        )}>
-                            <CardHeader className="flex flex-col items-center text-center gap-4">
-                                <div className="rounded-full bg-secondary p-4">
-                                    {step.icon}
-                                </div>
-                                <CardTitle>{index + 1}. {step.title}</CardTitle>
-                            </CardHeader>
-                            <CardContent className="text-center text-muted-foreground flex-1">
-                                {step.description}
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                <Carousel
+                    opts={{
+                        align: "start",
+                    }}
+                    className="w-full max-w-sm sm:max-w-xl mx-auto"
+                >
+                    <CarouselContent>
+                        {steps.map((step, index) => (
+                            <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                                 <div className="p-1 h-full">
+                                    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full">
+                                        <CardHeader className="flex flex-col items-center text-center gap-4">
+                                            <div className="rounded-full bg-secondary p-4">
+                                                {step.icon}
+                                            </div>
+                                            <CardTitle>{index + 1}. {step.title}</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="text-center text-muted-foreground flex-1">
+                                            {step.description}
+                                        </CardContent>
+                                    </Card>
+                                 </div>
+                            </CarouselItem>
+                        ))}
+                    </CarouselContent>
+                    <CarouselPrevious />
+                    <CarouselNext />
+                </Carousel>
             </div>
         </section>
     )
