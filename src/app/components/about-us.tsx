@@ -20,8 +20,7 @@ export function AboutUs() {
                     onMouseLeave={() => setActiveIndex(-1)}
                     className={`transition-transform duration-300 inline-block ${globalIndex === activeIndex ? '-translate-y-1 scale-110 text-primary font-semibold' : ''}`}
                 >
-                    {word}{' '}
-                </span>
+                    {word} </span>
             );
         });
     };
