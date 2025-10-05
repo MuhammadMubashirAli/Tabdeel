@@ -4,8 +4,8 @@ import { HeroWordmark } from "@/app/components/logo";
 
 export function Hero() {
   return (
-    <section className="relative w-full h-[60vh] md:h-[70vh] bg-card text-foreground flex items-center justify-center">
-      <div className="relative container mx-auto flex h-full flex-col items-center justify-center text-center">
+    <section className="w-full h-[60vh] md:h-[70vh] bg-card text-foreground flex items-center justify-center">
+      <div className="container mx-auto flex h-full flex-col items-center justify-center text-center">
         <div className="p-8 rounded-lg">
           <div className="mb-4 mt-12">
             <HeroWordmark />
