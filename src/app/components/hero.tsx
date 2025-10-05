@@ -1,32 +1,17 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { HeroWordmark } from "@/app/components/logo";
 
 export function Hero() {
-  const heroImage = PlaceHolderImages.find(p => p.id === 'hero-background');
-
   return (
-    <section className="relative w-full h-[60vh] md:h-[70vh] text-primary-foreground">
-      {heroImage && (
-        <Image
-          src={heroImage.imageUrl}
-          alt={heroImage.description}
-          fill
-          className="object-cover"
-          priority
-          data-ai-hint={heroImage.imageHint}
-        />
-      )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+    <section className="relative w-full h-[60vh] md:h-[70vh] bg-card text-foreground flex items-center justify-center">
       <div className="relative container mx-auto flex h-full flex-col items-center justify-center text-center">
-        <div className="bg-black/50 backdrop-blur-sm p-8 rounded-lg">
+        <div className="p-8 rounded-lg">
           <HeroWordmark />
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-white">
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-primary">
             Swap your stuff, not your money.
           </h1>
-          <p className="mx-auto mt-6 max-w-xl text-lg text-neutral-200">
+          <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
             Find new homes for things you don’t need, and take home what you want — all through direct exchanges.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
