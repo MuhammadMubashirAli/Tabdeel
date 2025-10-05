@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 
 const textContent = [
     "Tabdeel, meaning 'change' or 'exchange' in Urdu, was born from a simple idea: what if we could get the things we need without money? In a world of constant consumption, countless items sit unused in our homes. We believe these items have a second life waiting for them.",
@@ -20,12 +20,14 @@ export function AboutUs() {
                     onMouseLeave={() => setActiveIndex(-1)}
                     className={`transition-transform duration-300 inline-block ${globalIndex === activeIndex ? '-translate-y-1 scale-110 text-primary font-semibold' : ''}`}
                 >
-                    {word} 
+                    {word}{' '}
                 </span>
             );
         });
     };
 
+    let wordCount = 0;
+    
     return (
         <section id="about" className="w-full py-24 md:py-24 lg:py-32 bg-card">
             <div className="container mx-auto px-4 md:px-6">
