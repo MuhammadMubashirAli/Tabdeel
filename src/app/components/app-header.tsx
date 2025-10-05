@@ -25,10 +25,10 @@ export function AppHeader({ isAuthenticated = false }: { isAuthenticated?: boole
                 <UserNav />
             ) : (
                 <nav className="flex items-center gap-2">
-                    <Button asChild variant="ghost">
+                    <Button asChild variant="ghost" className="hover:bg-transparent hover:text-primary">
                         <Link href="/login">Sign In</Link>
                     </Button>
-                    <Button asChild>
+                    <Button asChild variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
                         <Link href="/signup">Sign Up</Link>
                     </Button>
                 </nav>

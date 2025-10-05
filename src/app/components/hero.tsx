@@ -29,10 +29,10 @@ export function Hero() {
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+            <Button asChild size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
               <Link href="/explore">Explore Items</Link>
             </Button>
-            <Button asChild size="lg" variant="secondary" className="bg-accent hover:bg-accent/90 text-accent-foreground">
+            <Button asChild size="lg" variant="outline" className="border-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground">
               <Link href="/signup">Sign In / Sign Up</Link>
             </Button>
           </div>
