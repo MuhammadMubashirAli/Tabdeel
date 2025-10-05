@@ -8,7 +8,7 @@ export function Hero() {
       <div className="relative container mx-auto flex h-full flex-col items-center justify-center text-center">
         <div className="p-8 rounded-lg">
           <HeroWordmark />
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-primary">
+          <h1 className="mt-8 text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-primary">
             Swap your stuff, not your money.
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
