@@ -70,8 +70,12 @@ export function HowItWorks() {
                     {steps.map((step, index) => (
                         <Card key={index} className={cn(
                             "shadow-lg hover:shadow-xl transition-all duration-700 ease-out flex flex-col transform",
-                            isVisible ? "opacity-100 translate-x-0" : "opacity-0",
-                            index < 2 ? "-translate-x-full" : "translate-x-full",
+                            {
+                                "opacity-0 -translate-x-full": !isVisible,
+                                "opacity-100 translate-x-0": isVisible && index < 2,
+                                "opacity-0 translate-x-full": !isVisible,
+                                "opacity-100 translate-x-0": isVisible && index >= 2
+                            },
                             `delay-[${index * 150}ms]`
                         )}>
                             <CardHeader className="flex flex-col items-center text-center gap-4">
