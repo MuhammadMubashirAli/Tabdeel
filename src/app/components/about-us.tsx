@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 
 const textContent = [
     "Tabdeel, meaning 'change' or 'exchange' in Urdu, was born from a simple idea: what if we could get the things we need without money? In a world of constant consumption, countless items sit unused in our homes. We believe these items have a second life waiting for them.",
@@ -8,23 +8,7 @@ const textContent = [
 ];
 
 export function AboutUs() {
-    const words = useMemo(() => textContent.join(' ').split(' '), []);
     const [activeIndex, setActiveIndex] = useState(-1);
-
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'ArrowRight') {
-                setActiveIndex((prevIndex) => Math.min(prevIndex + 1, words.length - 1));
-            } else if (event.key === 'ArrowLeft') {
-                setActiveIndex((prevIndex) => Math.max(prevIndex - 1, 0));
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [words.length]);
 
     const renderTextWithSpans = (text: string, wordStartIndex: number) => {
         return text.split(' ').map((word, index) => {
@@ -32,15 +16,15 @@ export function AboutUs() {
             return (
                 <span
                     key={globalIndex}
+                    onMouseEnter={() => setActiveIndex(globalIndex)}
+                    onMouseLeave={() => setActiveIndex(-1)}
                     className={`transition-transform duration-300 inline-block ${globalIndex === activeIndex ? '-translate-y-1 scale-110 text-primary font-semibold' : ''}`}
                 >
-                    {word}&nbsp;
+                    {word} 
                 </span>
             );
         });
     };
-
-    let wordCount = 0;
 
     return (
         <section id="about" className="w-full py-24 md:py-24 lg:py-32 bg-card">
