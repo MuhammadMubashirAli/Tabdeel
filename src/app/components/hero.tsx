@@ -7,7 +7,9 @@ export function Hero() {
     <section className="w-full h-[60vh] md:h-[70vh] bg-card text-foreground flex items-center justify-center">
       <div className="container mx-auto flex h-full flex-col items-center justify-center text-center p-4">
         <div className="flex flex-col items-center space-y-6">
-          <HeroWordmark />
+          <div className="mb-4">
+            <HeroWordmark />
+          </div>
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-primary">
               Swap your stuff, not your money.
