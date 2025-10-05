@@ -1,5 +1,9 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ListPlus, Search, Send, CheckCircle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 const steps = [
     {
@@ -25,8 +29,36 @@ const steps = [
 ]
 
 export function HowItWorks() {
+    const [isVisible, setIsVisible] = useState(false);
+    const sectionRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsVisible(true);
+                    observer.disconnect();
+                }
+            },
+            {
+                rootMargin: "0px",
+                threshold: 0.1
+            }
+        );
+
+        if (sectionRef.current) {
+            observer.observe(sectionRef.current);
+        }
+
+        return () => {
+            if (sectionRef.current) {
+                observer.unobserve(sectionRef.current);
+            }
+        };
+    }, []);
+
     return (
-        <section id="how-it-works" className="w-full py-12 md:py-24 lg:py-32">
+        <section ref={sectionRef} id="how-it-works" className="w-full py-12 md:py-24 lg:py-32 overflow-x-hidden">
             <div className="container mx-auto px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                     <div className="space-y-2">
@@ -35,7 +67,13 @@ export function HowItWorks() {
                 </div>
                 <div className="mx-auto grid items-stretch gap-8 sm:max-w-4xl sm:grid-cols-2 md:gap-12 lg:max-w-5xl lg:grid-cols-4">
                     {steps.map((step, index) => (
-                        <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
+                        <Card key={index} className={cn(
+                            "shadow-lg hover:shadow-xl transition-all duration-700 ease-out flex flex-col",
+                            "transform",
+                            isVisible ? "opacity-100 translate-x-0" : "opacity-0",
+                            index < 2 ? "translate-x-full" : "-translate-x-full",
+                            `delay-${index * 150}`
+                        )}>
                             <CardHeader className="flex flex-col items-center text-center gap-4">
                                 <div className="rounded-full bg-secondary p-4">
                                     {step.icon}
