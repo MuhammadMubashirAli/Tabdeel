@@ -7,10 +7,10 @@ export function Hero() {
     <section className="relative w-full h-[60vh] md:h-[70vh] bg-card text-foreground flex items-center justify-center">
       <div className="relative container mx-auto flex h-full flex-col items-center justify-center text-center">
         <div className="p-8 rounded-lg">
-          <div className="mb-4">
+          <div className="mb-4 mt-12">
             <HeroWordmark />
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-primary">
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-primary mt-8">
             Swap your stuff, not your money.
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
