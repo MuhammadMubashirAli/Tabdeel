@@ -39,6 +39,7 @@ export function HowItWorks() {
                 <Carousel
                     opts={{
                         align: "start",
+                        loop: true,
                     }}
                     className="w-full max-w-sm sm:max-w-xl mx-auto"
                 >
