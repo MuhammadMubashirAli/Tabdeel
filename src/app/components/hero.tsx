@@ -6,13 +6,13 @@ export function Hero() {
   return (
     <section className="w-full h-[60vh] md:h-[70vh] bg-card text-foreground flex items-center justify-center">
       <div className="container mx-auto flex h-full flex-col items-center justify-center text-center p-4">
-        <div className="flex flex-col items-center space-y-8">
+        <div className="flex flex-col items-center space-y-6">
           <HeroWordmark />
           <div>
             <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-primary">
               Swap your stuff, not your money.
             </h1>
-            <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
+            <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
               Find new homes for things you don’t need, and take home what you want — all through direct exchanges.
             </p>
           </div>
