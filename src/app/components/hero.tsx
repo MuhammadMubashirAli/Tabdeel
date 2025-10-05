@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Wordmark } from "@/app/components/logo";
+import { HeroWordmark } from "@/app/components/logo";
 
 export function Hero() {
   const heroImage = PlaceHolderImages.find(p => p.id === 'hero-background');
@@ -22,7 +22,7 @@ export function Hero() {
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
       <div className="relative container mx-auto flex h-full flex-col items-center justify-center text-center">
         <div className="bg-black/50 backdrop-blur-sm p-8 rounded-lg">
-          <Wordmark />
+          <HeroWordmark />
           <h1 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-white">
             Swap your stuff, not your money.
           </h1>
