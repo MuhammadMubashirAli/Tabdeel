@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen w-full flex-col">
       <AppHeader />
-      <main className="flex-1 pt-16 md:pt-0">
+      <main className="flex-1 pt-20 md:pt-0">
         <Hero />
         <AboutUs />
         <HowItWorks />
