@@ -25,8 +25,6 @@ export function AboutUs() {
             );
         });
     };
-
-    let wordCount = 0;
     
     return (
         <section id="about" className="w-full py-24 md:py-24 lg:py-32 bg-card">
