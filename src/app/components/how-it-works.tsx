@@ -46,13 +46,14 @@ export function HowItWorks() {
             }
         );
 
-        if (sectionRef.current) {
-            observer.observe(sectionRef.current);
+        const currentRef = sectionRef.current;
+        if (currentRef) {
+            observer.observe(currentRef);
         }
 
         return () => {
-            if (sectionRef.current) {
-                observer.unobserve(sectionRef.current);
+            if (currentRef) {
+                observer.unobserve(currentRef);
             }
         };
     }, []);
@@ -68,11 +69,10 @@ export function HowItWorks() {
                 <div className="mx-auto grid items-stretch gap-8 sm:max-w-4xl sm:grid-cols-2 md:gap-12 lg:max-w-5xl lg:grid-cols-4">
                     {steps.map((step, index) => (
                         <Card key={index} className={cn(
-                            "shadow-lg hover:shadow-xl transition-all duration-700 ease-out flex flex-col",
-                            "transform",
+                            "shadow-lg hover:shadow-xl transition-all duration-700 ease-out flex flex-col transform",
                             isVisible ? "opacity-100 translate-x-0" : "opacity-0",
-                            index < 2 ? "translate-x-full" : "-translate-x-full",
-                            `delay-${index * 150}`
+                            index < 2 ? "-translate-x-full" : "translate-x-full",
+                            `delay-[${index * 150}ms]`
                         )}>
                             <CardHeader className="flex flex-col items-center text-center gap-4">
                                 <div className="rounded-full bg-secondary p-4">
