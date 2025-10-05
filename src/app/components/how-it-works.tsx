@@ -27,6 +27,13 @@ const steps = [
     },
 ]
 
+const cardColors = [
+    "bg-emerald-50",
+    "bg-amber-50",
+    "bg-sky-50",
+    "bg-rose-50",
+]
+
 export function HowItWorks() {
     return (
         <section id="how-it-works" className="w-full py-12 md:py-24 lg:py-32">
@@ -47,9 +54,9 @@ export function HowItWorks() {
                         {steps.map((step, index) => (
                             <CarouselItem key={index}>
                                  <div className="p-1 h-full">
-                                    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full">
+                                    <Card className={`shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full ${cardColors[index]}`}>
                                         <CardHeader className="flex flex-col items-center text-center gap-4">
-                                            <div className="rounded-full bg-secondary p-4">
+                                            <div className="rounded-full bg-background/70 p-4">
                                                 {step.icon}
                                             </div>
                                             <CardTitle>{index + 1}. {step.title}</CardTitle>
