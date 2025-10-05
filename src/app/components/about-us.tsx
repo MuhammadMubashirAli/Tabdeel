@@ -13,15 +13,19 @@ export function AboutUs() {
     const renderTextWithSpans = (text: string, wordStartIndex: number) => {
         return text.split(' ').map((word, index) => {
             const globalIndex = wordStartIndex + index;
+            // Use a React.Fragment to group the word's span and the space
             return (
-                <span
-                    key={globalIndex}
-                    onMouseEnter={() => setActiveIndex(globalIndex)}
-                    onMouseLeave={() => setActiveIndex(-1)}
-                    className={`transition-transform duration-300 inline-block ${globalIndex === activeIndex ? '-translate-y-1 scale-110 text-primary font-semibold' : ''}`}
-                >
-                    {word}{' '}
-                </span>
+                <React.Fragment key={globalIndex}>
+                    <span
+                        onMouseEnter={() => setActiveIndex(globalIndex)}
+                        onMouseLeave={() => setActiveIndex(-1)}
+                        className={`transition-transform duration-300 inline-block ${globalIndex === activeIndex ? '-translate-y-1 scale-110 text-primary font-semibold' : ''}`}
+                    >
+                        {word}
+                    </span>
+                    {/* Add a space after each word */}
+                    {' '}
+                </React.Fragment>
             );
         });
     };
