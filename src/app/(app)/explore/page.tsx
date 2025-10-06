@@ -1,6 +1,7 @@
 import { ItemCard } from "@/app/components/item-card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { items as allItems, categories, pakistaniCities } from "@/lib/data";
 import { ListFilter } from "lucide-react";
 
@@ -20,19 +21,21 @@ export default function ExplorePage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup value="all">
-                <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
-                {categories.map(c => <DropdownMenuRadioItem key={c} value={c.toLowerCase()}>{c}</DropdownMenuRadioItem>)}
-              </DropdownMenuRadioGroup>
-              <DropdownMenuSeparator />
-               <DropdownMenuLabel>Filter by City</DropdownMenuLabel>
-               <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup value="all">
-                <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
-                {pakistaniCities.map(c => <DropdownMenuRadioItem key={c} value={c.toLowerCase()}>{c}</DropdownMenuRadioItem>)}
-              </DropdownMenuRadioGroup>
+                <ScrollArea className="h-72">
+                    <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuRadioGroup value="all" className="px-2">
+                        <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
+                        {categories.map(c => <DropdownMenuRadioItem key={c} value={c.toLowerCase()}>{c}</DropdownMenuRadioItem>)}
+                    </DropdownMenuRadioGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Filter by City</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuRadioGroup value="all" className="px-2">
+                        <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
+                        {pakistaniCities.map(c => <DropdownMenuRadioItem key={c} value={c.toLowerCase()}>{c}</DropdownMenuRadioItem>)}
+                    </DropdownMenuRadioGroup>
+                </ScrollArea>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
