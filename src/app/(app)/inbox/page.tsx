@@ -136,7 +136,7 @@ function MessagesView() {
             <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] h-full">
                 {/* Conversation List - Hidden on mobile when a chat is open */}
                 <div className={cn(
-                    "border-r flex-col h-full",
+                    "border-r flex-col h-full overflow-x-hidden",
                     isMobileView ? "hidden md:flex" : "flex"
                 )}>
                     <CardHeader>
@@ -160,10 +160,10 @@ function MessagesView() {
                                         {participantAvatar && <AvatarImage src={participantAvatar.imageUrl} alt={convo.participant.name} data-ai-hint={participantAvatar.imageHint} />}
                                         <AvatarFallback>{convo.participant.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
-                                    <div className="flex-1">
+                                    <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between">
-                                            <p className="font-semibold">{convo.participant.name}</p>
-                                            <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(convo.lastMessage.timestamp), { addSuffix: true })}</p>
+                                            <p className="font-semibold truncate">{convo.participant.name}</p>
+                                            <p className="text-xs text-muted-foreground flex-shrink-0 ml-2">{formatDistanceToNow(new Date(convo.lastMessage.timestamp), { addSuffix: true })}</p>
                                         </div>
                                         <p className="text-sm text-muted-foreground truncate">{convo.lastMessage.text}</p>
                                     </div>
