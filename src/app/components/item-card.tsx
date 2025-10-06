@@ -21,12 +21,15 @@ export function ItemCard({ item, index }: ItemCardProps) {
     'Fair': 'outline'
   } as const;
 
+  const isEven = index !== undefined && index % 2 === 0;
+
   return (
     <Card className={cn(
       "w-full overflow-hidden transition-all duration-300 ease-in-out",
       "hover:-translate-y-1",
       "hover-border-dance",
-      "hover:shadow-[0_0_25px_hsl(var(--accent)),0_0_25px_hsl(var(--primary))]"
+      "hover:shadow-[0_0_25px_hsl(var(--accent)),0_0_25px_hsl(var(--primary))]",
+       isEven ? 'bg-primary/10' : 'bg-accent/10'
       )}>
       <Link href={`/item/${item.id}`} className="block">
         <div className="relative aspect-[4/3] w-full">
