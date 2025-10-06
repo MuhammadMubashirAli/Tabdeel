@@ -39,24 +39,28 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
         <DialogContent className="max-w-4xl w-full p-0">
           <div className="grid md:grid-cols-2 gap-0">
             {/* Left side: Image Carousel */}
-            <div className="w-full md:rounded-l-lg overflow-hidden">
+            <div className="w-full md:rounded-l-lg overflow-hidden h-[400px] md:h-auto">
               <Carousel className="w-full h-full">
                 <CarouselContent>
                   {images.map((image, index) => (
-                    <CarouselItem key={index} className="h-[400px] md:h-full">
-                      <div className="relative w-full h-full">
-                        {image && <Image src={image.imageUrl} alt={item.title} fill className="object-cover" />}
+                    <CarouselItem key={index}>
+                      <div className="relative w-full h-full min-h-[400px]">
+                        {image && <Image src={image.imageUrl} alt={item.title} fill className="object-cover" data-ai-hint={image.imageHint} />}
                       </div>
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <CarouselPrevious className="absolute left-4" />
-                <CarouselNext className="absolute right-4" />
+                {images.length > 1 && (
+                    <>
+                        <CarouselPrevious className="absolute left-4" />
+                        <CarouselNext className="absolute right-4" />
+                    </>
+                )}
               </Carousel>
             </div>
 
             {/* Right side: Details */}
-            <div className="flex flex-col p-6">
+            <div className="flex flex-col p-6 max-h-[90vh] md:max-h-none">
               <DialogHeader className="mb-4">
                 <DialogTitle className="text-3xl font-headline mb-2">{item.title}</DialogTitle>
                 <DialogDescription className="flex items-center gap-1 text-muted-foreground">
@@ -77,7 +81,7 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
                      {owner && (
                         <div className="flex items-center gap-3">
                             <Avatar>
-                                {ownerAvatar && <AvatarImage src={ownerAvatar.imageUrl} alt={owner.name} />}
+                                {ownerAvatar && <AvatarImage src={ownerAvatar.imageUrl} alt={owner.name} data-ai-hint={ownerAvatar.imageHint} />}
                                 <AvatarFallback>{owner.name.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <div>
