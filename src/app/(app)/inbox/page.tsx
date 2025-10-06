@@ -8,7 +8,7 @@ import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Check, CornerDownLeft, ThumbsDown, X } from "lucide-react";
+import { ArrowLeft, Check, CornerDownLeft, ThumbsDown } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import type { Conversation, Message, SwapRequest, User } from "@/lib/types";
@@ -62,7 +62,7 @@ function SwapRequestCard({ request }: { request: SwapRequest }) {
             <p className="text-sm font-medium truncate max-w-24">{offeredItem.title}</p>
           </div>
 
-          <ArrowRight className="size-6 text-muted-foreground hidden md:block" />
+          <ArrowLeft className="size-6 text-muted-foreground hidden md:block rotate-180" />
 
           {/* Item You Give */}
           <div className="flex flex-col items-center gap-2 text-center">
@@ -91,36 +91,43 @@ function SwapRequestCard({ request }: { request: SwapRequest }) {
 
 function MessagesView() {
     const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
-    const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-    const [messages, setMessages] = useState<Message[]>(activeConversationMessages);
+    const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+    const [messages, setMessages] = useState<{[key: string]: Message[]}>({ 'conv-1': activeConversationMessages, 'conv-2': [] });
+    
     const currentUser = users.find(u => u.id === 'user-2');
-
+    const selectedConversation = conversations.find(c => c.id === selectedConversationId);
+    
     const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.currentTarget;
         const input = form.querySelector('textarea[name="message"]');
-        if (input instanceof HTMLTextAreaElement && input.value.trim() !== '' && currentUser) {
+
+        if (input instanceof HTMLTextAreaElement && input.value.trim() !== '' && currentUser && selectedConversation) {
             const newMessage: Message = {
-                id: `msg-${messages.length + 1}`,
+                id: `msg-${Date.now()}`,
                 senderId: currentUser.id,
                 text: input.value.trim(),
                 timestamp: new Date().toISOString(),
             };
-            setMessages([...messages, newMessage]);
+
+            // Update messages for the current conversation
+            setMessages(prev => ({
+                ...prev,
+                [selectedConversation.id]: [...(prev[selectedConversation.id] || []), newMessage]
+            }));
             
-            // Also update the last message in the conversation list
-            if (selectedConversation) {
-                const updatedConversations = conversations.map(c => 
-                    c.id === selectedConversation.id ? { ...c, lastMessage: newMessage } : c
-                );
-                setConversations(updatedConversations);
-            }
+            // Update the last message in the conversation list
+            setConversations(prev => prev.map(c => 
+                c.id === selectedConversation.id ? { ...c, lastMessage: newMessage } : c
+            ));
+            
             input.value = '';
         }
     };
     
     // Mobile-specific view management
-    const isMobileView = selectedConversation !== null;
+    const isMobileView = selectedConversationId !== null;
+    const currentMessages = selectedConversationId ? messages[selectedConversationId] || [] : [];
 
     if (!currentUser) return null;
 
@@ -138,16 +145,16 @@ function MessagesView() {
                     </CardHeader>
                     <Separator />
                     <div className="flex-1 overflow-y-auto">
-                        {conversations.map(convo => {
+                        {conversations.sort((a, b) => new Date(b.lastMessage.timestamp).getTime() - new Date(a.lastMessage.timestamp).getTime()).map(convo => {
                             const participantAvatar = PlaceHolderImages.find(p => p.id === convo.participant.avatarUrl);
                             return (
                                 <button
                                     key={convo.id}
                                     className={cn(
                                         "flex w-full items-start gap-4 p-4 text-left transition-colors hover:bg-muted/50",
-                                        selectedConversation?.id === convo.id && "bg-muted"
+                                        selectedConversationId === convo.id && "bg-muted"
                                     )}
-                                    onClick={() => setSelectedConversation(convo)}
+                                    onClick={() => setSelectedConversationId(convo.id)}
                                 >
                                     <Avatar>
                                         {participantAvatar && <AvatarImage src={participantAvatar.imageUrl} alt={convo.participant.name} data-ai-hint={participantAvatar.imageHint} />}
@@ -173,7 +180,7 @@ function MessagesView() {
                         <>
                             {/* Header */}
                             <div className="flex items-center gap-4 p-3 border-b">
-                                <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSelectedConversation(null)}>
+                                <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSelectedConversationId(null)}>
                                     <ArrowLeft />
                                 </Button>
                                 <Avatar>
@@ -188,7 +195,7 @@ function MessagesView() {
                             
                             {/* Messages */}
                             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                {messages.map(msg => {
+                                {currentMessages.map(msg => {
                                     const isSent = msg.senderId === currentUser.id;
                                     const sender = isSent ? currentUser : selectedConversation.participant;
                                     const senderAvatar = PlaceHolderImages.find(p => p.id === sender.avatarUrl);
@@ -228,6 +235,12 @@ function MessagesView() {
                                         placeholder="Type your message..."
                                         className="pr-16 resize-none"
                                         rows={1}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                handleSendMessage(e.currentTarget.form as HTMLFormElement);
+                                            }
+                                        }}
                                     />
                                     <Button type="submit" size="icon" className="absolute top-1/2 right-3 -translate-y-1/2">
                                         <CornerDownLeft className="size-4" />
