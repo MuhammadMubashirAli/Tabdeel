@@ -3,22 +3,22 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { users, items, swapRequests, conversations, activeConversationMessages } from "@/lib/data";
+import { users, items, swapRequests, conversations as initialConversations, activeConversationMessages } from "@/lib/data";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, CornerDownLeft, ThumbsDown, ThumbsUp, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CornerDownLeft, ThumbsDown, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
-import type { Conversation, Message } from "@/lib/types";
+import type { Conversation, Message, SwapRequest, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 
 
-function SwapRequestCard({ request }: { request: (typeof swapRequests)[0] }) {
+function SwapRequestCard({ request }: { request: SwapRequest }) {
   const fromUser = users.find(u => u.id === request.fromUserId);
   const toUser = users.find(u => u.id === request.toUserId);
   const requestedItem = items.find(i => i.id === request.requestedItemId);
@@ -90,7 +90,8 @@ function SwapRequestCard({ request }: { request: (typeof swapRequests)[0] }) {
 
 
 function MessagesView() {
-    const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(conversations[0]);
+    const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
+    const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
     const [messages, setMessages] = useState<Message[]>(activeConversationMessages);
     const currentUser = users.find(u => u.id === 'user-2');
 
@@ -98,36 +99,52 @@ function MessagesView() {
         e.preventDefault();
         const form = e.currentTarget;
         const input = form.querySelector('textarea[name="message"]');
-        if (input instanceof HTMLTextAreaElement && input.value.trim() !== '') {
+        if (input instanceof HTMLTextAreaElement && input.value.trim() !== '' && currentUser) {
             const newMessage: Message = {
                 id: `msg-${messages.length + 1}`,
-                senderId: currentUser!.id,
+                senderId: currentUser.id,
                 text: input.value.trim(),
                 timestamp: new Date().toISOString(),
             };
             setMessages([...messages, newMessage]);
+            
+            // Also update the last message in the conversation list
+            if (selectedConversation) {
+                const updatedConversations = conversations.map(c => 
+                    c.id === selectedConversation.id ? { ...c, lastMessage: newMessage } : c
+                );
+                setConversations(updatedConversations);
+            }
             input.value = '';
         }
     };
+    
+    // Mobile-specific view management
+    const isMobileView = selectedConversation !== null;
+
+    if (!currentUser) return null;
 
     return (
-        <Card className="h-[calc(100vh-200px)]">
+        <Card className="h-[calc(100vh-200px)] overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] h-full">
-                {/* Conversation List */}
-                <div className="border-r">
+                {/* Conversation List - Hidden on mobile when a chat is open */}
+                <div className={cn(
+                    "border-r flex-col h-full",
+                    isMobileView ? "hidden md:flex" : "flex"
+                )}>
                     <CardHeader>
                         <CardTitle>Messages</CardTitle>
                         <CardDescription>Your active conversations.</CardDescription>
                     </CardHeader>
                     <Separator />
-                    <div className="flex flex-col">
+                    <div className="flex-1 overflow-y-auto">
                         {conversations.map(convo => {
                             const participantAvatar = PlaceHolderImages.find(p => p.id === convo.participant.avatarUrl);
                             return (
                                 <button
                                     key={convo.id}
                                     className={cn(
-                                        "flex items-start gap-4 p-4 text-left transition-colors hover:bg-muted/50",
+                                        "flex w-full items-start gap-4 p-4 text-left transition-colors hover:bg-muted/50",
                                         selectedConversation?.id === convo.id && "bg-muted"
                                     )}
                                     onClick={() => setSelectedConversation(convo)}
@@ -150,12 +167,15 @@ function MessagesView() {
                     </div>
                 </div>
 
-                {/* Message View */}
-                <div className="flex flex-col h-full">
-                    {selectedConversation && currentUser ? (
+                {/* Message View - Hidden on mobile until a chat is selected */}
+                <div className={cn("flex-col h-full", isMobileView ? "flex" : "hidden md:flex")}>
+                    {selectedConversation ? (
                         <>
                             {/* Header */}
                             <div className="flex items-center gap-4 p-3 border-b">
+                                <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSelectedConversation(null)}>
+                                    <ArrowLeft />
+                                </Button>
                                 <Avatar>
                                     <AvatarImage src={PlaceHolderImages.find(p => p.id === selectedConversation.participant.avatarUrl)?.imageUrl} />
                                     <AvatarFallback>{selectedConversation.participant.name.charAt(0)}</AvatarFallback>
@@ -216,7 +236,7 @@ function MessagesView() {
                             </div>
                         </>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-center">
+                        <div className="flex-col items-center justify-center h-full text-center hidden md:flex">
                             <p className="text-muted-foreground">Select a conversation to start messaging</p>
                         </div>
                     )}
