@@ -1,4 +1,4 @@
-import type { Item, User, Testimonial, FaqItem } from './types';
+import type { Item, User, Testimonial, FaqItem, SwapRequest, Message, Conversation } from './types';
 
 export const users: User[] = [
   { id: 'user-1', name: 'Ahmed Khan', avatarUrl: 'user-avatar-1', city: 'Karachi' },
@@ -158,3 +158,56 @@ export const categories = [
 export const pakistaniCities = [
   "Karachi", "Lahore", "Faisalabad", "Rawalpindi", "Gujranwala", "Peshawar", "Multan", "Hyderabad", "Islamabad", "Quetta", "Sialkot", "Bahawalpur"
 ]
+
+export const swapRequests: SwapRequest[] = [
+  {
+    id: 'req-1',
+    fromUserId: 'user-1',
+    toUserId: 'user-2',
+    requestedItemId: 'item-2', // Ahmed Ali's Guitar
+    offeredItemId: 'item-1', // Ahmed Khan's Cricket Ball
+    status: 'pending',
+    createdAt: '2024-05-23T10:00:00Z',
+    message: "Hey! I saw you're looking for sports gear. Would you be interested in swapping your guitar for my vintage cricket ball?",
+  },
+  {
+    id: 'req-2',
+    fromUserId: 'user-3',
+    toUserId: 'user-2',
+    requestedItemId: 'item-6', // Ahmed Ali's Backpack
+    offeredItemId: 'item-4', // Zainab's Books
+    status: 'pending',
+    createdAt: '2024-05-22T18:30:00Z',
+    message: "Hi, I'm interested in your hiking backpack. I have a set of fantasy novels if you're into reading.",
+  }
+];
+
+const conversationMessages: Message[] = [
+    { id: 'msg-1', senderId: 'user-1', text: 'Hey, is the guitar still available?', timestamp: '2024-05-24T09:00:00Z' },
+    { id: 'msg-2', senderId: 'user-2', text: 'Yes it is! What are you thinking of offering?', timestamp: '2024-05-24T09:05:00Z' },
+    { id: 'msg-3', senderId: 'user-1', text: 'I have a vintage leather cricket ball, interested?', timestamp: '2024-05-24T09:10:00Z' },
+];
+
+export const conversations: Conversation[] = [
+    {
+        id: 'conv-1',
+        participant: users.find(u => u.id === 'user-1')!,
+        item: items.find(i => i.id === 'item-2')!,
+        lastMessage: conversationMessages[conversationMessages.length - 1],
+        unreadCount: 0
+    },
+    {
+        id: 'conv-2',
+        participant: users.find(u => u.id === 'user-3')!,
+        item: items.find(i => i.id === 'item-5')!,
+        lastMessage: {
+            id: 'msg-4',
+            senderId: 'user-3',
+            text: 'I can meet tomorrow to trade the speaker.',
+            timestamp: '2024-05-23T18:00:00Z'
+        },
+        unreadCount: 2
+    },
+]
+
+export const activeConversationMessages = conversationMessages;

@@ -34,3 +34,29 @@ export type FaqItem = {
   question: string;
   answer: string;
 };
+
+export type Message = {
+  id: string;
+  senderId: string;
+  text: string;
+  timestamp: string;
+};
+
+export type SwapRequest = {
+  id: string;
+  fromUserId: string;
+  toUserId: string;
+  requestedItemId: string;
+  offeredItemId: string;
+  status: 'pending' | 'accepted' | 'declined';
+  createdAt: string;
+  message?: string;
+};
+
+export type Conversation = {
+    id: string;
+    participant: User;
+    item: Item;
+    lastMessage: Message;
+    unreadCount: number;
+}
