@@ -43,7 +43,7 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
               <Carousel className="w-full h-full max-w-sm">
                 <CarouselContent>
                   {images.map((image, index) => (
-                    <CarouselItem key={index}>
+                    <CarouselItem key={index} className="flex items-center justify-center">
                       <div className="relative w-full h-[400px]">
                         {image && <Image src={image.imageUrl} alt={item.title} fill className="object-contain" data-ai-hint={image.imageHint} />}
                       </div>
