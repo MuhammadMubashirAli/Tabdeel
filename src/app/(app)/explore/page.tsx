@@ -3,7 +3,10 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { items as allItems, categories, pakistaniCities } from "@/lib/data";
+import type { Item } from "@/lib/types";
 import { ListFilter } from "lucide-react";
+
+const conditions: Item['condition'][] = ['Like New', 'Good', 'Fair'];
 
 export default function ExplorePage() {
   return (
@@ -21,7 +24,7 @@ export default function ExplorePage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-                <ScrollArea className="h-72">
+                <ScrollArea className="h-96">
                     <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuRadioGroup value="all" className="px-2">
@@ -34,6 +37,13 @@ export default function ExplorePage() {
                     <DropdownMenuRadioGroup value="all" className="px-2">
                         <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
                         {pakistaniCities.map(c => <DropdownMenuRadioItem key={c} value={c.toLowerCase()}>{c}</DropdownMenuRadioItem>)}
+                    </DropdownMenuRadioGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Filter by Condition</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuRadioGroup value="all" className="px-2">
+                        <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
+                        {conditions.map(c => <DropdownMenuRadioItem key={c} value={c.toLowerCase().replace(' ', '-')}>{c}</DropdownMenuRadioItem>)}
                     </DropdownMenuRadioGroup>
                 </ScrollArea>
             </DropdownMenuContent>
