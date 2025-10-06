@@ -21,10 +21,7 @@ export function ItemCard({ item, index }: ItemCardProps) {
     'Fair': 'outline'
   } as const;
 
-  const hoverGlowClass =
-    index !== undefined && index % 2 === 0
-      ? "hover:shadow-[0_0_15px_2px_hsl(var(--primary))]"
-      : "hover:shadow-[0_0_15px_2px_hsl(var(--accent))]";
+  const hoverGlowClass = "hover:shadow-[0_0_15px_2px_hsl(var(--primary)),0_0_15px_2px_hsl(var(--accent))]";
 
   return (
     <Card className={cn(
