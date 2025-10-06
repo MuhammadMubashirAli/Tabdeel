@@ -5,12 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import type { Item } from "@/lib/types";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { MapPin } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type ItemCardProps = {
   item: Item;
+  index?: number;
 };
 
-export function ItemCard({ item }: ItemCardProps) {
+export function ItemCard({ item, index }: ItemCardProps) {
   const image = PlaceHolderImages.find(p => p.id === item.images[0]);
   
   const conditionVariant = {
@@ -19,8 +21,17 @@ export function ItemCard({ item }: ItemCardProps) {
     'Fair': 'outline'
   } as const;
 
+  const hoverBorderClass =
+    index !== undefined && index % 2 === 0
+      ? "hover:border-primary"
+      : "hover:border-accent";
+
   return (
-    <Card className="w-full overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 duration-300 ease-in-out">
+    <Card className={cn(
+      "w-full overflow-hidden transition-all duration-300 ease-in-out border-2 border-transparent",
+      "hover:-translate-y-1",
+      hoverBorderClass
+      )}>
       <Link href={`/item/${item.id}`} className="block">
         <div className="relative aspect-[4/3] w-full">
             {image && (
