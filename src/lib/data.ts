@@ -19,7 +19,7 @@ export const items: Item[] = [
     desiredCategories: ['Electronics'],
     status: 'active',
     ownerId: 'user-1',
-    createdAt: '2024-05-20T10:00:00Z',
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     matchStrength: 'Good match',
   },
   {
@@ -34,7 +34,7 @@ export const items: Item[] = [
     desiredCategories: ['Electronics', 'Furniture'],
     status: 'active',
     ownerId: 'user-2',
-    createdAt: '2024-05-21T11:30:00Z',
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     matchStrength: 'Mutual interest',
   },
   {
@@ -49,7 +49,7 @@ export const items: Item[] = [
     desiredCategories: ['Sports Equipment'],
     status: 'active',
     ownerId: 'user-3',
-    createdAt: '2024-05-22T09:00:00Z',
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     matchStrength: 'Nearby',
   },
   {
@@ -64,7 +64,7 @@ export const items: Item[] = [
     desiredCategories: ['Books'],
     status: 'active',
     ownerId: 'user-3',
-    createdAt: '2024-05-19T14:00:00Z',
+    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'item-5',
@@ -78,7 +78,7 @@ export const items: Item[] = [
     desiredCategories: ['Electronics'],
     status: 'active',
     ownerId: 'user-1',
-    createdAt: '2024-05-22T15:00:00Z',
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'item-6',
@@ -92,7 +92,7 @@ export const items: Item[] = [
     desiredCategories: ['Outdoor Gear'],
     status: 'active',
     ownerId: 'user-2',
-    createdAt: '2024-05-18T18:00:00Z',
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
   },
 ];
 
@@ -167,7 +167,7 @@ export const swapRequests: SwapRequest[] = [
     requestedItemId: 'item-2', // Ahmed Ali's Guitar
     offeredItemId: 'item-1', // Ahmed Khan's Cricket Ball
     status: 'pending',
-    createdAt: '2024-05-23T10:00:00Z',
+    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
     message: "Hey! I saw you're looking for sports gear. Would you be interested in swapping your guitar for my vintage cricket ball?",
   },
   {
@@ -177,15 +177,15 @@ export const swapRequests: SwapRequest[] = [
     requestedItemId: 'item-6', // Ahmed Ali's Backpack
     offeredItemId: 'item-4', // Zainab's Books
     status: 'pending',
-    createdAt: '2024-05-22T18:30:00Z',
+    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
     message: "Hi, I'm interested in your hiking backpack. I have a set of fantasy novels if you're into reading.",
   }
 ];
 
 const conversationMessages: Message[] = [
-    { id: 'msg-1', senderId: 'user-1', text: 'Hey, is the guitar still available?', timestamp: '2024-05-24T09:00:00Z' },
-    { id: 'msg-2', senderId: 'user-2', text: 'Yes it is! What are you thinking of offering?', timestamp: '2024-05-24T09:05:00Z' },
-    { id: 'msg-3', senderId: 'user-1', text: 'I have a vintage leather cricket ball, interested?', timestamp: '2024-05-24T09:10:00Z' },
+    { id: 'msg-1', senderId: 'user-1', text: 'Hey, is the guitar still available?', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString() },
+    { id: 'msg-2', senderId: 'user-2', text: 'Yes it is! What are you thinking of offering?', timestamp: new Date(Date.now() - 4 * 60 * 1000).toISOString() },
+    { id: 'msg-3', senderId: 'user-1', text: 'I have a vintage leather cricket ball, interested?', timestamp: new Date(Date.now() - 3 * 60 * 1000).toISOString() },
 ];
 
 export const conversations: Conversation[] = [
@@ -204,7 +204,7 @@ export const conversations: Conversation[] = [
             id: 'msg-4',
             senderId: 'user-3',
             text: 'I can meet tomorrow to trade the speaker.',
-            timestamp: '2024-05-23T18:00:00Z'
+            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
         },
         unreadCount: 2
     },
