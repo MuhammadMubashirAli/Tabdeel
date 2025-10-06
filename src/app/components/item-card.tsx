@@ -21,13 +21,11 @@ export function ItemCard({ item, index }: ItemCardProps) {
     'Fair': 'outline'
   } as const;
 
-  const hoverGlowClass = "hover:shadow-[-5px_-5px_15px_hsl(var(--primary)),_5px_5px_15px_hsl(var(--accent))]";
-
   return (
     <Card className={cn(
       "w-full overflow-hidden transition-all duration-300 ease-in-out",
       "hover:-translate-y-1",
-      hoverGlowClass
+      "hover-border-dance" // Replaced glow class with border dance effect
       )}>
       <Link href={`/item/${item.id}`} className="block">
         <div className="relative aspect-[4/3] w-full">
