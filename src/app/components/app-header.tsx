@@ -28,7 +28,7 @@ export function AppHeader({ isAuthenticated = false }: { isAuthenticated?: boole
                     <Button asChild variant="ghost" className="hover:bg-transparent text-primary relative overflow-hidden transition-all duration-300 ease-in-out before:absolute before:inset-0 before:z-[-1] before:block before:translate-x-[-100%] before:bg-primary before:transition-transform before:duration-300 before:ease-in-out hover:before:translate-x-0 hover:text-primary-foreground">
                         <Link href="/login">Sign In</Link>
                     </Button>
-                    <Button asChild className="bg-transparent text-accent relative overflow-hidden transition-all duration-300 ease-in-out hover:text-accent-foreground before:absolute before:inset-0 before:z-[-1] before:block before:translate-x-[-100%] before:bg-accent before:transition-transform before:duration-300 before:ease-in-out hover:before:translate-x-0">
+                    <Button asChild variant="ghost" className="hover:bg-transparent text-accent relative overflow-hidden transition-all duration-300 ease-in-out before:absolute before:inset-0 before:z-[-1] before:block before:translate-x-[-100%] before:bg-accent before:transition-transform before:duration-300 before:ease-in-out hover:before:translate-x-0 hover:text-accent-foreground">
                         <Link href="/signup">Sign Up</Link>
                     </Button>
                 </nav>
