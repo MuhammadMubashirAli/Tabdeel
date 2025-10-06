@@ -1,5 +1,7 @@
+
+'use client';
+
 import Image from "next/image";
-import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Item } from "@/lib/types";
@@ -10,9 +12,10 @@ import { cn } from "@/lib/utils";
 type ItemCardProps = {
   item: Item;
   index?: number;
+  onSelect: () => void;
 };
 
-export function ItemCard({ item, index }: ItemCardProps) {
+export function ItemCard({ item, index, onSelect }: ItemCardProps) {
   const image = PlaceHolderImages.find(p => p.id === item.images[0]);
   
   const conditionVariant = {
@@ -24,14 +27,17 @@ export function ItemCard({ item, index }: ItemCardProps) {
   const isEven = index !== undefined && index % 2 === 0;
 
   return (
-    <Card className={cn(
-      "w-full overflow-hidden transition-all duration-300 ease-in-out",
-      "hover:-translate-y-1",
-      "hover-border-dance",
-      "hover:shadow-[0_0_25px_hsl(var(--accent)),0_0_25px_hsl(var(--primary))]",
-       isEven ? 'bg-primary/10' : 'bg-accent/10'
-      )}>
-      <Link href={`/item/${item.id}`} className="block">
+    <Card 
+      onClick={onSelect}
+      className={cn(
+        "w-full overflow-hidden transition-all duration-300 ease-in-out cursor-pointer",
+        "hover:-translate-y-1",
+        "hover-border-dance",
+        "hover:shadow-[0_0_25px_hsl(var(--accent)),0_0_25px_hsl(var(--primary))]",
+        isEven ? 'bg-primary/10' : 'bg-accent/10'
+      )}
+    >
+      <div className="block">
         <div className="relative aspect-[4/3] w-full">
             {image && (
               <Image
@@ -58,7 +64,7 @@ export function ItemCard({ item, index }: ItemCardProps) {
                 </div>
             </div>
         </CardContent>
-      </Link>
+      </div>
     </Card>
   );
 }
