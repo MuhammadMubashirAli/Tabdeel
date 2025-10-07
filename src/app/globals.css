@@ -90,20 +90,15 @@ body {
   }
 }
 
-@keyframes border-dance {
-  from { --angle: 0deg; }
-  to { --angle: 360deg; }
-}
-
-@property --angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
-
-@keyframes pulse-glow {
-    0%, 100% { opacity: 0.7; }
-    50% { opacity: 1; }
+@keyframes corner-glow {
+  0%, 100% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
 }
 
 @layer utilities {
@@ -117,11 +112,49 @@ body {
     background: conic-gradient(from var(--angle), hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)));
     border-radius: calc(var(--radius) + 2px);
     z-index: -1;
-    opacity: 1; /* Always visible */
-    animation: border-dance 4s linear infinite, pulse-glow 2.5s infinite ease-in-out;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    animation: border-dance 4s linear infinite;
   }
   .hover-border-dance:hover::before {
-     animation: border-dance 4s linear infinite, pulse-glow 2.5s infinite ease-in-out; /* Keep animation on hover */
+     opacity: 1;
+  }
+
+  .corner-glow-effect {
+    position: relative;
+  }
+
+  .corner-glow-effect::before,
+  .corner-glow-effect::after {
+    content: '';
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: transparent;
+    border-radius: 50%;
+    z-index: -1;
+    animation: corner-glow 3s infinite ease-in-out;
+  }
+  
+  .corner-glow-primary.corner-glow-effect::before,
+  .corner-glow-primary.corner-glow-effect::after {
+     box-shadow: 0 0 60px 20px hsl(var(--primary) / 0.7);
+  }
+
+  .corner-glow-accent.corner-glow-effect::before,
+  .corner-glow-accent.corner-glow-effect::after {
+     box-shadow: 0 0 60px 20px hsl(var(--accent) / 0.7);
+  }
+
+  .corner-glow-effect::before {
+    top: -40px;
+    left: -40px;
+  }
+
+  .corner-glow-effect::after {
+    bottom: -40px;
+    right: -40px;
+    animation-delay: -1.5s;
   }
 
 }

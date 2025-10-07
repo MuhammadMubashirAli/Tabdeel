@@ -35,6 +35,13 @@ const cardColors = [
     "bg-orange-200/50",
 ]
 
+const glowColors = [
+    "corner-glow-primary",
+    "corner-glow-accent",
+    "corner-glow-primary",
+    "corner-glow-accent",
+]
+
 export function HowItWorks() {
     return (
         <section id="how-it-works" className="w-full py-12 md:py-24 lg:py-32">
@@ -56,9 +63,10 @@ export function HowItWorks() {
                             <CarouselItem key={index}>
                                  <div className="p-1 h-full">
                                     <Card className={cn(
-                                        "shadow-lg transition-shadow duration-300 flex flex-col items-center justify-center h-80 w-80 mx-auto",
+                                        "shadow-lg transition-shadow duration-300 flex flex-col items-center justify-center h-80 w-80 mx-auto overflow-visible",
                                         cardColors[index],
-                                        "hover-border-dance" // Apply the border effect class
+                                        "corner-glow-effect",
+                                        glowColors[index]
                                     )}>
                                         <CardHeader className="flex flex-col items-center text-center gap-4">
                                             <div className="rounded-full bg-background/70 p-4">
