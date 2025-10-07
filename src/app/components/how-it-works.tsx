@@ -11,7 +11,7 @@ const steps = [
         description: "Upload a photo of your item and tell us what you'd like in exchange. It's fast, free, and easy.",
     },
     {
-        icon: <Search className="size-8 text-primary" />,
+        icon: <Search className="size-8 text-accent" />,
         title: "Explore & Get Matched",
         description: "Browse items from across Pakistan or check your recommendations for AI-powered swap suggestions.",
     },
@@ -21,17 +21,17 @@ const steps = [
         description: "Found something you like? Offer one of your own items to start a conversation with the owner.",
     },
     {
-        icon: <CheckCircle className="size-8 text-primary" />,
+        icon: <CheckCircle className="size-8 text-accent" />,
         title: "Meet & Exchange",
         description: "Arrange a safe meeting to exchange your items. Once done, mark the swap as complete on your profile.",
     },
 ]
 
 const cardColors = [
-    "bg-emerald-50",
-    "bg-amber-50",
-    "bg-sky-50",
-    "bg-rose-50",
+    "bg-green-50",
+    "bg-orange-50",
+    "bg-green-50",
+    "bg-orange-50",
 ]
 
 export function HowItWorks() {
