@@ -35,12 +35,6 @@ const cardColors = [
     "bg-orange-200/50",
 ]
 
-const glowColors = [
-    "corner-glow-primary",
-    "corner-glow-accent",
-    "corner-glow-primary",
-    "corner-glow-accent",
-]
 
 export function HowItWorks() {
     return (
@@ -63,10 +57,10 @@ export function HowItWorks() {
                             <CarouselItem key={index}>
                                  <div className="p-1 h-full">
                                     <Card className={cn(
-                                        "shadow-lg transition-shadow duration-300 flex flex-col items-center justify-center h-80 w-80 mx-auto overflow-visible",
+                                        "shadow-lg transition-shadow duration-300 flex flex-col items-center justify-center h-80 w-80 mx-auto",
+                                        "hover-border-dance",
                                         cardColors[index],
-                                        "corner-glow-effect",
-                                        glowColors[index]
+                                        "bg-card/80 backdrop-blur-sm"
                                     )}>
                                         <CardHeader className="flex flex-col items-center text-center gap-4">
                                             <div className="rounded-full bg-background/70 p-4">
