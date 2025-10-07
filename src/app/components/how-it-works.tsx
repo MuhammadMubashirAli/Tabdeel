@@ -54,7 +54,7 @@ export function HowItWorks() {
                         {steps.map((step, index) => (
                             <CarouselItem key={index}>
                                  <div className="p-1 h-full">
-                                    <Card className={`shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center justify-center h-80 w-80 mx-auto ${cardColors[index]} ${index % 2 !== 0 ? 'rounded-full' : ''}`}>
+                                    <Card className={`shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center justify-center h-80 w-80 mx-auto ${cardColors[index]}`}>
                                         <CardHeader className="flex flex-col items-center text-center gap-4">
                                             <div className="rounded-full bg-background/70 p-4">
                                                 {step.icon}
