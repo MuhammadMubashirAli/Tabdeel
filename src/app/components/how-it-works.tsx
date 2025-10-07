@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { ListPlus, Search, Send, CheckCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const steps = [
     {
@@ -44,23 +45,29 @@ export function HowItWorks() {
                     className="w-full max-w-sm sm:max-w-xl mx-auto"
                 >
                     <CarouselContent>
-                        {steps.map((step, index) => (
-                            <CarouselItem key={index}>
-                                 <div className="p-1 h-full">
-                                    <Card className="shadow-lg transition-shadow duration-300 flex flex-col items-center justify-center h-80 w-80 mx-auto bg-card/80 backdrop-blur-sm border border-white/10">
-                                        <CardHeader className="flex flex-col items-center text-center gap-4">
-                                            <div className="rounded-full bg-background/70 p-4">
-                                                {step.icon}
-                                            </div>
-                                            <CardTitle>{index + 1}. {step.title}</CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="text-center text-muted-foreground flex-1">
-                                            {step.description}
-                                        </CardContent>
-                                    </Card>
-                                 </div>
-                            </CarouselItem>
-                        ))}
+                        {steps.map((step, index) => {
+                            const isEven = index % 2 === 0;
+                            return (
+                                <CarouselItem key={index}>
+                                     <div className="p-1 h-full">
+                                        <Card className={cn(
+                                            "shadow-lg transition-shadow duration-300 flex flex-col items-center justify-center h-80 w-80 mx-auto backdrop-blur-sm border border-white/10",
+                                            isEven ? 'bg-primary/20' : 'bg-accent/20'
+                                        )}>
+                                            <CardHeader className="flex flex-col items-center text-center gap-4">
+                                                <div className="rounded-full bg-background/70 p-4">
+                                                    {step.icon}
+                                                </div>
+                                                <CardTitle>{index + 1}. {step.title}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="text-center text-muted-foreground flex-1">
+                                                {step.description}
+                                            </CardContent>
+                                        </Card>
+                                     </div>
+                                </CarouselItem>
+                            )
+                        })}
                     </CarouselContent>
                     <CarouselPrevious />
                     <CarouselNext />
