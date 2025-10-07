@@ -29,10 +29,10 @@ const steps = [
 ]
 
 const cardColors = [
-    "bg-green-200",
-    "bg-orange-200",
-    "bg-green-200",
-    "bg-orange-200",
+    "bg-green-200/50",
+    "bg-orange-200/50",
+    "bg-green-200/50",
+    "bg-orange-200/50",
 ]
 
 const glowEffects = [
@@ -64,7 +64,7 @@ export function HowItWorks() {
                                  <div className="p-1 h-full">
                                     <div className={cn("relative w-80 h-80 mx-auto", glowEffects[index])}>
                                         <Card className={cn(
-                                            "shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center justify-center h-full w-full",
+                                            "shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center justify-center h-full w-full bg-transparent backdrop-blur-sm",
                                             cardColors[index]
                                         )}>
                                             <CardHeader className="flex flex-col items-center text-center gap-4">

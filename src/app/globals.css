@@ -134,22 +134,22 @@ body {
   .glow-effect-orange::before {
     content: '';
     position: absolute;
-    inset: 0;
+    inset: -20px;
     background: radial-gradient(circle, hsl(var(--accent) / 0.6) 0%, transparent 70%);
     filter: blur(40px);
     animation: pulse-glow 3s infinite ease-in-out;
-    z-index: 0;
+    z-index: -1;
     border-radius: inherit;
   }
 
   .glow-effect-green::before {
     content: '';
     position: absolute;
-    inset: 0;
+    inset: -20px;
     background: radial-gradient(circle, hsl(var(--primary) / 0.5) 0%, transparent 70%);
     filter: blur(40px);
     animation: pulse-glow 3s infinite ease-in-out;
-    z-index: 0;
+    z-index: -1;
     border-radius: inherit;
   }
 }
