@@ -89,32 +89,3 @@ body {
     @apply font-headline;
   }
 }
-
-@layer utilities {
-  .hover-border-dance {
-    @apply relative;
-  }
-  .hover-border-dance::before {
-    content: '';
-    position: absolute;
-    inset: -10px;
-    background: conic-gradient(from var(--angle), hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)));
-    border-radius: calc(var(--radius) + 10px);
-    z-index: -1;
-    animation: border-dance 4s linear infinite;
-    filter: blur(15px);
-    opacity: 1;
-    transition: opacity 0.3s ease-in-out;
-  }
-}
-
-@keyframes border-dance {
-  from { --angle: 0deg; }
-  to { --angle: 360deg; }
-}
-
-@property --angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
