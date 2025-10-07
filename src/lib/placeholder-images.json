@@ -3,7 +3,7 @@
     {
       "id": "hero-background",
       "description": "A vibrant marketplace scene in Pakistan",
-      "imageUrl": "https://i.postimg.cc/fyck3xLc/download-1.jpg",
+      "imageUrl": "https://i.postimg.cc/3NXrzyDJ/Untitled-design-5.png",
       "imageHint": "marketplace bazaar"
     },
     {
@@ -45,31 +45,31 @@
     {
       "id": "item-guitar-2",
       "description": "Detail of the guitar headstock",
-      "imageUrl": "https://images.unsplash.com/photo-1633195234265-6dccce0d117c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxndWl0YXIlMjBoZWFkc3RvY2t8ZW58MHx8fHwxNzU5NTE0MzkxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1633195234265-6dccce0d117c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxndWl0YXIlMjBoZWFkc3RvY2t8ZW58MHx8fHwxNzU5NTE0MzkxfDA&ixlib_rb-4.1.0&q=80&w=1080",
       "imageHint": "guitar headstock"
     },
     {
       "id": "item-football-1",
       "description": "A professional football",
-      "imageUrl": "https://images.unsplash.com/photo-1660926655800-3d11219f390d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzb2NjZXIlMjBiYWxsfGVufDB8fHx8MTc1OTYxNDIxNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1660926655800-3d11219f390d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzb2NjZXIlMjBiYWxsfGVufDB8fHx8MTc1OTYxNDIxNnww&ixlib_rb-4.1.0&q=80&w=1080",
       "imageHint": "soccer ball"
     },
     {
       "id": "item-books-1",
       "description": "A set of 5 fantasy novels",
-      "imageUrl": "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxib29rJTIwc3RhY2t8ZW58MHx8fHwxNzU5NjE4NTg4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxib29rJTIwc3RhY2t8ZW58MHx8fHwxNzU5NjE4NTg4fDA&ixlib_rb-4.1.0&q=80&w=1080",
       "imageHint": "book stack"
     },
     {
       "id": "item-speaker-1",
       "description": "A portable bluetooth speaker",
-      "imageUrl": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxibHVldG9vdGglMjBzcGVha2VyfGVufDB8fHx8MTc1OTUxMjMxOXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxibHVldG9vdGglMjBzcGVha2VyfGVufDB8fHx8MTc1OTUxMjMxOXww&ixlib_rb-4.1.0&q=80&w=1080",
       "imageHint": "bluetooth speaker"
     },
     {
       "id": "item-backpack-1",
       "description": "A men's hiking backpack",
-      "imageUrl": "https://images.unsplash.com/photo-1602845860431-35374f24f48d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxoaWtpbmclMjBiYWNrcGFja3xlbnwwfHx8fDE3NTk1ODkxODB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1602845860431-35374f24f48d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxoaWtpbmclMjBiYWNrcGFja3xlbnwwfHx8fDE3NTk1ODkxODB8MA&ixlib_rb-4.1.0&q=80&w=1080",
       "imageHint": "hiking backpack"
     }
   ]
