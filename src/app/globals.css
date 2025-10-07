@@ -101,6 +101,17 @@ body {
   inherits: false;
 }
 
+@keyframes pulse-glow {
+  0%, 100% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
 @layer utilities {
   .hover-border-dance {
     @apply relative;
@@ -118,5 +129,27 @@ body {
   .hover-border-dance:hover::before {
     opacity: 1;
     animation: border-dance 4s linear infinite;
+  }
+
+  .glow-effect-orange::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, hsl(var(--accent) / 0.6) 0%, transparent 70%);
+    filter: blur(40px);
+    animation: pulse-glow 3s infinite ease-in-out;
+    z-index: -1;
+    border-radius: inherit;
+  }
+
+  .glow-effect-green::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, hsl(var(--primary) / 0.5) 0%, transparent 70%);
+    filter: blur(40px);
+    animation: pulse-glow 3s infinite ease-in-out;
+    z-index: -1;
+    border-radius: inherit;
   }
 }

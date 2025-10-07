@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { cn } from "@/lib/utils";
 import { ListPlus, Search, Send, CheckCircle } from "lucide-react";
 
 const steps = [
@@ -34,6 +35,13 @@ const cardColors = [
     "bg-orange-200",
 ]
 
+const glowEffects = [
+    "glow-effect-green",
+    "glow-effect-orange",
+    "glow-effect-green",
+    "glow-effect-orange",
+]
+
 export function HowItWorks() {
     return (
         <section id="how-it-works" className="w-full py-12 md:py-24 lg:py-32">
@@ -54,7 +62,11 @@ export function HowItWorks() {
                         {steps.map((step, index) => (
                             <CarouselItem key={index}>
                                  <div className="p-1 h-full">
-                                    <Card className={`shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center justify-center h-80 w-80 mx-auto ${cardColors[index]}`}>
+                                    <Card className={cn(
+                                        "shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center justify-center h-80 w-80 mx-auto relative overflow-visible",
+                                        cardColors[index],
+                                        glowEffects[index]
+                                    )}>
                                         <CardHeader className="flex flex-col items-center text-center gap-4">
                                             <div className="rounded-full bg-background/70 p-4">
                                                 {step.icon}
