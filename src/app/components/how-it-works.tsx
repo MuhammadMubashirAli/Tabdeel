@@ -36,10 +36,10 @@ const cardColors = [
 ]
 
 const glowEffects = [
-    "glow-effect-green",
     "glow-effect-orange",
     "glow-effect-green",
     "glow-effect-orange",
+    "glow-effect-green",
 ]
 
 export function HowItWorks() {
