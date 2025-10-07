@@ -35,13 +35,6 @@ const cardColors = [
     "bg-orange-200/50",
 ]
 
-const glowEffects = [
-    "glow-effect-orange",
-    "glow-effect-green",
-    "glow-effect-orange",
-    "glow-effect-green",
-]
-
 export function HowItWorks() {
     return (
         <section id="how-it-works" className="w-full py-12 md:py-24 lg:py-32">
@@ -62,22 +55,21 @@ export function HowItWorks() {
                         {steps.map((step, index) => (
                             <CarouselItem key={index}>
                                  <div className="p-1 h-full">
-                                    <div className={cn("relative w-80 h-80 mx-auto", glowEffects[index])}>
-                                        <Card className={cn(
-                                            "shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center justify-center h-full w-full bg-transparent backdrop-blur-sm",
-                                            cardColors[index]
-                                        )}>
-                                            <CardHeader className="flex flex-col items-center text-center gap-4">
-                                                <div className="rounded-full bg-background/70 p-4">
-                                                    {step.icon}
-                                                </div>
-                                                <CardTitle>{index + 1}. {step.title}</CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="text-center text-muted-foreground flex-1">
-                                                {step.description}
-                                            </CardContent>
-                                        </Card>
-                                    </div>
+                                    <Card className={cn(
+                                        "shadow-lg transition-shadow duration-300 flex flex-col items-center justify-center h-80 w-80 mx-auto",
+                                        cardColors[index],
+                                        "hover-border-dance" // Apply the border effect class
+                                    )}>
+                                        <CardHeader className="flex flex-col items-center text-center gap-4">
+                                            <div className="rounded-full bg-background/70 p-4">
+                                                {step.icon}
+                                            </div>
+                                            <CardTitle>{index + 1}. {step.title}</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="text-center text-muted-foreground flex-1">
+                                            {step.description}
+                                        </CardContent>
+                                    </Card>
                                  </div>
                             </CarouselItem>
                         ))}
