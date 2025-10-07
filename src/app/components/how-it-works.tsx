@@ -28,10 +28,10 @@ const steps = [
 ]
 
 const cardColors = [
-    "bg-green-50",
-    "bg-orange-50",
-    "bg-green-50",
-    "bg-orange-50",
+    "bg-green-200",
+    "bg-orange-200",
+    "bg-green-200",
+    "bg-orange-200",
 ]
 
 export function HowItWorks() {
