@@ -62,21 +62,22 @@ export function HowItWorks() {
                         {steps.map((step, index) => (
                             <CarouselItem key={index}>
                                  <div className="p-1 h-full">
-                                    <Card className={cn(
-                                        "shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center justify-center h-80 w-80 mx-auto relative overflow-visible",
-                                        cardColors[index],
-                                        glowEffects[index]
-                                    )}>
-                                        <CardHeader className="flex flex-col items-center text-center gap-4">
-                                            <div className="rounded-full bg-background/70 p-4">
-                                                {step.icon}
-                                            </div>
-                                            <CardTitle>{index + 1}. {step.title}</CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="text-center text-muted-foreground flex-1">
-                                            {step.description}
-                                        </CardContent>
-                                    </Card>
+                                    <div className={cn("relative w-80 h-80 mx-auto", glowEffects[index])}>
+                                        <Card className={cn(
+                                            "shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col items-center justify-center h-full w-full",
+                                            cardColors[index]
+                                        )}>
+                                            <CardHeader className="flex flex-col items-center text-center gap-4">
+                                                <div className="rounded-full bg-background/70 p-4">
+                                                    {step.icon}
+                                                </div>
+                                                <CardTitle>{index + 1}. {step.title}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="text-center text-muted-foreground flex-1">
+                                                {step.description}
+                                            </CardContent>
+                                        </Card>
+                                    </div>
                                  </div>
                             </CarouselItem>
                         ))}
