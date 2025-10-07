@@ -28,21 +28,6 @@ const steps = [
     },
 ]
 
-const cardColors = [
-    "bg-green-200/20",
-    "bg-orange-200/20",
-    "bg-green-200/20",
-    "bg-orange-200/20",
-]
-
-const glowColors = [
-    "green-glow",
-    "orange-glow",
-    "green-glow",
-    "orange-glow",
-]
-
-
 export function HowItWorks() {
     return (
         <section id="how-it-works" className="w-full py-12 md:py-24 lg:py-32 overflow-hidden">
@@ -62,11 +47,11 @@ export function HowItWorks() {
                     <CarouselContent>
                         {steps.map((step, index) => (
                             <CarouselItem key={index}>
-                                 <div className={cn("p-1 h-full animated-glow-card", glowColors[index])}>
+                                 <div className="p-1 h-full">
                                     <Card className={cn(
                                         "shadow-lg transition-shadow duration-300 flex flex-col items-center justify-center h-80 w-80 mx-auto",
-                                        cardColors[index],
-                                        "bg-card/80 backdrop-blur-sm border border-white/10"
+                                        "bg-card/80 backdrop-blur-sm border border-white/10",
+                                        "hover-border-dance"
                                     )}>
                                         <CardHeader className="flex flex-col items-center text-center gap-4">
                                             <div className="rounded-full bg-background/70 p-4">
