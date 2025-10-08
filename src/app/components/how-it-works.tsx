@@ -40,19 +40,19 @@ export function HowItWorks() {
         offset: ["start end", "end start"],
     });
 
-    const opacityFirst = useTransform(scrollYProgress, [0.1, 0.25, 0.3], [0, 1, 0]);
-    const opacitySecond = useTransform(scrollYProgress, [0.35, 0.5, 0.55], [0, 1, 0]);
-    const opacityThird = useTransform(scrollYProgress, [0.6, 0.75, 0.8], [0, 1, 0]);
-    const opacityFourth = useTransform(scrollYProgress, [0.85, 1, 1], [0, 1, 1]);
+    const opacityFirst = useTransform(scrollYProgress, [0.1, 0.2, 0.25], [0, 1, 0]);
+    const opacitySecond = useTransform(scrollYProgress, [0.3, 0.4, 0.45], [0, 1, 0]);
+    const opacityThird = useTransform(scrollYProgress, [0.5, 0.6, 0.65], [0, 1, 0]);
+    const opacityFourth = useTransform(scrollYProgress, [0.7, 0.8, 0.9], [0, 1, 1]);
     
     const opacities = [opacityFirst, opacitySecond, opacityThird, opacityFourth];
 
     return (
-        <section ref={targetRef} id="how-it-works" className="w-full relative h-[400vh]">
+        <section ref={targetRef} id="how-it-works" className="w-full relative h-[500vh]">
             <div className="sticky top-0 h-screen bg-black flex flex-col items-center justify-center pt-12 overflow-hidden">
                 <div className="stars-layer" />
-                <div className="container mx-auto px-4 md:px-6 h-full flex flex-col relative z-10">
-                    <div className="text-center mb-16">
+                <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center relative z-10">
+                    <div className="text-center mb-8">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-white">Four Simple Steps to Swap</h2>
                     </div>
 
