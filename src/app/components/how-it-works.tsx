@@ -34,52 +34,54 @@ export function HowItWorks() {
     const targetRef = useRef<HTMLDivElement | null>(null);
     const { scrollYProgress } = useScroll({
         target: targetRef,
-        offset: ["start start", "end end"],
+        offset: ["start end", "end start"],
     });
 
-    const opacityFirst = useTransform(scrollYProgress, [0.0, 0.25, 0.25], [1, 1, 0]);
-    const opacitySecond = useTransform(scrollYProgress, [0.25, 0.5, 0.5], [0, 1, 0]);
-    const opacityThird = useTransform(scrollYProgress, [0.5, 0.75, 0.75], [0, 1, 0]);
-    const opacityFourth = useTransform(scrollYProgress, [0.75, 1.0], [0, 1]);
+    const opacityFirst = useTransform(scrollYProgress, [0.05, 0.2, 0.25], [1, 1, 0]);
+    const opacitySecond = useTransform(scrollYProgress, [0.25, 0.4, 0.45], [0, 1, 0]);
+    const opacityThird = useTransform(scrollYProgress, [0.45, 0.6, 0.65], [0, 1, 0]);
+    const opacityFourth = useTransform(scrollYProgress, [0.65, 0.8, 1], [0, 1, 1]);
 
     const opacities = [opacityFirst, opacitySecond, opacityThird, opacityFourth];
 
     return (
-        <section ref={targetRef} id="how-it-works" className="w-full sticky top-0 overflow-hidden h-screen bg-black">
-            <div className="stars-layer" />
-            <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center relative z-10">
-                <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12 pt-24">
-                    <div className="space-y-2">
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-white">Four Simple Steps to Swap</h2>
+        <section ref={targetRef} id="how-it-works" className="w-full relative h-[400vh]">
+            <div className="sticky top-0 h-screen bg-black flex flex-col items-center justify-center overflow-hidden">
+                <div className="stars-layer" />
+                <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center relative z-10">
+                    <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
+                        <div className="space-y-2">
+                            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-white">Four Simple Steps to Swap</h2>
+                        </div>
                     </div>
-                </div>
 
-                <div className="h-full flex-1 flex items-center justify-center relative">
-                    {steps.map((step, index) => {
-                        const isEven = index % 2 === 0;
-                        return (
-                            <motion.div
-                                key={index}
-                                style={{ opacity: opacities[index] }}
-                                className="absolute"
-                            >
-                                <Card className={cn(
-                                    "shadow-lg flex flex-col items-center justify-center h-80 w-80 backdrop-blur-sm border border-white/10",
-                                    isEven ? 'bg-primary/20' : 'bg-accent/20'
-                                )}>
-                                    <CardHeader className="flex flex-col items-center text-center gap-4">
-                                        <div className="rounded-full bg-background/70 p-4">
-                                            {step.icon}
-                                        </div>
-                                        <CardTitle>{step.title}</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="text-center text-muted-foreground flex-1 px-6">
-                                        {step.description}
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        );
-                    })}
+                    <div className="h-full flex-1 flex items-center justify-center relative">
+                        {steps.map((step, index) => {
+                            const isEven = index % 2 === 0;
+                            return (
+                                <motion.div
+                                    key={index}
+                                    style={{ opacity: opacities[index] }}
+                                    className="absolute"
+                                >
+                                    <Card className={cn(
+                                        "shadow-lg flex flex-col items-center justify-center h-80 w-80 backdrop-blur-sm border border-white/10",
+                                        isEven ? 'bg-primary/20' : 'bg-accent/20'
+                                    )}>
+                                        <CardHeader className="flex flex-col items-center text-center gap-4">
+                                            <div className="rounded-full bg-background/70 p-4">
+                                                {step.icon}
+                                            </div>
+                                            <CardTitle>{step.title}</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="text-center text-muted-foreground flex-1 px-6">
+                                            {step.description}
+                                        </CardContent>
+                                    </Card>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         </section>

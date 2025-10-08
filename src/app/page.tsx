@@ -18,7 +18,7 @@ export default function Home() {
           <AboutUs />
         </div>
         
-        <div className="relative z-10 -mt-[100vh] h-[400vh]">
+        <div className="relative z-10 -mt-[100vh]">
            <HowItWorks />
         </div>
 
