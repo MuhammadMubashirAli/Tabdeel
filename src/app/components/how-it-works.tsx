@@ -37,17 +37,17 @@ export function HowItWorks() {
         offset: ["start start", "end end"],
     });
 
-    // Each step gets roughly 25% of the scroll duration.
-    // We add small gaps for fade in/out transitions.
+    // Correctly sequenced and spaced animation ranges.
+    // Each step gets a clear segment of the scroll duration.
     const stepOpacities = [
-        // Step 1: Visible from start, fades out around 25%
-        useTransform(scrollYProgress, [0, 0.20], [1, 0]),
-        // Step 2: Fades in around 25%, visible, then fades out around 50%
-        useTransform(scrollYProgress, [0.20, 0.25, 0.45], [0, 1, 0]),
-        // Step 3: Fades in around 50%, visible, then fades out around 75%
-        useTransform(scrollYProgress, [0.45, 0.50, 0.70], [0, 1, 0]),
-        // Step 4: Fades in around 75% and stays visible till the end.
-        useTransform(scrollYProgress, [0.70, 0.75, 1], [0, 1, 1]),
+        // Step 1: Visible from 0% to 20%, then fades out by 25%.
+        useTransform(scrollYProgress, [0, 0.20, 0.25], [1, 1, 0]),
+        // Step 2: Fades in from 25% to 30%, stays visible until 45%, then fades out by 50%.
+        useTransform(scrollYProgress, [0.25, 0.30, 0.45, 0.50], [0, 1, 1, 0]),
+        // Step 3: Fades in from 50% to 55%, stays visible until 70%, then fades out by 75%.
+        useTransform(scrollYProgress, [0.50, 0.55, 0.70, 0.75], [0, 1, 1, 0]),
+        // Step 4: Fades in from 75% to 80% and stays visible until the end (100%).
+        useTransform(scrollYProgress, [0.75, 0.80, 1], [0, 1, 1]),
     ];
 
     return (
