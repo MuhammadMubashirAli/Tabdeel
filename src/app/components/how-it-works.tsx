@@ -37,12 +37,14 @@ export function HowItWorks() {
         offset: ["start start", "end end"],
     });
 
-    const stepOpacities = [
-        useTransform(scrollYProgress, [0, 0.2, 0.25], [1, 1, 0]),
-        useTransform(scrollYProgress, [0.25, 0.45, 0.5], [0, 1, 0]),
-        useTransform(scrollYProgress, [0.5, 0.7, 0.75], [0, 1, 0]),
-        useTransform(scrollYProgress, [0.75, 0.95, 1], [0, 1, 1]),
-    ];
+    // Define distinct, non-overlapping animation ranges for each card
+    // [startFadeIn, fullOpacity, startFadeOut, endFadeOut]
+    const opacityFirst = useTransform(scrollYProgress, [0, 0.1, 0.2, 0.25], [1, 1, 0, 0]);
+    const opacitySecond = useTransform(scrollYProgress, [0.25, 0.3, 0.45, 0.5], [0, 1, 1, 0]);
+    const opacityThird = useTransform(scrollYProgress, [0.5, 0.55, 0.7, 0.75], [0, 1, 1, 0]);
+    const opacityFourth = useTransform(scrollYProgress, [0.75, 0.8, 1, 1], [0, 1, 1, 1]);
+
+    const opacities = [opacityFirst, opacitySecond, opacityThird, opacityFourth];
 
     return (
         <section ref={targetRef} id="how-it-works" className="w-full sticky top-0 overflow-hidden h-screen bg-black">
@@ -60,7 +62,7 @@ export function HowItWorks() {
                         return (
                             <motion.div
                                 key={index}
-                                style={{ opacity: stepOpacities[index] }}
+                                style={{ opacity: opacities[index] }}
                                 className="absolute"
                             >
                                 <Card className={cn(
