@@ -38,14 +38,14 @@ export function HowItWorks() {
     });
 
     const stepOpacities = [
-        useTransform(scrollYProgress, [0, 0.2, 0.25], [0, 1, 0]),
-        useTransform(scrollYProgress, [0.25, 0.45, 0.5], [0, 1, 0]),
-        useTransform(scrollYProgress, [0.5, 0.7, 0.75], [0, 1, 0]),
-        useTransform(scrollYProgress, [0.75, 0.95, 1], [0, 1, 0]),
+        useTransform(scrollYProgress, [0.1, 0.2, 0.3, 0.35], [0, 1, 1, 0]),
+        useTransform(scrollYProgress, [0.35, 0.45, 0.55, 0.6], [0, 1, 1, 0]),
+        useTransform(scrollYProgress, [0.6, 0.7, 0.8, 0.85], [0, 1, 1, 0]),
+        useTransform(scrollYProgress, [0.85, 0.95, 1, 1.1], [0, 1, 1, 0]),
     ];
 
     return (
-        <section ref={targetRef} id="how-it-works" className="w-full sticky top-0 overflow-hidden h-screen bg-black stars-bg">
+        <section ref={targetRef} id="how-it-works" className="w-full sticky top-0 overflow-hidden h-screen bg-black">
             <div className="stars-layer" />
             <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center relative z-10 pt-24">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
