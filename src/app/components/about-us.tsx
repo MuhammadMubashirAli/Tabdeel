@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Autoplay from "embla-carousel-autoplay";
 
 const textContent = [
@@ -17,6 +17,7 @@ const aboutImages = [
     PlaceHolderImages.find(p => p.id === 'about-us-1'),
     PlaceHolderImages.find(p => p.id === 'about-us-2'),
     PlaceHolderImages.find(p => p.id === 'about-us-3'),
+    PlaceHolderImages.find(p => p.id === 'about-us-4'),
 ].filter(Boolean);
 
 
@@ -53,29 +54,27 @@ export function AboutUs() {
                                 {aboutImages.map((image, index) => (
                                     image && (
                                         <CarouselItem key={index}>
-                                            <AnimatePresence>
-                                                <motion.div
-                                                    initial={{ opacity: 0 }}
-                                                    animate={{ opacity: 1 }}
-                                                    exit={{ opacity: 0 }}
-                                                    transition={{ duration: 1.5 }}
-                                                >
-                                                    <Card className="overflow-hidden rounded-lg shadow-lg">
-                                                        <CardContent className="p-0">
-                                                            <div className="relative aspect-[4/3] w-full">
-                                                                <Image
-                                                                    src={image.imageUrl}
-                                                                    alt={image.description}
-                                                                    fill
-                                                                    className="object-cover"
-                                                                    data-ai-hint={image.imageHint}
-                                                                    sizes="(max-width: 768px) 100vw, 50vw"
-                                                                />
-                                                            </div>
-                                                        </CardContent>
-                                                    </Card>
-                                                </motion.div>
-                                            </AnimatePresence>
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                transition={{ duration: 1.5 }}
+                                            >
+                                                <Card className="overflow-hidden rounded-lg shadow-lg">
+                                                    <CardContent className="p-0">
+                                                        <div className="relative aspect-[4/3] w-full">
+                                                            <Image
+                                                                src={image.imageUrl}
+                                                                alt={image.description}
+                                                                fill
+                                                                className="object-cover"
+                                                                data-ai-hint={image.imageHint}
+                                                                sizes="(max-width: 768px) 100vw, 50vw"
+                                                            />
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            </motion.div>
                                         </CarouselItem>
                                     )
                                 ))}

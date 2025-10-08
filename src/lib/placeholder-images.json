@@ -74,21 +74,27 @@
     },
     {
       "id": "about-us-1",
-      "description": "A group of friends sharing and laughing together.",
-      "imageUrl": "https://images.unsplash.com/photo-1505036573105-59b583e74b00?q=80&w=800&auto=format&fit=crop",
-      "imageHint": "friends community"
+      "description": "A traditional bartering market square with people exchanging goods.",
+      "imageUrl": "https://i.postimg.cc/66zbmgkf/traditional-bartering-market-square.jpg",
+      "imageHint": "market exchange"
     },
     {
       "id": "about-us-2",
-      "description": "Hands exchanging a small plant, symbolizing growth and sharing.",
-      "imageUrl": "https://images.unsplash.com/photo-1627542564230-0329093b169b?q=80&w=800&auto=format&fit=crop",
-      "imageHint": "sharing hands"
+      "description": "A family baker bartering bread for other goods.",
+      "imageUrl": "https://i.postimg.cc/FzJf32cW/family-baker-bartering.jpg",
+      "imageHint": "baker barter"
     },
     {
       "id": "about-us-3",
-      "description": "A bustling, colorful Pakistani street market.",
-      "imageUrl": "https://images.unsplash.com/photo-1627443992735-65a39e315b88?q=80&w=800&auto=format&fit=crop",
-      "imageHint": "pakistani market"
+      "description": "A mechanic and a hairstylist shaking hands, symbolizing a service exchange.",
+      "imageUrl": "https://i.postimg.cc/fTmChPF8/mechanic-hairstylist-handshake.jpg",
+      "imageHint": "service trade"
+    },
+    {
+      "id": "about-us-4",
+      "description": "Two people in separate locations connecting via digital devices for bartering.",
+      "imageUrl": "https://i.postimg.cc/KYqrNhk4/separate-locations-digital-bartering.jpg",
+      "imageHint": "digital barter"
     }
   ]
 }
