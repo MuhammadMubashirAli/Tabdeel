@@ -28,7 +28,7 @@ export function AboutUs() {
     );
 
     return (
-        <section id="about" className="w-full h-screen py-24 md:py-24 lg:py-32 bg-card sticky top-0">
+        <section id="about" className="w-full h-screen py-24 md:py-24 lg:py-32 bg-card sticky top-0 z-0">
             <div className="container mx-auto px-4 md:px-6">
                 <div className="grid md:grid-cols-2 gap-12 items-center">
                     <div className="space-y-4">

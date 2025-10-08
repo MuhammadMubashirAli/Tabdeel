@@ -14,7 +14,7 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         
-        <div className="relative h-[200vh]">
+        <div>
           <AboutUs />
           <HowItWorks />
         </div>
