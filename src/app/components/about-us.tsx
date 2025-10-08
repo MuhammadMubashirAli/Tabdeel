@@ -35,7 +35,7 @@ export function AboutUs() {
                         <div className="space-y-2">
                             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Rethinking Ownership in Pakistan</h2>
                         </div>
-                        <div className="text-muted-foreground md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed space-y-4 overflow-y-auto py-24">
+                        <div className="text-muted-foreground md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed space-y-4 overflow-y-auto pt-8">
                             <p>
                                 {textContent[0]}
                             </p>
