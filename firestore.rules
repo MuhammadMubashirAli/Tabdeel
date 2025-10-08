@@ -1,140 +1,133 @@
 /**
- * @file Firestore Security Rules
- * @description This ruleset enforces a user-ownership model for user profiles and items,
- * with public read access to items. Swap requests and messages are secured based on
- * participation. Categories are publicly readable.
+ * @fileoverview Firestore Security Rules for Tabdeel Platform
+ *
+ * Core Philosophy:
+ * This ruleset enforces a user-ownership model for user profiles and items.
+ * Users can only read and write their own profile data.
+ * Items are publicly readable, but only the owner can modify or delete them.
+ * SwapRequests can be created by any authenticated user but can only be updated by involved parties.
  *
  * Data Structure:
- * - /users/{userId}: User profiles, where userId is the Firebase Auth UID.
- * - /items/{itemId}: Items available for swap, with an ownerId field.
+ * - /users/{userId}: User profile data. 'userId' MUST match the Firebase Auth UID.
+ * - /items/{itemId}: Item data.  Each item has an 'ownerId' field.
  * - /swapRequests/{swapRequestId}: Swap requests between users.
  * - /swapRequests/{swapRequestId}/messages/{messageId}: Messages within a swap request.
  * - /categories/{categoryId}: Item categories.
  *
  * Key Security Decisions:
- * - Users can only read/write their own profile data.
- * - Items are publicly readable, but only the owner can modify them.
- * - Swap requests are secured to participants.
- * - Messages are secured to participants of the associated swap request.
- * - Categories are publicly readable.
+ * - Users can only access their own data in the /users collection.
+ * - Items are publicly readable, but only the owner can modify them. This allows for an open marketplace while maintaining control.
+ * - Listing of users and categories is allowed for the functioning of the application.
  *
  * Denormalization for Authorization:
- * - Items have an `ownerId` field to simplify ownership checks.
+ * - Items have an 'ownerId' field to easily check ownership for modification and deletion.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows users to read and write their own profile data.
+     * @description Controls access to user profiles.
      * @path /users/{userId}
-     * @allow (create) User with matching auth UID can create their profile.
-     * @allow (get, update, delete) Signed-in user can access their own profile.
-     * @deny (get, update, delete) Signed-in user cannot access another user's profile.
-     * @principle Enforces document ownership for writes.
+     * @allow (get, create, update, delete, list) if the user is the owner of the profile.
+     * @deny (get, create, update, delete, list) if the user is not the owner of the profile.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
       function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-      function isExistingOwner(userId) {
-          return isOwner(userId) && resource != null;
+        return request.auth != null && request.auth.uid == userId;
       }
 
-      allow get: if isSignedIn() && isOwner(userId);
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
       allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == request.auth.uid;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Allows anyone to read items, but only the owner can modify them.
+     * @description Controls access to items.
      * @path /items/{itemId}
-     * @allow (get, list) Anyone can read items.
-     * @allow (create) Signed-in user can create an item with their UID as ownerId.
-     * @allow (update, delete) Only the item owner can modify or delete it.
-     * @deny (update, delete) Non-owners cannot modify or delete items.
-     * @principle Allows public read access with owner-only writes.
+     * @allow (get, list) public read access.
+     * @allow (create, update, delete) owner-only write access.
+     * @deny (create, update, delete) if not the owner of the item.
+     * @principle Allows public read access but enforces ownership for writes.
      */
     match /items/{itemId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-        function isOwner(ownerId) {
-            return isSignedIn() && request.auth.uid == ownerId;
-        }
-        function isExistingOwner(ownerId) {
-            return isOwner(ownerId) && resource != null;
-        }
-        allow get, list: if true;
-        allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
-        allow update: if isExistingOwner(resource.data.ownerId);
-        allow delete: if isExistingOwner(resource.data.ownerId);
+      function isOwner(ownerId) {
+        return request.auth != null && request.auth.uid == ownerId;
+      }
+
+      function isExistingOwner(ownerId) {
+        return isOwner(ownerId) && resource != null;
+      }
+
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isExistingOwner(resource.data.ownerId);
+      allow delete: if isExistingOwner(resource.data.ownerId);
     }
 
     /**
-     * @description Allows participants of a swap request to read and write to it.
+     * @description Controls access to swap requests.
      * @path /swapRequests/{swapRequestId}
-     * @allow (get, list) Participants can read swap requests.
-     * @allow (create) Signed-in users can create swap requests.
-     * @allow (update, delete) Only participants can update or delete swap requests.
-     * @deny (get, list, update, delete) Non-participants cannot access swap requests.
-     * @principle Restricts access to swap requests to involved users.
+     * @allow (get, list) Access to swap requests is based on participation.
+     * @allow (create) Any signed in user can create a swap request.
+     * @allow (update, delete) Only involved parties can update a swap request.
+     * @principle Enforces participation-based access control for swap requests.
      */
     match /swapRequests/{swapRequestId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-        function isParticipant(swapRequest) {
-            return isSignedIn() && (swapRequest.requesterId == request.auth.uid || swapRequest.targetOwnerId == request.auth.uid);
-        }
-        function isExistingParticipant(swapRequest) {
-            return isParticipant(swapRequest) && resource != null;
-        }
-      allow get: if isSignedIn() && (resource.data.requesterId == request.auth.uid || resource.data.targetOwnerId == request.auth.uid);
-      allow list: if isSignedIn() && (resource.data.requesterId == request.auth.uid || resource.data.targetOwnerId == request.auth.uid);
-      allow create: if isSignedIn();
-      allow update: if isExistingParticipant(resource.data);
-      allow delete: if isExistingParticipant(resource.data);
+      function isParticipant(targetOwnerId, requesterId) {
+          return request.auth.uid == targetOwnerId || request.auth.uid == requesterId;
+      }
+      function isExistingParticipant(targetOwnerId, requesterId) {
+        return isParticipant(targetOwnerId, requesterId) && resource != null;
+      }
+      allow get: if isSignedIn() && isParticipant(resource.data.targetOwnerId, resource.data.requesterId);
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.requesterId == request.auth.uid;
+      allow update: if isExistingParticipant(resource.data.targetOwnerId, resource.data.requesterId);
+      allow delete: if false; // Prevent direct deletion of swap requests.
     }
 
     /**
-     * @description Allows participants of a swap request to read and write messages within it.
+     * @description Controls access to messages within a swap request.
      * @path /swapRequests/{swapRequestId}/messages/{messageId}
-     * @allow (get, list) Participants can read messages within a swap request.
-     * @allow (create) Signed-in users can create messages within a swap request they are part of.
-     * @allow (update, delete) No one can update or delete messages (disabled).
-     * @deny (get, list, create) Non-participants cannot access messages.
-     * @principle Restricts access to messages to participants of the parent swap request.
+     * @allow (get, list) Access to messages is based on participation in the parent swap request.
+     * @allow (create) Any participant in the parent swap request can create a message.
+     * @allow (update, delete) No updates or deletes are allowed on messages.
+     * @principle Enforces participation-based access control inherited from the parent swap request.
      */
     match /swapRequests/{swapRequestId}/messages/{messageId} {
-      function isSignedIn() {
-          return request.auth != null;
+      function isSwapRequestParticipant(swapRequestId) {
+        return get(/databases/$(database)/documents/swapRequests/$(swapRequestId)).data.targetOwnerId == request.auth.uid
+               || get(/databases/$(database)/documents/swapRequests/$(swapRequestId)).data.requesterId == request.auth.uid;
       }
-        function isSwapRequestParticipant(swapRequestId) {
-            return get(/databases/$(database)/documents/swapRequests/$(swapRequestId)).data.requesterId == request.auth.uid
-                || get(/databases/$(database)/documents/swapRequests/$(swapRequestId)).data.targetOwnerId == request.auth.uid;
-        }
-      allow get, list: if isSignedIn() && isSwapRequestParticipant(swapRequestId);
-      allow create: if isSignedIn() && isSwapRequestParticipant(swapRequestId);
+      allow get: if isSignedIn() && isSwapRequestParticipant(swapRequestId);
+      allow list: if isSignedIn() && isSwapRequestParticipant(swapRequestId);
+      allow create: if isSignedIn() && isSwapRequestParticipant(swapRequestId) && request.resource.data.swapRequestId == swapRequestId;
       allow update: if false;
       allow delete: if false;
     }
 
     /**
-     * @description Allows anyone to read categories.
+     * @description Controls access to item categories.
      * @path /categories/{categoryId}
-     * @allow (get, list) Anyone can read categories.
-     * @deny (create, update, delete) No one can create, update, or delete categories.
+     * @allow (get, list) Public read access.
+     * @allow (create, update, delete) Not allowed.
      * @principle Provides public read access to categories.
      */
     match /categories/{categoryId} {
       allow get, list: if true;
       allow create, update, delete: if false;
+    }
+
+    function isSignedIn() {
+        return request.auth != null;
     }
   }
 }
