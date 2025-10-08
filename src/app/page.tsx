@@ -1,3 +1,5 @@
+'use client';
+
 import { Hero } from "@/app/components/hero";
 import { AboutUs } from "@/app/components/about-us";
 import { HowItWorks } from "@/app/components/how-it-works";
@@ -6,11 +8,18 @@ import { Faq } from "@/app/components/faq";
 import { Footer } from "@/app/components/footer";
 import { AppHeader } from "./components/app-header";
 import { ScrollFadeIn } from "./components/scroll-fade-in";
+import { useUser } from "@/firebase";
 
 export default function Home() {
+  const { user, isUserLoading } = useUser();
+
+  if (isUserLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+  
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <AppHeader />
+      <AppHeader isAuthenticated={!!user} />
       <main className="flex-1">
         <Hero />
         
