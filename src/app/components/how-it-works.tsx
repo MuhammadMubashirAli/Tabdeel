@@ -46,7 +46,7 @@ export function HowItWorks() {
     return (
         <section ref={targetRef} id="how-it-works" className="w-full sticky top-0 overflow-hidden h-screen bg-black stars-bg">
             <div className="stars-layer" />
-            <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center relative z-10">
+            <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center relative z-10 pt-16">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                     <div className="space-y-2">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-white">Four Simple Steps to Swap</h2>
