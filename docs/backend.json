@@ -49,7 +49,6 @@
       "required": [
         "id",
         "name",
-        "city",
         "createdAt"
       ]
     },
@@ -112,20 +111,6 @@
         "updatedAt": {
           "type": "object",
           "description": "Timestamp indicating when the item was last updated."
-        },
-        "embeddings": {
-          "type": "array",
-          "description": "Array of floating-point numbers representing the item's text embeddings.",
-          "items": {
-            "type": "number"
-          }
-        },
-        "tags": {
-          "type": "array",
-          "description": "Tags associated with the item.",
-          "items": {
-            "type": "string"
-          }
         }
       },
       "required": [
@@ -146,28 +131,21 @@
       "type": "object",
       "description": "Represents a request to swap items between two users.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the swap request entity."
-        },
         "targetItemId": {
           "type": "string",
-          "description": "Reference to Item. (Relationship: Item 1:N SwapRequest) The item that is being requested."
+          "description": "Reference to Item. The item that is being requested."
         },
         "targetOwnerId": {
           "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N SwapRequest) The owner of the target item."
+          "description": "Reference to User. The owner of the target item."
         },
         "requesterId": {
           "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N SwapRequest) The user making the swap request."
+          "description": "Reference to User. The user making the swap request."
         },
-        "offeredItemIds": {
-          "type": "array",
-          "description": "References to Items. (Relationship: Item N:N SwapRequest) List of item IDs offered by the requester in the swap.",
-          "items": {
-            "type": "string"
-          }
+        "offeredItemId": {
+          "type": "string",
+          "description": "Reference to an Item. The item offered by the requester."
         },
         "message": {
           "type": "string",
@@ -175,67 +153,52 @@
         },
         "status": {
           "type": "string",
-          "description": "Status of the swap request (e.g., pending, accepted, declined, countered)."
+          "description": "Status of the swap request (e.g., pending, accepted, declined)."
         },
         "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the swap request was created.",
-          "format": "date-time"
+          "type": "object",
+          "description": "Timestamp indicating when the swap request was created."
         },
         "updatedAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the swap request was last updated.",
-          "format": "date-time"
+          "type": "object",
+          "description": "Timestamp indicating when the swap request was last updated."
         }
       },
       "required": [
-        "id",
         "targetItemId",
         "targetOwnerId",
         "requesterId",
-        "offeredItemIds",
+        "offeredItemId",
         "status",
-        "createdAt"
+        "createdAt",
+        "updatedAt"
       ]
     },
     "Message": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Message",
       "type": "object",
-      "description": "Represents a message within a swap request or a direct chat.",
+      "description": "Represents a message within a swap request's chat.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the message entity."
-        },
         "swapRequestId": {
           "type": "string",
-          "description": "Reference to SwapRequest. (Relationship: SwapRequest 1:N Message).  The swap request this message belongs to.  If null, it's a direct message.",
-          "format": "uuid"
+          "description": "Reference to SwapRequest. The swap request this message belongs to."
         },
         "senderId": {
           "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N Message) The user who sent the message."
+          "description": "Reference to User. The user who sent the message."
         },
         "text": {
           "type": "string",
           "description": "Content of the message."
         },
-        "attachments": {
-          "type": "array",
-          "description": "List of URLs pointing to attached files (e.g., images).",
-          "items": {
-            "type": "string"
-          }
-        },
         "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the message was sent.",
-          "format": "date-time"
+          "type": "object",
+          "description": "Timestamp indicating when the message was sent."
         }
       },
       "required": [
-        "id",
+        "swapRequestId",
         "senderId",
         "text",
         "createdAt"
@@ -281,81 +244,37 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user profile information. The 'userId' is the Firebase Auth UID.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user, matching the Firebase Auth UID."
-            }
-          ]
+          "description": "Stores user profile information. The 'userId' is the Firebase Auth UID."
         }
       },
       {
         "path": "/items/{itemId}",
         "definition": {
-            "entityName": "Item",
-            "schema": {
-                "$ref": "#/backend/entities/Item"
-            },
-            "description": "Stores all items available for barter on the platform. The 'ownerId' field links the item to a user in the '/users' collection.",
-            "params": [
-                {
-                    "name": "itemId",
-                    "description": "The unique identifier for the item."
-                }
-            ]
+          "entityName": "Item",
+          "schema": {
+            "$ref": "#/backend/entities/Item"
+          },
+          "description": "Stores all items available for barter on the platform."
         }
       },
       {
-        "path": "/users/{targetOwnerId}/items/{targetItemId}/swapRequests/{swapRequestId}",
+        "path": "/swapRequests/{swapRequestId}",
         "definition": {
           "entityName": "SwapRequest",
           "schema": {
             "$ref": "#/backend/entities/SwapRequest"
           },
-          "description": "Stores swap requests for an item. Includes denormalized 'targetOwnerId' and 'requesterId' for authorization independence.",
-          "params": [
-            {
-              "name": "targetOwnerId",
-              "description": "The unique identifier for the owner of the target item."
-            },
-            {
-              "name": "targetItemId",
-              "description": "The unique identifier for the target item."
-            },
-            {
-              "name": "swapRequestId",
-              "description": "The unique identifier for the swap request."
-            }
-          ]
+          "description": "Stores swap requests. This is a top-level collection for easier querying by involved users."
         }
       },
       {
-        "path": "/users/{targetOwnerId}/items/{targetItemId}/swapRequests/{swapRequestId}/messages/{messageId}",
+        "path": "/swapRequests/{swapRequestId}/messages/{messageId}",
         "definition": {
           "entityName": "Message",
           "schema": {
             "$ref": "#/backend/entities/Message"
           },
-          "description": "Stores messages associated with a specific swap request.",
-          "params": [
-            {
-              "name": "targetOwnerId",
-              "description": "The unique identifier for the owner of the target item in the swap request."
-            },
-            {
-              "name": "targetItemId",
-              "description": "The unique identifier for the target item in the swap request."
-            },
-            {
-              "name": "swapRequestId",
-              "description": "The unique identifier for the swap request."
-            },
-            {
-              "name": "messageId",
-              "description": "The unique identifier for the message."
-            }
-          ]
+          "description": "Stores messages for a specific swap request. Nested for logical grouping."
         }
       },
       {
@@ -365,16 +284,10 @@
           "schema": {
             "$ref": "#/backend/entities/Category"
           },
-          "description": "Stores item categories.",
-          "params": [
-            {
-              "name": "categoryId",
-              "description": "The unique identifier for the category."
-            }
-          ]
+          "description": "Stores item categories."
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to be secure, scalable, and debuggable. The key change is moving 'items' to a top-level collection. This is crucial for the 'Explore' page, allowing for efficient querying of all items across all users without needing a complex and costly collection group query. Ownership is maintained via the 'ownerId' field within each item document. User profiles remain in '/users/{userId}'. Swap requests and messages remain nested to logically group them and simplify security rules, ensuring only involved parties can access them."
+    "reasoning": "The Firestore structure is designed to be secure and scalable. Key collections like 'users', 'items', and 'swapRequests' are at the top level. This allows for efficient querying across the entire dataset (e.g., fetching all items for the explore page, or all of a user's swap requests) without needing complex and costly collection group queries. Messages are nested within swap requests as they are directly tied to a specific request."
   }
 }

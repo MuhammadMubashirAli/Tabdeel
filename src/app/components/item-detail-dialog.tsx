@@ -8,11 +8,14 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MapPin, User, Send } from 'lucide-react';
-import type { Item } from '@/lib/types';
+import { MapPin, Send } from 'lucide-react';
+import type { Item, User } from '@/lib/types';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { users } from '@/lib/data';
 import { SwapRequestDialog } from './swap-request-dialog';
+import { useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatDistanceToNow } from 'date-fns';
 
 type ItemDetailDialogProps = {
   item: Item;
@@ -22,9 +25,17 @@ type ItemDetailDialogProps = {
 
 export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogProps) {
   const [isSwapRequestOpen, setIsSwapRequestOpen] = useState(false);
-  const owner = users.find(u => u.id === item.ownerId);
-  const ownerAvatar = PlaceHolderImages.find(p => p.id === owner?.avatarUrl);
+  const { user: currentUser } = useUser();
+  const firestore = useFirestore();
 
+  const ownerRef = useMemoFirebase(() => {
+    if (!firestore || !item.ownerId) return null;
+    return doc(firestore, 'users', item.ownerId);
+  }, [firestore, item.ownerId]);
+
+  const { data: owner, isLoading: isOwnerLoading } = useDoc<User>(ownerRef);
+
+  const ownerAvatar = PlaceHolderImages.find(p => p.id === owner?.avatarUrl);
   const images = item.images.map(id => PlaceHolderImages.find(p => p.id === id)).filter(Boolean);
 
   const conditionVariant = {
@@ -32,6 +43,8 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
     'Good': 'secondary',
     'Fair': 'outline'
   } as const;
+  
+  const isOwnerOfItem = currentUser?.uid === item.ownerId;
 
   return (
     <>
@@ -78,6 +91,15 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
                 
                 <div>
                     <h4 className="font-semibold mb-2">Owner</h4>
+                    {isOwnerLoading && (
+                        <div className="flex items-center gap-3">
+                            <Skeleton className="h-10 w-10 rounded-full" />
+                            <div className='space-y-2'>
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-3 w-32" />
+                            </div>
+                        </div>
+                    )}
                      {owner && (
                         <div className="flex items-center gap-3">
                             <Avatar>
@@ -86,7 +108,7 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
                             </Avatar>
                             <div>
                                 <p className="font-medium">{owner.name}</p>
-                                <p className="text-sm text-muted-foreground">Member since 2023</p>
+                                {owner.createdAt && <p className="text-sm text-muted-foreground">Member since {formatDistanceToNow(new Date(owner.createdAt), { addSuffix: true })}</p>}
                             </div>
                         </div>
                      )}
@@ -109,21 +131,25 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
                     onClick={() => onOpenChange(false)}>
                         Close
                 </Button>
-                <Button onClick={() => setIsSwapRequestOpen(true)} className="bg-primary hover:bg-primary/90">
-                  <Send className="mr-2" />
-                  Request Swap
-                </Button>
+                {!isOwnerOfItem && (
+                    <Button onClick={() => setIsSwapRequestOpen(true)} className="bg-primary hover:bg-primary/90">
+                        <Send className="mr-2" />
+                        Request Swap
+                    </Button>
+                )}
               </DialogFooter>
             </div>
           </div>
         </DialogContent>
       </Dialog>
       
-      <SwapRequestDialog
-        targetItem={item}
-        open={isSwapRequestOpen}
-        onOpenChange={setIsSwapRequestOpen}
-      />
+      {!isOwnerOfItem && (
+        <SwapRequestDialog
+          targetItem={item}
+          open={isSwapRequestOpen}
+          onOpenChange={setIsSwapRequestOpen}
+        />
+      )}
     </>
   );
 }

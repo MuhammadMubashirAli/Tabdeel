@@ -8,8 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { Item } from '@/lib/types';
-import { items as allItems } from '@/lib/data';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { collection, query, where, serverTimestamp } from 'firebase/firestore';
 
 type SwapRequestDialogProps = {
   targetItem: Item;
@@ -17,18 +18,23 @@ type SwapRequestDialogProps = {
   onOpenChange: (open: boolean) => void;
 };
 
-// This should be dynamically determined by the logged-in user
-const CURRENT_USER_ID = 'user-2'; 
-
 export function SwapRequestDialog({ targetItem, open, onOpenChange }: SwapRequestDialogProps) {
   const { toast } = useToast();
+  const { user } = useUser();
+  const firestore = useFirestore();
+
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>();
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Filter for items owned by the current user, excluding the item they are requesting
-  const userItems = allItems.filter(item => item.ownerId === CURRENT_USER_ID && item.id !== targetItem.id);
+  const userItemsQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'items'), where('ownerId', '==', user.uid));
+  }, [firestore, user]);
 
-  const handleSubmit = () => {
+  const { data: userItems, isLoading } = useCollection<Item>(userItemsQuery);
+
+  const handleSubmit = async () => {
     if (!selectedItemId) {
       toast({
         variant: "destructive",
@@ -38,20 +44,33 @@ export function SwapRequestDialog({ targetItem, open, onOpenChange }: SwapReques
       return;
     }
     
-    // In a real app, this would trigger an API call to save the swap request.
-    console.log({
-      fromUserId: CURRENT_USER_ID,
-      toUserId: targetItem.ownerId,
-      requestedItemId: targetItem.id,
+    if (!firestore || !user || !targetItem.id) {
+        toast({ variant: "destructive", title: "Error", description: "Cannot process request. Missing information." });
+        return;
+    }
+
+    setIsSubmitting(true);
+
+    const swapRequestData = {
+      targetItemId: targetItem.id,
+      targetOwnerId: targetItem.ownerId,
+      requesterId: user.uid,
       offeredItemId: selectedItemId,
-      message,
-    });
+      message: message,
+      status: 'pending' as const,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+
+    const swapRequestsCollection = collection(firestore, 'swapRequests');
+    await addDocumentNonBlocking(swapRequestsCollection, swapRequestData);
     
     toast({
       title: "Request Sent!",
       description: `Your swap offer for "${targetItem.title}" has been sent.`,
     });
     
+    setIsSubmitting(false);
     onOpenChange(false);
     setSelectedItemId(undefined);
     setMessage('');
@@ -70,14 +89,14 @@ export function SwapRequestDialog({ targetItem, open, onOpenChange }: SwapReques
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="item-select">Your Item to Offer</Label>
-            <Select value={selectedItemId} onValueChange={setSelectedItemId}>
+            <Select value={selectedItemId} onValueChange={setSelectedItemId} disabled={isLoading}>
               <SelectTrigger id="item-select">
-                <SelectValue placeholder="Select one of your items" />
+                <SelectValue placeholder={isLoading ? "Loading your items..." : "Select one of your items"} />
               </SelectTrigger>
               <SelectContent>
-                {userItems.length > 0 ? (
+                {userItems && userItems.length > 0 ? (
                   userItems.map(item => (
-                    <SelectItem key={item.id} value={item.id}>{item.title}</SelectItem>
+                    <SelectItem key={item.id} value={item.id!}>{item.title}</SelectItem>
                   ))
                 ) : (
                   <div className="p-4 text-center text-sm text-muted-foreground">
@@ -100,7 +119,9 @@ export function SwapRequestDialog({ targetItem, open, onOpenChange }: SwapReques
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={userItems.length === 0}>Send Request</Button>
+          <Button onClick={handleSubmit} disabled={isLoading || !userItems || userItems.length === 0 || isSubmitting}>
+            {isSubmitting ? 'Sending...' : 'Send Request'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

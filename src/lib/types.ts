@@ -41,22 +41,25 @@ export type FaqItem = {
 };
 
 export type Message = {
-  id: string;
+  id?: string;
+  swapRequestId: string;
   senderId: string;
   text: string;
-  timestamp: string;
+  createdAt: Timestamp | object;
 };
 
 export type SwapRequest = {
-  id: string;
-  fromUserId: string;
-  toUserId: string;
-  requestedItemId: string;
+  id?: string;
+  targetItemId: string;
+  targetOwnerId: string;
+  requesterId: string;
   offeredItemId: string;
   status: 'pending' | 'accepted' | 'declined';
-  createdAt: string;
   message?: string;
+  createdAt: Timestamp | object;
+  updatedAt: Timestamp | object;
 };
+
 
 export type Conversation = {
     id: string;
