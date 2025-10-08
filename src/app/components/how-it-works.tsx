@@ -37,11 +37,12 @@ export function HowItWorks() {
         offset: ["start end", "end start"],
     });
 
+    // Adjusted timings for more even transitions
     const stepOpacities = [
-        useTransform(scrollYProgress, [0.1, 0.2, 0.3, 0.35], [0, 1, 1, 0]),
-        useTransform(scrollYProgress, [0.35, 0.45, 0.55, 0.6], [0, 1, 1, 0]),
-        useTransform(scrollYProgress, [0.6, 0.7, 0.8, 0.85], [0, 1, 1, 0]),
-        useTransform(scrollYProgress, [0.85, 0.95, 1, 1.1], [0, 1, 1, 0]),
+        useTransform(scrollYProgress, [0.1, 0.2, 0.3, 0.4], [0, 1, 1, 0]),     // Step 1: Fades in, stays, fades out
+        useTransform(scrollYProgress, [0.35, 0.45, 0.55, 0.65], [0, 1, 1, 0]), // Step 2
+        useTransform(scrollYProgress, [0.6, 0.7, 0.8, 0.9], [0, 1, 1, 0]),     // Step 3
+        useTransform(scrollYProgress, [0.85, 0.95, 1, 1.05], [0, 1, 1, 0]),   // Step 4
     ];
 
     return (
