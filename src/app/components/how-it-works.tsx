@@ -34,14 +34,14 @@ export function HowItWorks() {
     const targetRef = useRef<HTMLDivElement | null>(null);
     const { scrollYProgress } = useScroll({
         target: targetRef,
-        offset: ["start end", "end end"],
+        offset: ["start start", "end end"],
     });
 
     const stepOpacities = [
-        useTransform(scrollYProgress, [0.1, 0.2, 0.35, 0.4], [1, 1, 1, 0]),     // Step 1
-        useTransform(scrollYProgress, [0.4, 0.45, 0.55, 0.6], [0, 1, 1, 0]), // Step 2
-        useTransform(scrollYProgress, [0.6, 0.65, 0.75, 0.8], [0, 1, 1, 0]),     // Step 3
-        useTransform(scrollYProgress, [0.8, 0.85, 0.95, 1.0], [0, 1, 1, 1]),   // Step 4
+        useTransform(scrollYProgress, [0, 0.15, 0.25], [1, 1, 0]),     // Step 1: Visible from start, fades out
+        useTransform(scrollYProgress, [0.25, 0.4, 0.5], [0, 1, 0]), // Step 2: Fades in and out
+        useTransform(scrollYProgress, [0.5, 0.65, 0.75], [0, 1, 0]),     // Step 3: Fades in and out
+        useTransform(scrollYProgress, [0.75, 0.9, 1.0], [0, 1, 1]),   // Step 4: Fades in and stays
     ];
 
     return (
