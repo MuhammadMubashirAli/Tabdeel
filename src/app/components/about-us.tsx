@@ -50,6 +50,7 @@ export function AboutUs() {
                             className="w-full max-w-md mx-auto"
                             onMouseEnter={plugin.current.stop}
                             onMouseLeave={plugin.current.reset}
+                            opts={{ loop: true }}
                          >
                             <CarouselContent>
                                 {aboutImages.map((image, index) => (
