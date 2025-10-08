@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +25,7 @@ const steps = [
         icon: <Send className="size-8 text-primary" />,
         title: "3. Send a Swap Request",
         description: "Found something you like? Offer one of your own items to start a conversation with the owner.",
+        image: "https://i.postimg.cc/SR36T4xK/Simple-Minimalist-Typographic-Beauty-Studio-Logo-1.png",
     },
     {
         icon: <CheckCircle className="size-8 text-accent" />,
@@ -50,16 +50,16 @@ export function HowItWorks() {
 
     return (
         <section ref={targetRef} id="how-it-works" className="w-full relative h-[500vh]">
-            <div className="sticky top-0 h-screen bg-black flex flex-col items-center justify-center pt-12 overflow-hidden">
+            <div className="sticky top-0 h-screen bg-black flex flex-col items-center pt-12 overflow-hidden">
                 <div className="stars-layer" />
                 <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center relative z-10">
-                    <div className="text-center mb-8">
+                    <div className="text-center mb-auto pt-10">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-white">Four Simple Steps to Swap</h2>
                     </div>
 
-                    <div className="flex-grow flex items-center justify-center relative">
+                    <div className="flex-grow flex items-center justify-center relative -mt-24">
                         {steps.map((step, index) => {
-                            if (index < 2) { // For steps 1 and 2
+                             if (index < 3) {
                                 return (
                                      <motion.div
                                         key={index}
@@ -85,7 +85,7 @@ export function HowItWorks() {
                                     </motion.div>
                                 )
                             }
-
+                            
                             const isEven = index % 2 === 0;
                             return (
                                 <motion.div
@@ -111,6 +111,7 @@ export function HowItWorks() {
                             );
                         })}
                     </div>
+                     <div className="h-20" /> {/* Spacer */}
                 </div>
             </div>
         </section>
