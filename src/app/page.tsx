@@ -11,14 +11,14 @@ export default function Home() {
   return (
     <div className="flex min-h-screen w-full flex-col">
       <AppHeader />
-      <main className="flex-1 pt-20 md:pt-0">
+      <main className="flex-1">
         <Hero />
-        <ScrollFadeIn>
+        
+        <div className="relative h-[200vh]">
           <AboutUs />
-        </ScrollFadeIn>
-        <ScrollFadeIn delay={0.2}>
           <HowItWorks />
-        </ScrollFadeIn>
+        </div>
+
         <ScrollFadeIn delay={0.2}>
           <Testimonials />
         </ScrollFadeIn>
