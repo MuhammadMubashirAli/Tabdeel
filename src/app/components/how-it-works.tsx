@@ -31,6 +31,7 @@ const steps = [
         icon: <CheckCircle className="size-8 text-accent" />,
         title: "4. Meet & Exchange",
         description: "Arrange a safe meeting to exchange your items. Once done, mark the swap as complete on your profile.",
+        image: "https://i.postimg.cc/wxN4Zxmf/Simple-Minimalist-Typographic-Beauty-Studio-Logo-3.png",
     },
 ];
 
@@ -58,58 +59,30 @@ export function HowItWorks() {
                     </div>
 
                     <div className="flex-grow flex items-center justify-center relative -mt-24">
-                        {steps.map((step, index) => {
-                             if (index < 3) {
-                                return (
-                                     <motion.div
-                                        key={index}
-                                        style={{ opacity: opacities[index] }}
-                                        className="absolute w-full max-w-4xl"
-                                    >
-                                        <div className="grid md:grid-cols-2 gap-12 items-center">
-                                            <div className="space-y-4 text-white">
-                                                <h3 className={cn("text-4xl font-bold", index % 2 === 0 ? "text-primary" : "text-accent")}>{step.title}</h3>
-                                                <p className="text-lg text-neutral-300">{step.description}</p>
-                                            </div>
-                                            <div className="relative aspect-square w-full max-w-md mx-auto">
-                                                {step.image && (
-                                                    <Image
-                                                        src={step.image}
-                                                        alt={step.title}
-                                                        fill
-                                                        className="object-contain rounded-lg"
-                                                    />
-                                                )}
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                )
-                            }
-                            
-                            const isEven = index % 2 === 0;
-                            return (
-                                <motion.div
-                                    key={index}
-                                    style={{ opacity: opacities[index] }}
-                                    className="absolute"
-                                >
-                                    <Card className={cn(
-                                        "shadow-lg flex flex-col items-center justify-center h-80 w-80 backdrop-blur-sm border border-white/10",
-                                        isEven ? 'bg-primary/20' : 'bg-accent/20'
-                                    )}>
-                                        <CardHeader className="flex flex-col items-center text-center gap-4">
-                                            <div className="rounded-full bg-background/70 p-4">
-                                                {step.icon}
-                                            </div>
-                                            <CardTitle>{step.title}</CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="text-center text-muted-foreground flex-1 px-6">
-                                            {step.description}
-                                        </CardContent>
-                                    </Card>
-                                </motion.div>
-                            );
-                        })}
+                        {steps.map((step, index) => (
+                             <motion.div
+                                key={index}
+                                style={{ opacity: opacities[index] }}
+                                className="absolute w-full max-w-4xl"
+                            >
+                                <div className="grid md:grid-cols-2 gap-12 items-center">
+                                    <div className="space-y-4 text-white">
+                                        <h3 className={cn("text-4xl font-bold", index % 2 === 0 ? "text-primary" : "text-accent")}>{step.title}</h3>
+                                        <p className="text-lg text-neutral-300">{step.description}</p>
+                                    </div>
+                                    <div className="relative aspect-square w-full max-w-md mx-auto">
+                                        {step.image && (
+                                            <Image
+                                                src={step.image}
+                                                alt={step.title}
+                                                fill
+                                                className="object-contain rounded-lg"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
                     </div>
                      <div className="h-20" /> {/* Spacer */}
                 </div>
