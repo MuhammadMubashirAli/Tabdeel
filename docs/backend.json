@@ -244,7 +244,11 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user profile information. The 'userId' is the Firebase Auth UID."
+          "description": "Stores user profile information. The 'userId' is the Firebase Auth UID.",
+          "rules": {
+            "read": "request.auth != null",
+            "write": "request.auth.uid == userId"
+          }
         }
       },
       {
