@@ -38,10 +38,10 @@ export function HowItWorks() {
     });
 
     const stepOpacities = [
-        useTransform(scrollYProgress, [0, 0.15, 0.25], [1, 1, 0]),     // Step 1: Visible from start, fades out
-        useTransform(scrollYProgress, [0.25, 0.4, 0.5], [0, 1, 0]), // Step 2: Fades in and out
-        useTransform(scrollYProgress, [0.5, 0.65, 0.75], [0, 1, 0]),     // Step 3: Fades in and out
-        useTransform(scrollYProgress, [0.75, 0.9, 1.0], [0, 1, 1]),   // Step 4: Fades in and stays
+        useTransform(scrollYProgress, [0, 0.2, 0.25], [1, 1, 0]),     // Step 1: Fade out
+        useTransform(scrollYProgress, [0.25, 0.45, 0.5], [0, 1, 0]), // Step 2: Fade in and out
+        useTransform(scrollYProgress, [0.5, 0.7, 0.75], [0, 1, 0]),     // Step 3: Fade in and out
+        useTransform(scrollYProgress, [0.75, 0.95, 1], [0, 1, 1]),   // Step 4: Fade in
     ];
 
     return (
