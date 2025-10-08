@@ -54,14 +54,15 @@ export function HowItWorks() {
         <section ref={targetRef} id="how-it-works" className="w-full relative h-[500vh]">
             <div className="sticky top-0 h-screen bg-black flex flex-col items-center pt-12 overflow-hidden">
                 <div className="stars-layer" />
-                <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-start relative z-10">
-                    <div className="text-center pt-10">
+                <div className="container mx-auto px-4 md:px-6 h-full flex flex-col items-center justify-start relative z-10">
+                    <div className="w-full text-center pt-10 absolute top-0">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-white">Four Simple Steps to Swap</h2>
                     </div>
 
-                    <div className="flex-grow flex items-center justify-center relative -mt-20">
+                    <div className="absolute top-[30%] w-full h-3/4">
+                        <div className="relative w-full h-full flex items-center justify-center">
                         {steps.map((step, index) => (
-                             <motion.div
+                            <motion.div
                                 key={index}
                                 style={{ opacity: opacities[index] }}
                                 className="absolute w-full max-w-4xl"
@@ -84,6 +85,7 @@ export function HowItWorks() {
                                 </div>
                             </motion.div>
                         ))}
+                        </div>
                     </div>
                 </div>
             </div>
