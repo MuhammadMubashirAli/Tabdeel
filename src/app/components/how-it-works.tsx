@@ -59,7 +59,7 @@ export function HowItWorks() {
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-white">Four Simple Steps to Swap</h2>
                     </div>
 
-                    <div className="absolute top-[30%] w-full h-3/4">
+                    <div className="absolute top-[28%] w-full h-3/4">
                         <div className="relative w-full h-full flex items-center justify-center">
                         {steps.map((step, index) => (
                             <motion.div
