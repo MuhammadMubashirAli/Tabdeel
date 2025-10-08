@@ -6,7 +6,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export function Testimonials() {
     return (
-        <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32 bg-card relative z-20">
+        <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32 bg-card">
             <div className="container mx-auto px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                     <div className="space-y-2">

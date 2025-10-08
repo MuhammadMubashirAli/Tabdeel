@@ -14,17 +14,23 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         
-        <div>
+        <div className="relative h-[200vh]">
           <AboutUs />
-          <HowItWorks />
+        </div>
+        
+        <div className="relative h-[400vh]">
+           <HowItWorks />
         </div>
 
-        <ScrollFadeIn delay={0.2}>
-          <Testimonials />
-        </ScrollFadeIn>
-        <ScrollFadeIn delay={0.2}>
-          <Faq />
-        </ScrollFadeIn>
+        <div className="relative z-20 bg-background">
+          <ScrollFadeIn delay={0.2}>
+            <Testimonials />
+          </ScrollFadeIn>
+          <ScrollFadeIn delay={0.2}>
+            <Faq />
+          </ScrollFadeIn>
+        </div>
+
       </main>
       <Footer />
     </div>
