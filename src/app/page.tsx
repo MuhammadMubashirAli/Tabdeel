@@ -14,11 +14,11 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         
-        <div className="relative h-[200vh]">
+        <div className="h-[200vh]">
           <AboutUs />
         </div>
         
-        <div className="relative h-[400vh]">
+        <div className="relative z-10 -mt-[100vh] h-[400vh]">
            <HowItWorks />
         </div>
 

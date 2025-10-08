@@ -28,14 +28,14 @@ export function AboutUs() {
     );
 
     return (
-        <section id="about" className="w-full h-screen py-24 md:py-24 lg:py-32 bg-card sticky top-0 z-0">
+        <section id="about" className="w-full h-screen py-24 md:py-24 lg:py-32 bg-card sticky top-0">
             <div className="container mx-auto px-4 md:px-6 h-full">
                 <div className="grid md:grid-cols-2 gap-12 items-center h-full">
                     <div className="space-y-4 h-full flex flex-col justify-center">
                         <div className="space-y-2">
                             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Rethinking Ownership in Pakistan</h2>
                         </div>
-                        <div className="text-muted-foreground md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed space-y-4">
+                        <div className="text-muted-foreground md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed space-y-4 overflow-y-auto py-24">
                             <p>
                                 {textContent[0]}
                             </p>
