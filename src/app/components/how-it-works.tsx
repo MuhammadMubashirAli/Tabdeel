@@ -20,6 +20,7 @@ const steps = [
         icon: <Search className="size-8 text-accent" />,
         title: "2. Explore & Get Matched",
         description: "Browse items from across Pakistan or check your recommendations for AI-powered swap suggestions.",
+        image: "https://i.postimg.cc/CxCHwWKR/Simple-Minimalist-Typographic-Beauty-Studio-Logo.png",
     },
     {
         icon: <Send className="size-8 text-primary" />,
@@ -58,7 +59,7 @@ export function HowItWorks() {
 
                     <div className="flex-grow flex items-center justify-center relative">
                         {steps.map((step, index) => {
-                            if (index === 0) {
+                            if (index < 2) { // For steps 1 and 2
                                 return (
                                      <motion.div
                                         key={index}
@@ -67,7 +68,7 @@ export function HowItWorks() {
                                     >
                                         <div className="grid md:grid-cols-2 gap-12 items-center">
                                             <div className="space-y-4 text-white">
-                                                <h3 className="text-4xl font-bold text-primary">{step.title}</h3>
+                                                <h3 className={cn("text-4xl font-bold", index % 2 === 0 ? "text-primary" : "text-accent")}>{step.title}</h3>
                                                 <p className="text-lg text-neutral-300">{step.description}</p>
                                             </div>
                                             <div className="relative aspect-square w-full max-w-md mx-auto">
