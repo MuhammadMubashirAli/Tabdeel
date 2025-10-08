@@ -71,6 +71,24 @@
       "description": "A men's hiking backpack",
       "imageUrl": "https://images.unsplash.com/photo-1602845860431-35374f24f48d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxoaWtpbmclMjBiYWNrcGFja3xlbnwwfHx8fDE3NTk1ODkxODB8MA&ixlib_rb-4.1.0&q=80&w=1080",
       "imageHint": "hiking backpack"
+    },
+    {
+      "id": "about-us-1",
+      "description": "A group of friends sharing and laughing together.",
+      "imageUrl": "https://images.unsplash.com/photo-1505036573105-59b583e74b00?q=80&w=800&auto=format&fit=crop",
+      "imageHint": "friends community"
+    },
+    {
+      "id": "about-us-2",
+      "description": "Hands exchanging a small plant, symbolizing growth and sharing.",
+      "imageUrl": "https://images.unsplash.com/photo-1627542564230-0329093b169b?q=80&w=800&auto=format&fit=crop",
+      "imageHint": "sharing hands"
+    },
+    {
+      "id": "about-us-3",
+      "description": "A bustling, colorful Pakistani street market.",
+      "imageUrl": "https://images.unsplash.com/photo-1627443992735-65a39e315b88?q=80&w=800&auto=format&fit=crop",
+      "imageHint": "pakistani market"
     }
   ]
 }
