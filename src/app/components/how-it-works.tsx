@@ -37,18 +37,24 @@ export function HowItWorks() {
         offset: ["start start", "end end"],
     });
 
+    // Each step gets roughly 25% of the scroll duration.
+    // We add small gaps for fade in/out transitions.
     const stepOpacities = [
-        useTransform(scrollYProgress, [0, 0.2, 0.25], [1, 1, 0]),     // Step 1: Fade out
-        useTransform(scrollYProgress, [0.25, 0.45, 0.5], [0, 1, 0]), // Step 2: Fade in and out
-        useTransform(scrollYProgress, [0.5, 0.7, 0.75], [0, 1, 0]),     // Step 3: Fade in and out
-        useTransform(scrollYProgress, [0.75, 0.95, 1], [0, 1, 1]),   // Step 4: Fade in
+        // Step 1: Visible from start, fades out around 25%
+        useTransform(scrollYProgress, [0, 0.20], [1, 0]),
+        // Step 2: Fades in around 25%, visible, then fades out around 50%
+        useTransform(scrollYProgress, [0.20, 0.25, 0.45], [0, 1, 0]),
+        // Step 3: Fades in around 50%, visible, then fades out around 75%
+        useTransform(scrollYProgress, [0.45, 0.50, 0.70], [0, 1, 0]),
+        // Step 4: Fades in around 75% and stays visible till the end.
+        useTransform(scrollYProgress, [0.70, 0.75, 1], [0, 1, 1]),
     ];
 
     return (
         <section ref={targetRef} id="how-it-works" className="w-full sticky top-0 overflow-hidden h-screen bg-black">
             <div className="stars-layer" />
-            <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center relative z-10 pt-24">
-                <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
+            <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center relative z-10">
+                <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12 pt-24">
                     <div className="space-y-2">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-white">Four Simple Steps to Swap</h2>
                     </div>
