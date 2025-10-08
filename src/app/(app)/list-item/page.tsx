@@ -1,106 +1,286 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { categories, pakistaniCities } from "@/lib/data"
-import { Upload } from "lucide-react"
+
+'use client';
+
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useRouter } from "next/navigation";
+import { useAuth, useFirestore, useUser } from "@/firebase";
+import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { collection, serverTimestamp } from "firebase/firestore";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
+import { categories, pakistaniCities } from "@/lib/data";
+import { Upload } from "lucide-react";
+import type { Item } from "@/lib/types";
+
+const formSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters."),
+  description: z.string().min(10, "Description must be at least 10 characters."),
+  category: z.string({ required_error: "Please select a category." }),
+  city: z.string({ required_error: "Please select a city." }),
+  condition: z.enum(["Like New", "Good", "Fair"]),
+  desiredKeywords: z.string().min(3, "Please enter at least one keyword."),
+  desiredCategories: z.string().optional(), // For now, we'll keep this simple
+});
 
 export default function ListItemPage() {
+  const router = useRouter();
+  const firestore = useFirestore();
+  const { user } = useUser();
+  const { toast } = useToast();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      condition: "Good",
+      desiredKeywords: "",
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!firestore || !user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication Error",
+        description: "You must be logged in to list an item.",
+      });
+      return;
+    }
+
+    try {
+      const itemsCollection = collection(firestore, 'items');
+      
+      const newItem: Omit<Item, 'id' | 'createdAt' | 'updatedAt'> = {
+        title: values.title,
+        description: values.description,
+        // For now, assign a default placeholder image.
+        images: ['item-cricket-ball-1'], 
+        category: values.category,
+        condition: values.condition,
+        city: values.city,
+        desiredKeywords: values.desiredKeywords,
+        desiredCategories: values.desiredCategories ? [values.desiredCategories] : [],
+        status: 'active',
+        ownerId: user.uid,
+      };
+
+      const docData = {
+          ...newItem,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+      }
+
+      await addDocumentNonBlocking(itemsCollection, docData);
+
+      toast({
+        title: "Success!",
+        description: `Your item "${values.title}" has been listed.`,
+      });
+
+      router.push('/explore');
+
+    } catch (error) {
+      console.error("Error listing item:", error);
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "There was a problem listing your item. Please try again.",
+      });
+    }
+  }
+
+
   return (
     <div className="mx-auto grid max-w-4xl gap-6">
-        <div className="space-y-2">
-            <h1 className="text-3xl font-bold">List a New Item</h1>
-            <p className="text-muted-foreground">Fill out the details below to put your item up for barter.</p>
-        </div>
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold">List a New Item</h1>
+        <p className="text-muted-foreground">Fill out the details below to put your item up for barter.</p>
+      </div>
       <Card>
         <CardContent className="p-6">
-          <form className="grid gap-6">
-            <div className="grid gap-3">
-              <Label htmlFor="title">Title</Label>
-              <Input id="title" type="text" className="w-full" placeholder="e.g. Vintage Leather Cricket Ball" />
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="description">Description</Label>
-              <Textarea id="description" placeholder="Describe your item in detail..." />
-            </div>
-            <div className="grid gap-3">
-              <Label>Upload Photos</Label>
-              <div className="flex items-center justify-center w-full">
-                  <Label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-muted">
-                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
-                          <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                          <p className="text-xs text-muted-foreground">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
-                      </div>
-                      <Input id="dropzone-file" type="file" className="hidden" multiple />
-                  </Label>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
+              
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Vintage Leather Cricket Ball" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Describe your item in detail..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid gap-3">
+                <Label>Upload Photos (Coming Soon)</Label>
+                <div className="flex items-center justify-center w-full">
+                  <div className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-not-allowed bg-secondary/50 opacity-60">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
+                      <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Image Upload Not Available</span></p>
+                      <p className="text-xs text-muted-foreground">A default image will be used for now.</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="grid md:grid-cols-2 gap-6">
-                <div className="grid gap-3">
-                <Label htmlFor="category">Category</Label>
-                <Select>
-                    <SelectTrigger id="category">
-                    <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                    {categories.map(c => <SelectItem key={c} value={c.toLowerCase()}>{c}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-                </div>
-                <div className="grid gap-3">
-                <Label htmlFor="city">City</Label>
-                <Select>
-                    <SelectTrigger id="city">
-                    <SelectValue placeholder="Select your city" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {pakistaniCities.map(c => <SelectItem key={c} value={c.toLowerCase()}>{c}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-                </div>
-            </div>
-             <div className="grid gap-3">
-                <Label>Condition</Label>
-                <RadioGroup defaultValue="good" className="flex gap-4">
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="like-new" id="r1" />
-                        <Label htmlFor="r1">Like New</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="good" id="r2" />
-                        <Label htmlFor="r2">Good</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="fair" id="r3" />
-                        <Label htmlFor="r3">Fair</Label>
-                    </div>
-                </RadioGroup>
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="desiredKeywords">What do you want in exchange? (Keywords)</Label>
-              <Input id="desiredKeywords" type="text" className="w-full" placeholder="e.g. Football, gaming chair, headphones" />
-              <p className="text-xs text-muted-foreground">List some keywords for items you're interested in.</p>
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="desiredCategories">Desired Categories</Label>
-               <Select>
-                    <SelectTrigger id="desiredCategories">
-                    <SelectValue placeholder="Select desired categories (optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                    {categories.map(c => <SelectItem key={c} value={c.toLowerCase()}>{c}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">This helps our AI find better matches for you.</p>
-            </div>
-            <Button type="submit" size="lg">List My Item</Button>
-          </form>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your city" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {pakistaniCities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="condition"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>Condition</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex gap-4"
+                      >
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="Like New" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Like New</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="Good" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Good</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="Fair" />
+                          </FormControl>
+                          <FormLabel className="font-normal">Fair</FormLabel>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="desiredKeywords"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>What do you want in exchange? (Keywords)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Football, gaming chair, headphones" {...field} />
+                    </FormControl>
+                     <p className="text-xs text-muted-foreground">List some keywords for items you're interested in.</p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                  control={form.control}
+                  name="desiredCategories"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Desired Category (Optional)</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a desired category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">This helps our AI find better matches for you.</p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              
+              <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Listing...' : 'List My Item'}
+              </Button>
+
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
+
+    
