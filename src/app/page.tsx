@@ -5,6 +5,7 @@ import { Testimonials } from "@/app/components/testimonials";
 import { Faq } from "@/app/components/faq";
 import { Footer } from "@/app/components/footer";
 import { AppHeader } from "./components/app-header";
+import { ScrollFadeIn } from "./components/scroll-fade-in";
 
 export default function Home() {
   return (
@@ -12,10 +13,18 @@ export default function Home() {
       <AppHeader />
       <main className="flex-1 pt-20 md:pt-0">
         <Hero />
-        <AboutUs />
-        <HowItWorks />
-        <Testimonials />
-        <Faq />
+        <ScrollFadeIn>
+          <AboutUs />
+        </ScrollFadeIn>
+        <ScrollFadeIn delay={0.2}>
+          <HowItWorks />
+        </ScrollFadeIn>
+        <ScrollFadeIn delay={0.2}>
+          <Testimonials />
+        </ScrollFadeIn>
+        <ScrollFadeIn delay={0.2}>
+          <Faq />
+        </ScrollFadeIn>
       </main>
       <Footer />
     </div>
