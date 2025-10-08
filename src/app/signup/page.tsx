@@ -17,10 +17,12 @@ import {
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Wordmark } from "../components/logo"
-import { useAuth, useUser } from "@/firebase";
+import { useAuth, useUser, setDocumentNonBlocking, useFirestore } from "@/firebase";
 import { initiateEmailSignUp } from "@/firebase/non-blocking-login";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc } from "firebase/firestore";
 
 
 const formSchema = z.object({
@@ -33,6 +35,7 @@ const formSchema = z.object({
 
 export default function SignupPage() {
   const auth = useAuth();
+  const firestore = useFirestore();
   const router = useRouter();
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
@@ -53,13 +56,44 @@ export default function SignupPage() {
     }
   }, [user, router]);
   
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    initiateEmailSignUp(auth, values.email, values.password);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!firestore || !auth) {
+        toast({ variant: "destructive", title: "Firebase not initialized." });
+        return;
+    }
+    
     toast({
-      title: "Creating Account...",
-      description: "Please wait while we set things up for you.",
+        title: "Creating Account...",
+        description: "Please wait while we set things up for you.",
     });
-    // In a real app, you would also save the first and last name to the user's profile in Firestore.
+
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+        const firebaseUser = userCredential.user;
+
+        // Now create the user profile document in Firestore
+        const userDocRef = doc(firestore, "users", firebaseUser.uid);
+        const userProfileData = {
+            id: firebaseUser.uid,
+            name: `${values.firstName} ${values.lastName}`,
+            email: firebaseUser.email,
+            avatarUrl: 'user-avatar-1', // Default avatar
+            city: '', // Default city
+            createdAt: new Date().toISOString(),
+        };
+
+        setDocumentNonBlocking(userDocRef, userProfileData, { merge: true });
+
+        // The onAuthStateChanged listener in the provider will handle the redirect.
+        
+    } catch (error: any) {
+        console.error("Error creating account:", error);
+        toast({
+            variant: "destructive",
+            title: "Sign-up failed",
+            description: error.message || "There was a problem creating your account.",
+        });
+    }
   }
 
   if (isUserLoading || user) {
@@ -134,8 +168,8 @@ export default function SignupPage() {
                     </FormItem>
                   )}
                 />
-              <Button type="submit" className="w-full">
-                Create an account
+              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Creating...' : 'Create an account'}
               </Button>
               <Button variant="outline" className="w-full" disabled>
                 Sign up with Google

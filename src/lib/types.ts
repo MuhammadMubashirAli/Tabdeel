@@ -1,7 +1,7 @@
 import type { Timestamp } from 'firebase/firestore';
 
 export type Item = {
-  id: string;
+  id?: string;
   title: string;
   description: string;
   images: string[];
@@ -12,8 +12,8 @@ export type Item = {
   desiredCategories: string[];
   status: 'active' | 'exchanged' | 'removed';
   ownerId: string;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt: Timestamp | object;
+  updatedAt: Timestamp | object;
   matchStrength?: 'Good match' | 'Mutual interest' | 'Nearby';
 };
 
@@ -22,6 +22,8 @@ export type User = {
   name: string;
   avatarUrl: string;
   city: string;
+  email?: string;
+  createdAt?: string;
 };
 
 export type Testimonial = {

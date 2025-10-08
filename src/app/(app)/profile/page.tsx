@@ -1,31 +1,91 @@
+'use client';
+
+import { useMemo } from 'react';
+import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase } from "@/firebase";
+import { collection, query, where, doc } from 'firebase/firestore';
+
 import { ItemCard } from "@/app/components/item-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { items as allItems, users } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Edit, MapPin } from "lucide-react";
+import type { Item, User } from "@/lib/types";
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProfilePage() {
-  const user = users.find(u => u.id === 'user-2');
-  const userItems = allItems.filter(item => item.ownerId === user?.id);
-  const avatarImage = PlaceHolderImages.find(p => p.id === user?.avatarUrl);
+  const { user: authUser } = useUser();
+  const firestore = useFirestore();
 
-  if (!user) return null;
+  // Memoize the document reference for the user's profile
+  const userDocRef = useMemoFirebase(() => {
+    if (!firestore || !authUser) return null;
+    return doc(firestore, 'users', authUser.uid);
+  }, [firestore, authUser]);
+
+  // Memoize the query for the user's items
+  const userItemsQuery = useMemoFirebase(() => {
+    if (!firestore || !authUser) return null;
+    return query(collection(firestore, 'items'), where('ownerId', '==', authUser.uid));
+  }, [firestore, authUser]);
+
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<User>(userDocRef);
+  const { data: userItems, isLoading: areItemsLoading } = useCollection<Item>(userItemsQuery);
+
+  const avatarImage = PlaceHolderImages.find(p => p.id === userProfile?.avatarUrl);
+
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return "AA";
+    return name.split(' ').map(n => n[0]).join('');
+  }
+  
+  if (isProfileLoading || areItemsLoading) {
+    return (
+        <div className="space-y-6">
+             <Card>
+                <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-6">
+                    <Skeleton className="h-24 w-24 rounded-full" />
+                    <div className="space-y-2">
+                        <Skeleton className="h-8 w-48" />
+                        <Skeleton className="h-5 w-32" />
+                        <Skeleton className="h-5 w-64" />
+                    </div>
+                </CardContent>
+            </Card>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                {Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="space-y-2">
+                        <Skeleton className="h-48 w-full" />
+                        <Skeleton className="h-4 w-1/4" />
+                        <Skeleton className="h-6 w-3/4" />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+  }
+
+  if (!userProfile) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Could not load user profile.</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-6">
             <Avatar className="h-24 w-24">
-                {avatarImage && <AvatarImage src={avatarImage.imageUrl} alt={user.name} data-ai-hint={avatarImage.imageHint}/>}
-                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                {avatarImage && <AvatarImage src={avatarImage.imageUrl} alt={userProfile.name} data-ai-hint={avatarImage.imageHint}/>}
+                <AvatarFallback>{getInitials(userProfile.name)}</AvatarFallback>
             </Avatar>
             <div className="text-center sm:text-left">
-                <h1 className="text-2xl font-bold">{user.name}</h1>
+                <h1 className="text-2xl font-bold">{userProfile.name}</h1>
                 <p className="text-muted-foreground flex items-center justify-center sm:justify-start gap-2">
-                    <MapPin className="size-4" /> {user.city}
+                    <MapPin className="size-4" /> {userProfile.city || 'Not set'}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">Loves music and outdoor adventures. Looking to trade for cool tech!</p>
             </div>
@@ -37,14 +97,20 @@ export default function ProfilePage() {
 
       <Tabs defaultValue="listed" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="listed">Listed Items</TabsTrigger>
+                <TabsTrigger value="listed">Listed Items ({userItems?.length || 0})</TabsTrigger>
                 <TabsTrigger value="history">Exchange History</TabsTrigger>
             </TabsList>
             <TabsContent value="listed">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                    {userItems.map(item => (
-                        <ItemCard key={item.id} item={item} />
-                    ))}
+                    {userItems && userItems.length > 0 ? (
+                        userItems.map((item, index) => (
+                            <ItemCard key={item.id} item={item} index={index} onSelect={() => {}} />
+                        ))
+                    ) : (
+                         <div className="text-center py-12 col-span-full">
+                            <p className="text-muted-foreground">You haven't listed any items yet.</p>
+                        </div>
+                    )}
                 </div>
             </TabsContent>
             <TabsContent value="history">
