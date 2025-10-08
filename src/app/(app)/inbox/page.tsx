@@ -54,15 +54,17 @@ function SwapRequestCard({ request }: { request: SwapRequest }) {
         )}
         <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center justify-items-center gap-4">
           {/* Item You Get */}
-          <div className="flex md:flex-col items-center gap-2 text-center md:text-left">
-            <p className="font-semibold text-sm md:w-full">You Get</p>
-             <div className="flex items-center gap-2">
+          <div className="flex flex-col items-center gap-2 text-center w-full">
+            <p className="font-semibold text-sm w-full text-center md:text-left">You Get</p>
+             <div className="flex items-center gap-4">
                 <div className="w-24 h-24 rounded-lg overflow-hidden relative border shrink-0">
                     {offeredItemImage && <Image src={offeredItemImage.imageUrl} alt={offeredItem.title} fill className="object-cover" data-ai-hint={offeredItemImage.imageHint} />}
                 </div>
-                <p className="text-sm font-medium truncate max-w-24 md:hidden">{offeredItem.title}</p>
+                <div className="text-left">
+                    <p className="text-sm font-medium">{offeredItem.title}</p>
+                    <p className="text-xs text-muted-foreground">{offeredItem.category}</p>
+                </div>
              </div>
-             <p className="hidden md:block text-sm font-medium truncate max-w-24 mt-2">{offeredItem.title}</p>
           </div>
 
           {/* Desktop Arrow */}
@@ -71,15 +73,17 @@ function SwapRequestCard({ request }: { request: SwapRequest }) {
           <ArrowDown className="size-6 text-muted-foreground md:hidden" />
 
           {/* Item You Give */}
-          <div className="flex md:flex-col items-center gap-2 text-center md:text-left">
-            <p className="font-semibold text-sm md:w-full">You Give</p>
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col items-center gap-2 text-center w-full">
+            <p className="font-semibold text-sm w-full text-center md:text-left">You Give</p>
+            <div className="flex items-center gap-4">
                 <div className="w-24 h-24 rounded-lg overflow-hidden relative border shrink-0">
                     {requestedItemImage && <Image src={requestedItemImage.imageUrl} alt={requestedItem.title} fill className="object-cover" data-ai-hint={requestedItemImage.imageHint}/>}
                 </div>
-                <p className="text-sm font-medium truncate max-w-24 md:hidden">{requestedItem.title}</p>
+                <div className="text-left">
+                    <p className="text-sm font-medium">{requestedItem.title}</p>
+                    <p className="text-xs text-muted-foreground">{requestedItem.category}</p>
+                </div>
             </div>
-            <p className="hidden md:block text-sm font-medium truncate max-w-24 mt-2">{requestedItem.title}</p>
           </div>
         </div>
       </CardContent>
