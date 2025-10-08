@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,20 +34,20 @@ export function HowItWorks() {
     const targetRef = useRef<HTMLDivElement | null>(null);
     const { scrollYProgress } = useScroll({
         target: targetRef,
-        offset: ["start start", "end end"],
+        offset: ["start end", "end start"],
     });
 
     const stepOpacities = [
-        useTransform(scrollYProgress, [0, 0.2, 0.25], [1, 1, 0]),
-        useTransform(scrollYProgress, [0.25, 0.45, 0.5], [0, 1, 0]),
-        useTransform(scrollYProgress, [0.5, 0.7, 0.75], [0, 1, 0]),
-        useTransform(scrollYProgress, [0.75, 0.95, 1], [0, 1, 1]),
+        useTransform(scrollYProgress, [0.1, 0.2, 0.3, 0.4], [0, 1, 1, 0]),
+        useTransform(scrollYProgress, [0.3, 0.4, 0.5, 0.6], [0, 1, 1, 0]),
+        useTransform(scrollYProgress, [0.5, 0.6, 0.7, 0.8], [0, 1, 1, 0]),
+        useTransform(scrollYProgress, [0.7, 0.8, 0.9, 1.0], [0, 1, 1, 0]),
     ];
 
     return (
         <section ref={targetRef} id="how-it-works" className="w-full sticky top-0 overflow-hidden h-screen bg-black stars-bg">
             <div className="stars-layer" />
-            <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center relative z-10 pt-16">
+            <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center relative z-10 pt-24">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                     <div className="space-y-2">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-white">Four Simple Steps to Swap</h2>
