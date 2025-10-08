@@ -30,8 +30,9 @@ const steps = [
 
 export function HowItWorks() {
     return (
-        <section id="how-it-works" className="w-full py-12 md:py-24 lg:py-32 overflow-hidden relative z-10 bg-black">
-            <div className="container mx-auto px-4 md:px-6">
+        <section id="how-it-works" className="w-full py-12 md:py-24 lg:py-32 overflow-hidden relative z-10 bg-black stars-bg">
+            <div className="stars-layer" />
+            <div className="container mx-auto px-4 md:px-6 relative z-10">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                     <div className="space-y-2">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-white">Four Simple Steps to Swap</h2>

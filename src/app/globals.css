@@ -89,3 +89,62 @@ body {
     @apply font-headline;
   }
 }
+
+@layer components {
+  /* Starfield Background */
+  .stars-bg {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stars-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  .stars-layer:before,
+  .stars-layer:after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    animation: twinkle 50s linear infinite;
+  }
+
+  .stars-layer:before {
+    width: 2px;
+    height: 2px;
+    box-shadow: 
+      10vw 10vh 2px #fff, 20vw 30vh 3px #fff, 30vw 5vh 2px #fff, 
+      45vw 25vh 2px #fff, 55vw 15vh 3px #fff, 70vw 20vh 2px #fff, 
+      85vw 35vh 2px #fff, 95vw 10vh 3px #fff, 5vw 45vh 2px #fff, 
+      15vw 60vh 2px #fff, 25vw 75vh 3px #fff, 35vw 90vh 2px #fff,
+      40vw 50vh 2px #fff, 50vw 70vh 3px #fff, 60vw 85vh 2px #fff,
+      75vw 65vh 2px #fff, 80vw 80vh 3px #fff, 90vw 55vh 2px #fff;
+  }
+
+  .stars-layer:after {
+    width: 1px;
+    height: 1px;
+    box-shadow: 
+      5vw 80vh 1px rgba(255,255,255,0.7), 12vw 20vh 1px rgba(255,255,255,0.7), 
+      22vw 50vh 1px rgba(255,255,255,0.7), 33vw 10vh 1px rgba(255,255,255,0.7), 
+      48vw 40vh 1px rgba(255,255,255,0.7), 62vw 60vh 1px rgba(255,255,255,0.7),
+      73vw 90vh 1px rgba(255,255,255,0.7), 88vw 5vh 1px rgba(255,255,255,0.7),
+      98vw 22vh 1px rgba(255,255,255,0.7), 2vw 95vh 1px rgba(255,255,255,0.7),
+      28vw 33vh 1px rgba(255,255,255,0.7), 42vw 88vh 1px rgba(255,255,255,0.7),
+      58vw 28vh 1px rgba(255,255,255,0.7), 67vw 48vh 1px rgba(255,255,255,0.7),
+      78vw 18vh 1px rgba(255,255,255,0.7), 92vw 72vh 1px rgba(255,255,255,0.7);
+  }
+
+  @keyframes twinkle {
+    from {
+      transform: translateY(0px);
+    }
+    to {
+      transform: translateY(-100px);
+    }
+  }
+}
