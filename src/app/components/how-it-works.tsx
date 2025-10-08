@@ -67,12 +67,12 @@ export function HowItWorks() {
                                 style={{ opacity: opacities[index] }}
                                 className="absolute w-full max-w-4xl"
                             >
-                                <div className="grid md:grid-cols-2 gap-12 items-center">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center text-center md:text-left">
                                     <div className="space-y-4 text-white">
                                         <h3 className={cn("text-4xl font-bold", index % 2 === 0 ? "text-primary" : "text-accent")}>{step.title}</h3>
                                         <p className="text-lg text-neutral-300">{step.description}</p>
                                     </div>
-                                    <div className="relative aspect-square w-full max-w-md mx-auto">
+                                    <div className="relative aspect-square w-full max-w-sm mx-auto md:max-w-md">
                                         {step.image && (
                                             <Image
                                                 src={step.image}
