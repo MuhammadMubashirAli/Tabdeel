@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -58,10 +59,6 @@
       "type": "object",
       "description": "Represents an item listed for barter on the Tabdeel platform.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the item entity."
-        },
         "ownerId": {
           "type": "string",
           "description": "Reference to User. (Relationship: User 1:N Item)"
@@ -109,14 +106,12 @@
           "description": "Status of the item (e.g., active, exchanged, removed)."
         },
         "createdAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the item was listed.",
-          "format": "date-time"
+          "type": "object",
+          "description": "Timestamp indicating when the item was listed."
         },
         "updatedAt": {
-          "type": "string",
-          "description": "Timestamp indicating when the item was last updated.",
-          "format": "date-time"
+          "type": "object",
+          "description": "Timestamp indicating when the item was last updated."
         },
         "embeddings": {
           "type": "array",
@@ -134,7 +129,6 @@
         }
       },
       "required": [
-        "id",
         "ownerId",
         "title",
         "description",
@@ -297,23 +291,19 @@
         }
       },
       {
-        "path": "/users/{userId}/items/{itemId}",
+        "path": "/items/{itemId}",
         "definition": {
-          "entityName": "Item",
-          "schema": {
-            "$ref": "#/backend/entities/Item"
-          },
-          "description": "Stores items listed by a user. Includes denormalized 'ownerId' for authorization independence.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user who owns the item."
+            "entityName": "Item",
+            "schema": {
+                "$ref": "#/backend/entities/Item"
             },
-            {
-              "name": "itemId",
-              "description": "The unique identifier for the item."
-            }
-          ]
+            "description": "Stores all items available for barter on the platform. The 'ownerId' field links the item to a user in the '/users' collection.",
+            "params": [
+                {
+                    "name": "itemId",
+                    "description": "The unique identifier for the item."
+                }
+            ]
         }
       },
       {
@@ -385,6 +375,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to be secure, scalable, and debuggable, adhering to the core principles of Authorization Independence, Clarity of Intent, DBAC (Database-Based Access Control), and QAPs (Rules are not Filters). Authorization Independence is achieved by denormalizing authorization data (e.g., ownerId) into subcollections where necessary, avoiding `get()` calls in security rules. Structural Segregation is maintained by keeping data with different access requirements in separate collections. Access Modeling is standardized with path-based ownership for user-owned data and membership maps for collaborative data. \n\nSpecifically:\n\n*   **Users:** User data is stored in `/users/{userId}`.  This path structure ensures clear ownership. The `userId` is implicitly the user's authentication UID.\n*   **Items:** Items are stored in `/users/{userId}/items/{itemId}` to represent the User 1:N Item relationship.  The item documents contain the `ownerId` field, which is redundant but intentionally denormalized to ensure authorization independence (no need for rules to `get()` the user document to check ownership).\n*   **SwapRequests:** Swap requests are stored in `/users/{targetOwnerId}/items/{targetItemId}/swapRequests/{swapRequestId}`. This structure nests swap requests under the target item and its owner for easy querying and access control. Crucially, the `targetOwnerId` is denormalized into the swap request to avoid authorization dependencies on the parent item.  The `requesterId` is also present for easier querying.\n*   **Messages:** Messages are stored within the swap request in `/users/{targetOwnerId}/items/{targetItemId}/swapRequests/{swapRequestId}/messages/{messageId}`.  This isolates messages to participants of the swap and simplifies security rules.  The `senderId` is within the message.\n*   **Categories:** Categories are stored in a flat `/categories/{categoryId}` collection.  These are globally accessible and do not require complex authorization.\n\nThis structure supports the required QAPs:\n\n*   Listing items is secured via the `/users/{userId}/items/{itemId}` path and rules that ensure the user is the owner. Public read access can be configured, with write access restricted to the owner.\n*   Swap request access is limited to the involved parties through the nested structure and rules that check `targetOwnerId` and `requesterId`.\n*   The explicit `status` field for items (`active`, `exchanged`, `removed`) facilitates filtering and prevents unauthorized access to inactive items.\n*   The use of path-based ownership and explicit `ownerId` fields enables secure list operations, as rules can easily filter based on the authenticated user's ID."
+    "reasoning": "The Firestore structure is designed to be secure, scalable, and debuggable. The key change is moving 'items' to a top-level collection. This is crucial for the 'Explore' page, allowing for efficient querying of all items across all users without needing a complex and costly collection group query. Ownership is maintained via the 'ownerId' field within each item document. User profiles remain in '/users/{userId}'. Swap requests and messages remain nested to logically group them and simplify security rules, ensuring only involved parties can access them."
   }
 }

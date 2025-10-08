@@ -1,3 +1,5 @@
+import type { Timestamp } from 'firebase/firestore';
+
 export type Item = {
   id: string;
   title: string;
@@ -10,7 +12,8 @@ export type Item = {
   desiredCategories: string[];
   status: 'active' | 'exchanged' | 'removed';
   ownerId: string;
-  createdAt: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
   matchStrength?: 'Good match' | 'Mutual interest' | 'Nearby';
 };
 

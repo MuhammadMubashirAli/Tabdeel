@@ -5,16 +5,27 @@ import { ItemCard } from "@/app/components/item-card";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { items as allItems, categories, pakistaniCities } from "@/lib/data";
+import { categories, pakistaniCities } from "@/lib/data";
 import type { Item } from "@/lib/types";
 import { ListFilter } from "lucide-react";
 import { useState } from "react";
 import { ItemDetailDialog } from "@/app/components/item-detail-dialog";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const conditions: Item['condition'][] = ['Like New', 'Good', 'Fair'];
 
 export default function ExplorePage() {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const firestore = useFirestore();
+
+  const itemsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'items');
+  }, [firestore]);
+
+  const { data: allItems, isLoading } = useCollection<Item>(itemsQuery);
 
   return (
     <>
@@ -58,11 +69,31 @@ export default function ExplorePage() {
             </DropdownMenu>
           </div>
         </div>
+        {isLoading && (
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <div key={index} className="space-y-2">
+                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-6 w-3/4" />
+                <div className="flex justify-between">
+                  <Skeleton className="h-5 w-1/3" />
+                  <Skeleton className="h-5 w-1/4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-          {allItems.map((item, index) => (
+          {allItems && allItems.map((item, index) => (
             <ItemCard key={item.id} item={item} index={index} onSelect={() => setSelectedItem(item)} />
           ))}
         </div>
+         {!isLoading && (!allItems || allItems.length === 0) && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No items have been listed yet. Be the first!</p>
+          </div>
+        )}
       </div>
       {selectedItem && (
           <ItemDetailDialog 
