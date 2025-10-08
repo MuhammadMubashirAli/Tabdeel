@@ -72,7 +72,7 @@ export function HowItWorks() {
                                         <h3 className={cn("text-4xl font-bold", index % 2 === 0 ? "text-primary" : "text-accent")}>{step.title}</h3>
                                         <p className="text-lg text-neutral-300">{step.description}</p>
                                     </div>
-                                    <div className="relative aspect-square w-full max-w-sm mx-auto md:max-w-md">
+                                    <div className="relative aspect-square w-full max-w-[18rem] sm:max-w-sm mx-auto md:max-w-md">
                                         {step.image && (
                                             <Image
                                                 src={step.image}
