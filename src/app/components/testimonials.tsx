@@ -13,13 +13,13 @@ export function Testimonials() {
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">What Our Community Says</h2>
                     </div>
                 </div>
-                <div className="mx-auto grid items-start gap-8 sm:max-w-4xl sm:grid-cols-1 md:gap-12 lg:max-w-5xl lg:grid-cols-3">
+                <div className="mx-auto grid items-stretch gap-8 sm:max-w-4xl sm:grid-cols-1 md:gap-12 lg:max-w-5xl lg:grid-cols-3">
                     {testimonialData.map((testimonial) => {
                         const avatarImage = PlaceHolderImages.find(p => p.id === testimonial.avatarImageId);
                         return (
-                            <Card key={testimonial.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-                                <CardContent className="p-6">
-                                    <blockquote className="text-lg font-semibold leading-snug">
+                            <Card key={testimonial.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
+                                <CardContent className="p-6 flex flex-col flex-grow">
+                                    <blockquote className="text-lg font-semibold leading-snug flex-grow">
                                        “{testimonial.quote}”
                                     </blockquote>
                                     <div className="mt-6 flex items-center gap-4">
