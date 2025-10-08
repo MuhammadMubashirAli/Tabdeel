@@ -58,7 +58,7 @@ export default function ExplorePage() {
             </DropdownMenu>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {allItems.map((item, index) => (
             <ItemCard key={item.id} item={item} index={index} onSelect={() => setSelectedItem(item)} />
           ))}
