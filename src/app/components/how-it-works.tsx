@@ -37,12 +37,10 @@ export function HowItWorks() {
         offset: ["start start", "end end"],
     });
 
-    // Define distinct, non-overlapping animation ranges for each card
-    // [startFadeIn, fullOpacity, startFadeOut, endFadeOut]
-    const opacityFirst = useTransform(scrollYProgress, [0, 0.1, 0.2, 0.25], [1, 1, 0, 0]);
-    const opacitySecond = useTransform(scrollYProgress, [0.25, 0.3, 0.45, 0.5], [0, 1, 1, 0]);
-    const opacityThird = useTransform(scrollYProgress, [0.5, 0.55, 0.7, 0.75], [0, 1, 1, 0]);
-    const opacityFourth = useTransform(scrollYProgress, [0.75, 0.8, 1, 1], [0, 1, 1, 1]);
+    const opacityFirst = useTransform(scrollYProgress, [0.0, 0.25, 0.25], [1, 1, 0]);
+    const opacitySecond = useTransform(scrollYProgress, [0.25, 0.5, 0.5], [0, 1, 0]);
+    const opacityThird = useTransform(scrollYProgress, [0.5, 0.75, 0.75], [0, 1, 0]);
+    const opacityFourth = useTransform(scrollYProgress, [0.75, 1.0], [0, 1]);
 
     const opacities = [opacityFirst, opacitySecond, opacityThird, opacityFourth];
 
@@ -56,7 +54,7 @@ export function HowItWorks() {
                     </div>
                 </div>
 
-                <div className="flex-1 flex items-center justify-center relative h-full">
+                <div className="h-full flex-1 flex items-center justify-center relative">
                     {steps.map((step, index) => {
                         const isEven = index % 2 === 0;
                         return (
