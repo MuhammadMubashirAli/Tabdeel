@@ -37,17 +37,11 @@ export function HowItWorks() {
         offset: ["start start", "end end"],
     });
 
-    // Correctly sequenced and spaced animation ranges.
-    // Each step gets a clear segment of the scroll duration.
     const stepOpacities = [
-        // Step 1: Visible from 0% to 20%, then fades out by 25%.
-        useTransform(scrollYProgress, [0, 0.20, 0.25], [1, 1, 0]),
-        // Step 2: Fades in from 25% to 30%, stays visible until 45%, then fades out by 50%.
-        useTransform(scrollYProgress, [0.25, 0.30, 0.45, 0.50], [0, 1, 1, 0]),
-        // Step 3: Fades in from 50% to 55%, stays visible until 70%, then fades out by 75%.
-        useTransform(scrollYProgress, [0.50, 0.55, 0.70, 0.75], [0, 1, 1, 0]),
-        // Step 4: Fades in from 75% to 80% and stays visible until the end (100%).
-        useTransform(scrollYProgress, [0.75, 0.80, 1], [0, 1, 1]),
+        useTransform(scrollYProgress, [0, 0.2, 0.25], [1, 1, 0]),
+        useTransform(scrollYProgress, [0.25, 0.45, 0.5], [0, 1, 0]),
+        useTransform(scrollYProgress, [0.5, 0.7, 0.75], [0, 1, 0]),
+        useTransform(scrollYProgress, [0.75, 0.95, 1], [0, 1, 1]),
     ];
 
     return (
