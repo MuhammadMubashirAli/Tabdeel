@@ -29,9 +29,9 @@ export function AboutUs() {
 
     return (
         <section id="about" className="w-full h-screen py-24 md:py-24 lg:py-32 bg-card sticky top-0 z-0">
-            <div className="container mx-auto px-4 md:px-6">
-                <div className="grid md:grid-cols-2 gap-12 items-center">
-                    <div className="space-y-4">
+            <div className="container mx-auto px-4 md:px-6 h-full">
+                <div className="grid md:grid-cols-2 gap-12 items-center h-full">
+                    <div className="space-y-4 h-full flex flex-col justify-center">
                         <div className="space-y-2">
                             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Rethinking Ownership in Pakistan</h2>
                         </div>
@@ -58,8 +58,8 @@ export function AboutUs() {
                                         <CarouselItem key={index}>
                                             <motion.div
                                                 initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
+                                                whileInView={{ opacity: 1 }}
+                                                viewport={{ once: false, amount: 0.5 }}
                                                 transition={{ duration: 1.5 }}
                                             >
                                                 <Card className="overflow-hidden rounded-lg shadow-lg">
