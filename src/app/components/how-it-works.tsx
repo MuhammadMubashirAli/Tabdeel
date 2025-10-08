@@ -54,12 +54,12 @@ export function HowItWorks() {
         <section ref={targetRef} id="how-it-works" className="w-full relative h-[500vh]">
             <div className="sticky top-0 h-screen bg-black flex flex-col items-center pt-12 overflow-hidden">
                 <div className="stars-layer" />
-                <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center relative z-10">
-                    <div className="text-center mb-auto pt-10">
+                <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-start relative z-10">
+                    <div className="text-center pt-10">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-white">Four Simple Steps to Swap</h2>
                     </div>
 
-                    <div className="flex-grow flex items-center justify-center relative -mt-24">
+                    <div className="flex-grow flex items-center justify-center relative -mt-20">
                         {steps.map((step, index) => (
                              <motion.div
                                 key={index}
@@ -85,7 +85,6 @@ export function HowItWorks() {
                             </motion.div>
                         ))}
                     </div>
-                     <div className="h-20" /> {/* Spacer */}
                 </div>
             </div>
         </section>
