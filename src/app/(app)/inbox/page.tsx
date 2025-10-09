@@ -7,7 +7,7 @@ import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Check, CornerDownLeft, ThumbsDown, ArrowDown } from "lucide-react";
+import { ArrowLeft, Check, CornerDownLeft, ThumbsDown, ArrowDown, MessageSquare } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useState, useMemo } from "react";
 import type { Message, SwapRequest, User, Item } from "@/lib/types";
@@ -20,41 +20,50 @@ import { collection, doc, query, where, serverTimestamp, or, orderBy, Timestamp,
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
-
 function SwapRequestCard({ 
-    request, 
+    request,
+    currentUserId,
     onAccept,
-    onDecline
+    onDecline,
+    onStartConversation
 }: { 
     request: SwapRequest,
+    currentUserId: string,
     onAccept: (id: string) => void,
-    onDecline: (id: string) => void 
+    onDecline: (id: string) => void,
+    onStartConversation: (id: string) => void,
 }) {
   const firestore = useFirestore();
+  const isReceiver = request.targetOwnerId === currentUserId;
+  const otherUserId = isReceiver ? request.requesterId : request.targetOwnerId;
 
-  const fromUserRef = useMemoFirebase(() => firestore ? doc(firestore, 'users', request.requesterId) : null, [firestore, request.requesterId]);
+  const otherUserRef = useMemoFirebase(() => firestore ? doc(firestore, 'users', otherUserId) : null, [firestore, otherUserId]);
   const requestedItemRef = useMemoFirebase(() => firestore ? doc(firestore, 'items', request.targetItemId) : null, [firestore, request.targetItemId]);
   const offeredItemRef = useMemoFirebase(() => firestore ? doc(firestore, 'items', request.offeredItemId) : null, [firestore, request.offeredItemId]);
 
-  const { data: fromUser, isLoading: fromUserLoading } = useDoc<User>(fromUserRef);
+  const { data: otherUser, isLoading: otherUserLoading } = useDoc<User>(otherUserRef);
   const { data: requestedItem, isLoading: requestedItemLoading } = useDoc<Item>(requestedItemRef);
   const { data: offeredItem, isLoading: offeredItemLoading } = useDoc<Item>(offeredItemRef);
 
-  const fromUserAvatar = PlaceHolderImages.find(p => p.id === fromUser?.avatarUrl);
-  const requestedItemImage = requestedItem ? PlaceHolderImages.find(p => p.id === requestedItem.images[0]) : null;
-  const offeredItemImage = offeredItem ? PlaceHolderImages.find(p => p.id === offeredItem.images[0]) : null;
+  const otherUserAvatar = PlaceHolderImages.find(p => p.id === otherUser?.avatarUrl);
+
+  // Determine which item is "yours" and which is "theirs" from the current user's perspective
+  const yourItem = isReceiver ? requestedItem : offeredItem;
+  const theirItem = isReceiver ? offeredItem : requestedItem;
+  const yourItemImage = yourItem ? PlaceHolderImages.find(p => p.id === yourItem.images[0]) : null;
+  const theirItemImage = theirItem ? PlaceHolderImages.find(p => p.id === theirItem.images[0]) : null;
   
-  const isLoading = fromUserLoading || requestedItemLoading || offeredItemLoading;
+  const isLoading = otherUserLoading || requestedItemLoading || offeredItemLoading;
 
   if (isLoading) {
     return (
         <Card className="overflow-hidden">
-            <CardHeader className="flex flex-row items-start gap-4 space-y-0 p-4 bg-muted/40">
-                <Skeleton className="w-10 h-10 rounded-full" />
+            <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 p-4 bg-muted/40">
                 <div className="space-y-2">
-                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-4 w-32" />
                     <Skeleton className="h-3 w-24" />
                 </div>
+                <Skeleton className="h-6 w-28" />
             </CardHeader>
             <CardContent className="p-4 space-y-4">
                  <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center justify-items-center gap-4">
@@ -68,23 +77,29 @@ function SwapRequestCard({
     )
   }
 
-  if (!fromUser || !requestedItem || !offeredItem) return null;
+  if (!otherUser || !requestedItem || !offeredItem) return null;
+
+  const statusBadgeVariant = {
+      pending: 'secondary',
+      accepted: 'default',
+      declined: 'destructive'
+  } as const;
+
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="flex flex-row items-start gap-4 space-y-0 p-4 bg-muted/40">
-        <Avatar>
-          {fromUserAvatar && <AvatarImage src={fromUserAvatar.imageUrl} alt={fromUser.name} data-ai-hint={fromUserAvatar.imageHint} />}
-          <AvatarFallback>{fromUser.name.charAt(0)}</AvatarFallback>
-        </Avatar>
+      <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 p-4 bg-muted/40">
         <div className="space-y-1">
-          <p className="font-semibold">
-            <span className="font-bold">{fromUser.name}</span> wants to swap with you
+          <p className="font-semibold text-sm">
+             {isReceiver ? 'Received Request' : 'Sent Request'} from <span className="font-bold">{otherUser.name}</span>
           </p>
-           {request.createdAt && <p className="text-sm text-muted-foreground">
+           {request.createdAt && <p className="text-xs text-muted-foreground">
             {formatDistanceToNow(request.createdAt.toDate(), { addSuffix: true })}
           </p>}
         </div>
+        <Badge variant={statusBadgeVariant[request.status]} className="capitalize">
+            Request {request.status}
+        </Badge>
       </CardHeader>
       <CardContent className="p-4 space-y-4">
         {request.message && (
@@ -98,11 +113,11 @@ function SwapRequestCard({
             <p className="font-semibold text-sm w-full text-center md:text-left">You Get</p>
              <div className="flex items-center gap-4">
                 <div className="w-24 h-24 rounded-lg overflow-hidden relative border shrink-0">
-                    {offeredItemImage && <Image src={offeredItemImage.imageUrl} alt={offeredItem.title} fill className="object-cover" data-ai-hint={offeredItemImage.imageHint} />}
+                    {theirItemImage && <Image src={theirItemImage.imageUrl} alt={theirItem.title} fill className="object-cover" data-ai-hint={theirItemImage.imageHint} />}
                 </div>
                 <div className="text-left">
-                    <p className="text-sm font-medium">{offeredItem.title}</p>
-                    <p className="text-xs text-muted-foreground">{offeredItem.category}</p>
+                    <p className="text-sm font-medium">{theirItem.title}</p>
+                    <p className="text-xs text-muted-foreground">{theirItem.category}</p>
                 </div>
              </div>
           </div>
@@ -117,26 +132,37 @@ function SwapRequestCard({
             <p className="font-semibold text-sm w-full text-center md:text-left">You Give</p>
             <div className="flex items-center gap-4">
                 <div className="w-24 h-24 rounded-lg overflow-hidden relative border shrink-0">
-                    {requestedItemImage && <Image src={requestedItemImage.imageUrl} alt={requestedItem.title} fill className="object-cover" data-ai-hint={requestedItemImage.imageHint}/>}
+                    {yourItemImage && <Image src={yourItemImage.imageUrl} alt={yourItem.title} fill className="object-cover" data-ai-hint={yourItemImage.imageHint}/>}
                 </div>
                 <div className="text-left">
-                    <p className="text-sm font-medium">{requestedItem.title}</p>
-                    <p className="text-xs text-muted-foreground">{requestedItem.category}</p>
+                    <p className="text-sm font-medium">{yourItem.title}</p>
+                    <p className="text-xs text-muted-foreground">{yourItem.category}</p>
                 </div>
             </div>
           </div>
         </div>
       </CardContent>
-      <div className="flex items-center p-4 border-t bg-muted/40">
-        <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/50" onClick={() => onDecline(request.id!)}>
-            <ThumbsDown className="mr-2" />
-            Decline
-        </Button>
-        <Button size="sm" className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => onAccept(request.id!)}>
-            Accept & Message
-            <Check className="ml-2" />
-        </Button>
-      </div>
+      {/* --- DYNAMIC BUTTONS --- */}
+      {request.status === 'pending' && isReceiver && (
+          <div className="flex items-center p-4 border-t bg-muted/40">
+            <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/50" onClick={() => onDecline(request.id!)}>
+                <ThumbsDown className="mr-2" />
+                Decline
+            </Button>
+            <Button size="sm" className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => onAccept(request.id!)}>
+                Accept
+                <Check className="ml-2" />
+            </Button>
+          </div>
+      )}
+      {request.status === 'accepted' && (
+          <div className="flex items-center p-4 border-t bg-muted/40 justify-end">
+              <Button size="sm" onClick={() => onStartConversation(request.id!)}>
+                  <MessageSquare className="mr-2" />
+                  Start Conversation
+              </Button>
+          </div>
+      )}
     </Card>
   );
 }
@@ -212,7 +238,7 @@ function ConversationListItem({
                         </p>
                     )}
                 </div>
-                <p className="text-sm text-muted-foreground truncate">{lastMessage?.text || "Accepted swap request."}</p>
+                <p className="text-sm text-muted-foreground truncate">{lastMessage?.text || "Swap request accepted. Start chatting!"}</p>
             </div>
         </button>
     )
@@ -441,12 +467,16 @@ function SwapRequestsView({
     const firestore = useFirestore();
     const { toast } = useToast();
 
+    // Query for all requests where the user is either the sender or receiver
     const swapRequestsQuery = useMemoFirebase(() => {
         if (!firestore || !user) return null;
         return query(
             collection(firestore, 'swapRequests'), 
-            where('targetOwnerId', '==', user.uid),
-            where('status', '==', 'pending') // Only show pending requests
+            or(
+                where('targetOwnerId', '==', user.uid),
+                where('requesterId', '==', user.uid)
+            ),
+            orderBy('updatedAt', 'desc')
         );
     }, [firestore, user]);
 
@@ -456,16 +486,11 @@ function SwapRequestsView({
         if (!firestore) return;
         const requestRef = doc(firestore, 'swapRequests', id);
         try {
-            // Non-blocking update
             updateDocumentNonBlocking(requestRef, { status, updatedAt: serverTimestamp() });
             toast({
                 title: `Request ${status}`,
                 description: `The swap request has been ${status}.`,
             });
-            if (status === 'accepted') {
-                setActiveTab('messages');
-                setSelectedConversationId(id);
-            }
         } catch (error) {
             console.error(`Error updating request:`, error);
             toast({
@@ -476,12 +501,17 @@ function SwapRequestsView({
         }
     };
     
+    const handleStartConversation = (id: string) => {
+        setActiveTab('messages');
+        setSelectedConversationId(id);
+    }
+
     return (
         <Card>
             <CardHeader>
                 <CardTitle>Swap Requests</CardTitle>
                 <CardDescription>
-                    Incoming offers for your items. Review and respond to them here.
+                    All your sent and received swap requests.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -496,14 +526,16 @@ function SwapRequestsView({
                         <SwapRequestCard 
                             key={req.id} 
                             request={req}
-                            onAccept={() => handleUpdateRequest(req.id!, 'accepted')}
-                            onDecline={() => handleUpdateRequest(req.id!, 'declined')}
+                            currentUserId={user!.uid}
+                            onAccept={(id) => handleUpdateRequest(id, 'accepted')}
+                            onDecline={(id) => handleUpdateRequest(id, 'declined')}
+                            onStartConversation={handleStartConversation}
                         />
                     ))
                 ) : (
                     !isLoading && (
                         <div className="text-center py-12">
-                            <p className="text-muted-foreground">You have no new swap requests.</p>
+                            <p className="text-muted-foreground">You have no swap requests yet.</p>
                         </div>
                     )
                 )}
@@ -540,7 +572,3 @@ export default function InboxPage() {
     </div>
   );
 }
-
-    
-
-    
