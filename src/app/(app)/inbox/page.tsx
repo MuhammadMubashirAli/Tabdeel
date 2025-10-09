@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -220,10 +219,15 @@ function ConversationListItem({
     )
 }
 
-function MessagesView() {
+function MessagesView({
+    selectedConversationId,
+    setSelectedConversationId,
+}: {
+    selectedConversationId: string | null;
+    setSelectedConversationId: (id: string | null) => void;
+}) {
     const { user: authUser } = useUser();
     const firestore = useFirestore();
-    const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
 
     // Get full user profile from 'users' collection
     const userProfileRef = useMemoFirebase(() => {
@@ -428,7 +432,13 @@ function MessagesView() {
     );
 }
 
-function SwapRequestsView() {
+function SwapRequestsView({ 
+    setActiveTab, 
+    setSelectedConversationId 
+} : {
+    setActiveTab: (tab: 'requests' | 'messages') => void;
+    setSelectedConversationId: (id: string) => void;
+}) {
     const { user } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -454,6 +464,10 @@ function SwapRequestsView() {
                 title: `Request ${status}`,
                 description: `The swap request has been ${status}.`,
             });
+            if (status === 'accepted') {
+                setActiveTab('messages');
+                setSelectedConversationId(id);
+            }
         } catch (error) {
             console.error(`Error updating request:`, error);
             toast({
@@ -503,6 +517,9 @@ function SwapRequestsView() {
 
 export default function InboxPage() {
   const { user, isUserLoading } = useUser();
+  const [activeTab, setActiveTab] = useState<'requests' | 'messages'>('requests');
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+
   if (isUserLoading) {
       return <div>Loading...</div>
   }
@@ -510,22 +527,18 @@ export default function InboxPage() {
   return (
     <div className="space-y-6">
         <h1 className="text-2xl font-bold tracking-tight">Messages & Requests</h1>
-        <Tabs defaultValue="requests" className="w-full">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'requests' | 'messages')} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="requests">Requests</TabsTrigger>
                 <TabsTrigger value="messages">Messages</TabsTrigger>
             </TabsList>
             <TabsContent value="requests">
-               <SwapRequestsView />
+               <SwapRequestsView setActiveTab={setActiveTab} setSelectedConversationId={setSelectedConversationId} />
             </TabsContent>
             <TabsContent value="messages">
-                 <MessagesView />
+                 <MessagesView selectedConversationId={selectedConversationId} setSelectedConversationId={setSelectedConversationId} />
             </TabsContent>
         </Tabs>
     </div>
   );
 }
-
-    
-
-    
