@@ -253,6 +253,8 @@ function MessagesView({
 }) {
     const { user: authUser } = useUser();
     const firestore = useFirestore();
+    const [conversations, setConversations] = useState<SwapRequest[]>([]);
+    const [conversationsLoading, setConversationsLoading] = useState(true);
 
     // Get full user profile from 'users' collection
     const userProfileRef = useMemoFirebase(() => {
@@ -261,26 +263,49 @@ function MessagesView({
     }, [firestore, authUser]);
     const { data: currentUser, isLoading: isUserLoading } = useDoc<User>(userProfileRef);
 
-
-    // 1. Fetch all accepted swap requests where the current user is involved
-    const conversationsQuery = useMemoFirebase(() => {
+    // --- NEW QUERIES ---
+    // 1. Fetch accepted swap requests where the user is the requester
+    const sentConversationsQuery = useMemoFirebase(() => {
         if (!authUser || !firestore) return null;
         return query(
             collection(firestore, 'swapRequests'),
-            and(
-                where('status', '==', 'accepted'),
-                or(
-                    where('requesterId', '==', authUser.uid),
-                    where('targetOwnerId', '==', authUser.uid)
-                )
-            ),
-             orderBy('updatedAt', 'desc')
+            where('status', '==', 'accepted'),
+            where('requesterId', '==', authUser.uid)
         );
     }, [authUser, firestore]);
+    const { data: sentConversations, isLoading: sentLoading } = useCollection<SwapRequest>(sentConversationsQuery);
+
+    // 2. Fetch accepted swap requests where the user is the target
+    const receivedConversationsQuery = useMemoFirebase(() => {
+        if (!authUser || !firestore) return null;
+        return query(
+            collection(firestore, 'swapRequests'),
+            where('status', '==', 'accepted'),
+            where('targetOwnerId', '==', authUser.uid)
+        );
+    }, [authUser, firestore]);
+    const { data: receivedConversations, isLoading: receivedLoading } = useCollection<SwapRequest>(receivedConversationsQuery);
     
-    const { data: conversations, isLoading: conversationsLoading } = useCollection<SwapRequest>(conversationsQuery);
-    
-    // 2. Fetch messages for the selected conversation
+    // 3. Combine and sort the conversations
+    useEffect(() => {
+        setConversationsLoading(sentLoading || receivedLoading);
+        if (sentConversations && receivedConversations) {
+            const allConversations = [...sentConversations, ...receivedConversations];
+            const uniqueConversations = Array.from(new Map(allConversations.map(item => [item.id, item])).values());
+            uniqueConversations.sort((a, b) => b.updatedAt.toMillis() - a.updatedAt.toMillis());
+            setConversations(uniqueConversations);
+        } else if (sentConversations) {
+             setConversations(sentConversations.sort((a,b) => b.updatedAt.toMillis() - a.updatedAt.toMillis()));
+        } else if (receivedConversations) {
+             setConversations(receivedConversations.sort((a,b) => b.updatedAt.toMillis() - a.updatedAt.toMillis()));
+        }
+         else {
+            setConversations([]);
+        }
+    }, [sentConversations, receivedConversations, sentLoading, receivedLoading]);
+
+
+    // Fetch messages for the selected conversation
     const messagesQuery = useMemoFirebase(() => {
         if (!firestore || !selectedConversationId) return null;
         return query(
@@ -292,7 +317,7 @@ function MessagesView({
     const { data: messages, isLoading: messagesLoading } = useCollection<Message>(messagesQuery);
     const selectedConversation = useMemo(() => conversations?.find(c => c.id === selectedConversationId), [conversations, selectedConversationId]);
     
-    // 3. Fetch details for the selected conversation (other user and items)
+    // Fetch details for the selected conversation (other user and items)
     const otherUserId = useMemo(() => {
       if (!selectedConversation || !authUser) return null;
       return selectedConversation.requesterId === authUser.uid ? selectedConversation.targetOwnerId : selectedConversation.requesterId;
@@ -511,11 +536,20 @@ function SwapRequestsView({
         if (!firestore) return;
         const requestRef = doc(firestore, 'swapRequests', id);
         try {
-            updateDocumentNonBlocking(requestRef, { status, updatedAt: serverTimestamp() });
-            toast({
-                title: `Request ${status}`,
-                description: `The swap request has been ${status}.`,
-            });
+            await updateDocumentNonBlocking(requestRef, { status, updatedAt: serverTimestamp() });
+            
+            if (status === 'accepted') {
+                toast({
+                    title: `Request Accepted!`,
+                    description: `The swap request has been accepted. You can now start a conversation.`,
+                });
+                handleStartConversation(id);
+            } else {
+                 toast({
+                    title: `Request Declined`,
+                    description: `The swap request has been declined.`,
+                });
+            }
         } catch (error) {
             console.error(`Error updating request:`, error);
             toast({
@@ -621,5 +655,3 @@ export default function InboxPage() {
     </div>
   );
 }
-
-    
