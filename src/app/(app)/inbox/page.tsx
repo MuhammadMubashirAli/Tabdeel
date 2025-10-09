@@ -15,13 +15,22 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
-import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase } from "@/firebase";
-import { collection, doc, query, where } from "firebase/firestore";
+import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
+import { collection, doc, query, where, updateDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { conversations as initialConversations, activeConversationMessages, users } from "@/lib/data";
+import { useToast } from "@/hooks/use-toast";
 
 
-function SwapRequestCard({ request }: { request: SwapRequest }) {
+function SwapRequestCard({ 
+    request, 
+    onAccept,
+    onDecline
+}: { 
+    request: SwapRequest,
+    onAccept: (id: string) => void,
+    onDecline: (id: string) => void 
+}) {
   const firestore = useFirestore();
 
   const fromUserRef = useMemoFirebase(() => firestore ? doc(firestore, 'users', request.requesterId) : null, [firestore, request.requesterId]);
@@ -120,11 +129,11 @@ function SwapRequestCard({ request }: { request: SwapRequest }) {
         </div>
       </CardContent>
       <div className="flex items-center p-4 border-t bg-muted/40">
-        <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/50">
+        <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/50" onClick={() => onDecline(request.id!)}>
             <ThumbsDown className="mr-2" />
             Decline
         </Button>
-        <Button size="sm" className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground">
+        <Button size="sm" className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => onAccept(request.id!)}>
             Accept & Message
             <Check className="ml-2" />
         </Button>
@@ -308,13 +317,37 @@ function MessagesView() {
 function SwapRequestsView() {
     const { user } = useUser();
     const firestore = useFirestore();
+    const { toast } = useToast();
 
     const swapRequestsQuery = useMemoFirebase(() => {
         if (!firestore || !user) return null;
-        return query(collection(firestore, 'swapRequests'), where('targetOwnerId', '==', user.uid));
+        return query(
+            collection(firestore, 'swapRequests'), 
+            where('targetOwnerId', '==', user.uid),
+            where('status', '==', 'pending') // Only show pending requests
+        );
     }, [firestore, user]);
 
     const { data: swapRequests, isLoading } = useCollection<SwapRequest>(swapRequestsQuery);
+
+    const handleUpdateRequest = async (id: string, status: 'accepted' | 'declined') => {
+        if (!firestore) return;
+        const requestRef = doc(firestore, 'swapRequests', id);
+        try {
+            await updateDoc(requestRef, { status });
+            toast({
+                title: `Request ${status}`,
+                description: `The swap request has been ${status}.`,
+            });
+        } catch (error) {
+            console.error(`Error updating request:`, error);
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Could not update the swap request.',
+            });
+        }
+    };
     
     return (
         <Card>
@@ -332,7 +365,14 @@ function SwapRequestsView() {
                     </>
                 )}
                 {!isLoading && swapRequests && swapRequests.length > 0 ? (
-                    swapRequests.map(req => <SwapRequestCard key={req.id} request={req} />)
+                    swapRequests.map(req => (
+                        <SwapRequestCard 
+                            key={req.id} 
+                            request={req}
+                            onAccept={() => handleUpdateRequest(req.id!, 'accepted')}
+                            onDecline={() => handleUpdateRequest(req.id!, 'declined')}
+                        />
+                    ))
                 ) : (
                     !isLoading && (
                         <div className="text-center py-12">
@@ -365,5 +405,7 @@ export default function InboxPage() {
     </div>
   );
 }
+
+    
 
     
