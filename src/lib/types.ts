@@ -22,6 +22,7 @@ export type User = {
   name: string;
   avatarUrl: string;
   city: string;
+  preferences?: string[];
   email?: string;
   createdAt?: string;
 };

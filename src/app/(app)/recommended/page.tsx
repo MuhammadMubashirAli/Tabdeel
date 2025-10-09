@@ -57,8 +57,8 @@ export default function RecommendedPage() {
         const aiRecommendations = await recommendItemsBasedOnInterests({
           userId: authUser.uid,
           userCity: userProfile.city,
-          userPreferences: [], // This can be expanded later
-          userListedItemIds: userItems.map(item => item.id!),
+          userPreferences: userProfile.preferences || [],
+          userItems: userItems, // Pass the full userItems array
           allItems: allItems,
         });
 

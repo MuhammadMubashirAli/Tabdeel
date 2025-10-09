@@ -33,7 +33,7 @@ const RecommendItemsBasedOnInterestsInputSchema = z.object({
   userId: z.string().describe('The ID of the user to generate recommendations for.'),
   userCity: z.string().describe('The city of the user.'),
   userPreferences: z.array(z.string()).describe('The categories the user is interested in.'),
-  userListedItemIds: z.array(z.string()).describe('The IDs of the items listed by the user.'),
+  userItems: z.array(ItemSchema).describe('The items listed by the user.'),
   allItems: z.array(ItemSchema).describe('The full list of all available items to recommend from.'),
 });
 export type RecommendItemsBasedOnInterestsInput = z.infer<typeof RecommendItemsBasedOnInterestsInputSchema>;
@@ -56,20 +56,23 @@ const prompt = ai.definePrompt({
   output: {schema: RecommendItemsBasedOnInterestsOutputSchema},
   prompt: `You are an expert recommendation engine for a barter marketplace.
 
-  You must recommend items from the provided list of all available items.
+  Your goal is to recommend items to a user. You will be given a list of all available items to choose from.
   Here is the list of all available items:
   {{{json allItems}}}
 
-  Based on the user's interests ({{{userPreferences}}}), their location ({{{userCity}}}), and the items they have listed ({{{userListedItemIds}}}), recommend relevant items for them to barter for from the list provided.
+  You must make recommendations based on the current user's profile.
+  - User's City: {{{userCity}}}
+  - User's preferred categories: {{{json userPreferences}}}
+  - User's currently listed items: {{{json userItems}}}
 
-  Consider the following factors when generating recommendations:
+  Consider the following factors when generating recommendations, in order of importance:
+  1.  **Mutual Interest:** Prioritize items where the other user's desired items/categories match what the current user has listed. This is the strongest signal for a good swap.
+  2.  **User Preferences:** Recommend items from the user's preferred categories ({{{userPreferences}}}).
+  3.  **Semantic Similarity:** Match items from the "all items" list to the user's own listed items based on description and category.
+  4.  **Location:** Prefer items where the city matches the user's city ({{{userCity}}}).
+  5.  **Condition:** Prefer items with a better condition (Like New > Good > Fair).
 
-  *   Prioritize items where the city matches the user's city.
-  *   Prioritize items with better condition (Like New > Good > Fair).
-  *   Use semantic similarity to match items to the user's interests and listed items.
-  *   Give extra weight to mutual swap opportunities (where the desired items of one user match the listed items of another user).
-
-  For each recommended item, provide the item ID and a label indicating the strength of the match (e.g., \"Good match\", \"Mutual interest\", \"Nearby\").`,
+  For each recommended item, you MUST provide the item ID and a label for 'matchStrength' indicating the primary reason for the recommendation (e.g., "Mutual interest", "Good match", "Nearby"). If there are very few items to choose from, be more lenient with your recommendations to ensure the user has something to see.`,
 });
 
 const recommendItemsBasedOnInterestsFlow = ai.defineFlow(
@@ -79,7 +82,12 @@ const recommendItemsBasedOnInterestsFlow = ai.defineFlow(
     outputSchema: RecommendItemsBasedOnInterestsOutputSchema,
   },
   async input => {
+    // If there are no items to recommend from, return an empty array.
+    if (!input.allItems || input.allItems.length === 0) {
+      return [];
+    }
     const {output} = await prompt(input);
-    return output!;
+    return output || [];
   }
 );
+
