@@ -15,8 +15,7 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
-import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase } from "@/firebase";
-import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
 import { collection, doc, query, where, serverTimestamp, or, orderBy, Timestamp, and, limit } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
@@ -155,9 +154,12 @@ function ConversationListItem({
     currentUser: User
 }) {
     const firestore = useFirestore();
-    const otherUserId = currentUser.id === conversation.requesterId ? conversation.targetOwnerId : conversation.requesterId;
+    const { user: authUser } = useUser();
+    
+    // Correctly determine the other user's ID
+    const otherUserId = authUser?.uid === conversation.requesterId ? conversation.targetOwnerId : conversation.requesterId;
 
-    const otherUserRef = useMemoFirebase(() => firestore ? doc(firestore, 'users', otherUserId) : null, [firestore, otherUserId]);
+    const otherUserRef = useMemoFirebase(() => firestore && otherUserId ? doc(firestore, 'users', otherUserId) : null, [firestore, otherUserId]);
     const { data: otherUser, isLoading: isUserLoading } = useDoc<User>(otherUserRef);
 
     const lastMessageQuery = useMemoFirebase(() => {
@@ -233,18 +235,18 @@ function MessagesView() {
 
     // 1. Fetch all accepted swap requests where the current user is involved
     const conversationsQuery = useMemoFirebase(() => {
-        if (!currentUser || !firestore) return null;
+        if (!authUser || !firestore) return null;
         return query(
             collection(firestore, 'swapRequests'),
             and(
                 where('status', '==', 'accepted'),
                 or(
-                    where('requesterId', '==', currentUser.id),
-                    where('targetOwnerId', '==', currentUser.id)
+                    where('requesterId', '==', authUser.uid),
+                    where('targetOwnerId', '==', authUser.uid)
                 )
             )
         );
-    }, [currentUser, firestore]);
+    }, [authUser, firestore]);
     
     const { data: conversations, isLoading: conversationsLoading } = useCollection<SwapRequest>(conversationsQuery);
     
@@ -260,32 +262,28 @@ function MessagesView() {
     const { data: messages, isLoading: messagesLoading } = useCollection<Message>(messagesQuery);
     const selectedConversation = useMemo(() => conversations?.find(c => c.id === selectedConversationId), [conversations, selectedConversationId]);
     
-    // 3. Fetch details for the selected conversation (other user and item)
+    // 3. Fetch details for the selected conversation (other user and items)
     const otherUserId = useMemo(() => {
-      if (!selectedConversation || !currentUser) return null;
-      return selectedConversation.requesterId === currentUser.id ? selectedConversation.targetOwnerId : selectedConversation.requesterId;
-    }, [selectedConversation, currentUser]);
+      if (!selectedConversation || !authUser) return null;
+      return selectedConversation.requesterId === authUser.uid ? selectedConversation.targetOwnerId : selectedConversation.requesterId;
+    }, [selectedConversation, authUser]);
 
     const otherUserRef = useMemoFirebase(() => firestore && otherUserId ? doc(firestore, 'users', otherUserId) : null, [firestore, otherUserId]);
     const { data: otherUser } = useDoc<User>(otherUserRef);
 
-    const itemInvolvedId = useMemo(() => {
-      if (!selectedConversation || !currentUser) return null;
-      // Show the item the current user will receive
-      return selectedConversation.requesterId === currentUser.id ? selectedConversation.targetItemId : selectedConversation.offeredItemId;
-    }, [selectedConversation, currentUser]);
-
-    const itemInvolvedRef = useMemoFirebase(() => firestore && itemInvolvedId ? doc(firestore, 'items', itemInvolvedId) : null, [firestore, itemInvolvedId]);
-    const { data: itemInvolved } = useDoc<Item>(itemInvolvedRef);
+    const targetItemRef = useMemoFirebase(() => firestore && selectedConversation ? doc(firestore, 'items', selectedConversation.targetItemId) : null, [firestore, selectedConversation]);
+    const { data: targetItem } = useDoc<Item>(targetItemRef);
     
+    const offeredItemRef = useMemoFirebase(() => firestore && selectedConversation ? doc(firestore, 'items', selectedConversation.offeredItemId) : null, [firestore, selectedConversation]);
+    const { data: offeredItem } = useDoc<Item>(offeredItemRef);
 
     const handleSendMessage = (form: HTMLFormElement) => {
         const input = form.querySelector('textarea[name="message"]');
 
-        if (input instanceof HTMLTextAreaElement && input.value.trim() !== '' && currentUser && selectedConversationId && firestore) {
+        if (input instanceof HTMLTextAreaElement && input.value.trim() !== '' && authUser && selectedConversationId && firestore) {
             const messagesCollection = collection(firestore, 'swapRequests', selectedConversationId, 'messages');
             const newMessage: Omit<Message, 'id' | 'createdAt'> = {
-                senderId: currentUser.id,
+                senderId: authUser.uid,
                 swapRequestId: selectedConversationId,
                 text: input.value.trim(),
                 createdAt: serverTimestamp(),
@@ -345,7 +343,7 @@ function MessagesView() {
 
                 {/* Message View - Hidden on mobile until a chat is selected */}
                 <div className={cn("flex-col h-full", isMobileChatView ? "flex" : "hidden md:flex")}>
-                    {selectedConversation && otherUser && itemInvolved ? (
+                    {selectedConversation && otherUser && targetItem && offeredItem ? (
                         <>
                             {/* Header */}
                             <div className="flex items-center gap-4 p-3 border-b">
@@ -358,7 +356,7 @@ function MessagesView() {
                                 </Avatar>
                                 <div>
                                     <p className="font-semibold">{otherUser.name}</p>
-                                    <p className="text-sm text-muted-foreground">Regarding: {selectedConversation.requesterId === currentUser.id ? itemInvolved.title : targetItem.title}</p>
+                                    <p className="text-sm text-muted-foreground">Regarding: {selectedConversation.requesterId === authUser?.uid ? targetItem.title : offeredItem.title}</p>
                                 </div>
                             </div>
                             
@@ -366,9 +364,9 @@ function MessagesView() {
                             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                                 {messagesLoading && <div className="text-center text-muted-foreground">Loading messages...</div>}
                                 {messages && messages.map(msg => {
-                                    const isSent = msg.senderId === currentUser.id;
+                                    const isSent = msg.senderId === authUser?.uid;
                                     const sender = isSent ? currentUser : otherUser;
-                                    const senderAvatar = PlaceHolderImages.find(p => p.id === (isSent ? currentUser.avatarUrl : otherUser.avatarUrl));
+                                    const senderAvatar = PlaceHolderImages.find(p => p.id === (sender?.avatarUrl));
                                     return (
                                         <div key={msg.id} className={cn("flex items-end gap-2", isSent ? "justify-end" : "justify-start")}>
                                             {!isSent && (
@@ -527,5 +525,7 @@ export default function InboxPage() {
     </div>
   );
 }
+
+    
 
     
