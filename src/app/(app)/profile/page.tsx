@@ -15,11 +15,16 @@ import type { Item, User } from "@/lib/types";
 import { Skeleton } from '@/components/ui/skeleton';
 import { EditProfileDialog } from '@/app/components/edit-profile-dialog';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { EditItemDialog } from '@/app/components/edit-item-dialog';
+import { ItemDetailDialog } from '@/app/components/item-detail-dialog';
 
 export default function ProfilePage() {
   const { user: authUser, isUserLoading: isAuthLoading } = useUser();
   const firestore = useFirestore();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isEditItemDialogOpen, setIsEditItemDialogOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [itemToEdit, setItemToEdit] = useState<Item | null>(null);
 
   // Memoize the document reference for the user's profile
   const userDocRef = useMemoFirebase(() => {
@@ -45,6 +50,11 @@ export default function ProfilePage() {
 
   const isLoading = isAuthLoading || isProfileLoading || areItemsLoading;
 
+  const handleEditItem = (item: Item) => {
+    setItemToEdit(item);
+    setIsEditItemDialogOpen(true);
+  };
+  
   if (isLoading) {
     return (
         <div className="space-y-6">
@@ -112,7 +122,14 @@ export default function ProfilePage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                       {userItems && userItems.length > 0 ? (
                           userItems.map((item, index) => (
-                              <ItemCard key={item.id} item={item} index={index} onSelect={() => {}} />
+                              <ItemCard 
+                                key={item.id} 
+                                item={item} 
+                                index={index} 
+                                onSelect={() => setSelectedItem(item)}
+                                onEdit={() => handleEditItem(item)}
+                                isOwner={true}
+                              />
                           ))
                       ) : (
                            <div className="text-center py-12 col-span-full">
@@ -135,13 +152,29 @@ export default function ProfilePage() {
                   </Card>
               </TabsContent>
           </Tabs>
-
       </div>
+
       {userProfile && (
         <EditProfileDialog
           user={userProfile}
           open={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
+        />
+      )}
+
+      {itemToEdit && (
+        <EditItemDialog
+          item={itemToEdit}
+          open={isEditItemDialogOpen}
+          onOpenChange={setIsEditItemDialogOpen}
+        />
+      )}
+
+      {selectedItem && (
+        <ItemDetailDialog
+            item={selectedItem}
+            open={!!selectedItem}
+            onOpenChange={(isOpen) => !isOpen && setSelectedItem(null)}
         />
       )}
     </>

@@ -6,16 +6,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Item } from "@/lib/types";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { MapPin } from "lucide-react";
+import { Edit, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "../ui/button";
 
 type ItemCardProps = {
   item: Item;
   index?: number;
   onSelect: () => void;
+  onEdit?: () => void;
+  isOwner?: boolean;
 };
 
-export function ItemCard({ item, index, onSelect }: ItemCardProps) {
+export function ItemCard({ item, index, onSelect, onEdit, isOwner = false }: ItemCardProps) {
   const image = PlaceHolderImages.find(p => p.id === item.images[0]);
   
   const conditionVariant = {
@@ -24,11 +27,19 @@ export function ItemCard({ item, index, onSelect }: ItemCardProps) {
     'Fair': 'outline'
   } as const;
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent onSelect from firing if the edit button was clicked
+    if ((e.target as HTMLElement).closest('[data-edit-button]')) {
+      return;
+    }
+    onSelect();
+  };
+
   const isEven = index !== undefined && index % 2 === 0;
 
   return (
     <Card 
-      onClick={onSelect}
+      onClick={handleCardClick}
       className={cn(
         "w-full overflow-hidden transition-all duration-300 ease-in-out cursor-pointer",
         "hover:-translate-y-1",
@@ -51,6 +62,21 @@ export function ItemCard({ item, index, onSelect }: ItemCardProps) {
             )}
             {item.matchStrength && (
                 <Badge variant="destructive" className="absolute top-2 right-2 bg-accent text-accent-foreground">{item.matchStrength}</Badge>
+            )}
+             {isOwner && onEdit && (
+                <Button 
+                  data-edit-button
+                  size="icon" 
+                  variant="secondary"
+                  className="absolute bottom-2 right-2 h-8 w-8 rounded-full shadow-md"
+                  onClick={(e) => {
+                    e.stopPropagation(); // prevent card click
+                    onEdit();
+                  }}
+                >
+                    <Edit className="h-4 w-4" />
+                    <span className="sr-only">Edit item</span>
+                </Button>
             )}
         </div>
         <CardContent className="p-4 space-y-2">
