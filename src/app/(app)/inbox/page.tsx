@@ -543,7 +543,6 @@ function SwapRequestsView({
                     title: `Request Accepted!`,
                     description: `The swap request has been accepted. You can now start a conversation.`,
                 });
-                handleStartConversation(id);
             } else {
                  toast({
                     title: `Request Declined`,
