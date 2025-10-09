@@ -15,10 +15,11 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
-import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase";
-import { collection, doc, query, where, serverTimestamp, or, orderBy, Timestamp, and, limit } from "firebase/firestore";
+import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase } from "@/firebase";
+import { collection, doc, query, where, serverTimestamp, orderBy, Timestamp, and, or, limit } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
 function SwapRequestCard({ 
     request,
@@ -89,7 +90,7 @@ function SwapRequestCard({
       <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 p-4 bg-muted/40">
         <div className="space-y-1">
           <p className="font-semibold text-sm">
-             {isReceiver ? 'Received Request' : 'Sent Request'} from <span className="font-bold">{otherUser.name}</span>
+             {isReceiver ? 'Received Request' : 'Sent Request'} {isReceiver ? 'from' : 'to'} <span className="font-bold">{otherUser.name}</span>
           </p>
            {request.createdAt && <p className="text-xs text-muted-foreground">
             {formatDistanceToNow(request.createdAt.toDate(), { addSuffix: true })}
@@ -272,7 +273,8 @@ function MessagesView({
                     where('requesterId', '==', authUser.uid),
                     where('targetOwnerId', '==', authUser.uid)
                 )
-            )
+            ),
+             orderBy('updatedAt', 'desc')
         );
     }, [authUser, firestore]);
     
@@ -310,14 +312,18 @@ function MessagesView({
 
         if (input instanceof HTMLTextAreaElement && input.value.trim() !== '' && authUser && selectedConversationId && firestore) {
             const messagesCollection = collection(firestore, 'swapRequests', selectedConversationId, 'messages');
-            const newMessage: Omit<Message, 'id'> = {
+            const newMessage: Omit<Message, 'id'|'createdAt'> = {
                 senderId: authUser.uid,
                 swapRequestId: selectedConversationId,
                 text: input.value.trim(),
-                createdAt: serverTimestamp(),
             };
             
-            addDocumentNonBlocking(messagesCollection, newMessage);
+            addDocumentNonBlocking(messagesCollection, { ...newMessage, createdAt: serverTimestamp() });
+            
+            // Also update the parent swapRequest's updatedAt field
+            const swapRequestRef = doc(firestore, 'swapRequests', selectedConversationId);
+            updateDocumentNonBlocking(swapRequestRef, { updatedAt: serverTimestamp() });
+
             input.value = '';
         }
     };
@@ -492,9 +498,9 @@ function SwapRequestsView({
             uniqueRequests.sort((a, b) => b.updatedAt.toMillis() - a.updatedAt.toMillis());
             setSwapRequests(uniqueRequests);
         } else if (receivedRequests) {
-            setSwapRequests(receivedRequests);
+            setSwapRequests(receivedRequests.sort((a,b) => b.updatedAt.toMillis() - a.updatedAt.toMillis()));
         } else if (sentRequests) {
-            setSwapRequests(sentRequests);
+            setSwapRequests(sentRequests.sort((a,b) => b.updatedAt.toMillis() - a.updatedAt.toMillis()));
         } else {
             setSwapRequests([]);
         }
@@ -510,10 +516,6 @@ function SwapRequestsView({
                 title: `Request ${status}`,
                 description: `The swap request has been ${status}.`,
             });
-
-             if (status === 'accepted') {
-                handleStartConversation(id);
-            }
         } catch (error) {
             console.error(`Error updating request:`, error);
             toast({
@@ -527,6 +529,22 @@ function SwapRequestsView({
     const handleStartConversation = (id: string) => {
         setActiveTab('messages');
         setSelectedConversationId(id);
+    }
+
+    if (!user) {
+        return (
+             <Card>
+                <CardHeader>
+                    <CardTitle>Swap Requests</CardTitle>
+                    <CardDescription>
+                        All your sent and received swap requests.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center py-12">
+                    <p className="text-muted-foreground">Please log in to see your requests.</p>
+                </CardContent>
+            </Card>
+        )
     }
 
     return (
@@ -574,7 +592,15 @@ export default function InboxPage() {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
 
   if (isUserLoading) {
-      return <div>Loading...</div>
+      return (
+        <div className="space-y-6">
+            <Skeleton className="h-8 w-1/4" />
+            <div className="space-y-2">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-64 w-full" />
+            </div>
+        </div>
+      );
   }
 
   return (
@@ -595,3 +621,5 @@ export default function InboxPage() {
     </div>
   );
 }
+
+    
