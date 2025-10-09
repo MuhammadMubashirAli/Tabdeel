@@ -149,7 +149,7 @@ function SwapRequestCard({
             </Button>
             <Button size="sm" className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => onAccept(request.id!)}>
                 Accept
-                <Check className="ml-2" />
+                <Check className="mr-2" />
             </Button>
           </div>
       )}
@@ -310,7 +310,7 @@ function MessagesView({
 
         if (input instanceof HTMLTextAreaElement && input.value.trim() !== '' && authUser && selectedConversationId && firestore) {
             const messagesCollection = collection(firestore, 'swapRequests', selectedConversationId, 'messages');
-            const newMessage: Omit<Message, 'id' | 'createdAt'> = {
+            const newMessage: Omit<Message, 'id'> = {
                 senderId: authUser.uid,
                 swapRequestId: selectedConversationId,
                 text: input.value.trim(),
@@ -587,7 +587,7 @@ export default function InboxPage() {
             </TabsList>
             <TabsContent value="requests">
                <SwapRequestsView setActiveTab={setActiveTab} setSelectedConversationId={setSelectedConversationId} />
-            </Tabs-content>
+            </TabsContent>
             <TabsContent value="messages">
                  <MessagesView selectedConversationId={selectedConversationId} setSelectedConversationId={setSelectedConversationId} />
             </TabsContent>
