@@ -511,6 +511,8 @@ function SwapRequestsView({
 
     useEffect(() => {
         setIsLoading(receivedLoading || sentLoading);
+        if (receivedLoading || sentLoading) return;
+
         const allRequests = [...(receivedRequests || []), ...(sentRequests || [])];
         const uniqueRequests = Array.from(new Map(allRequests.map(item => [item.id, item])).values());
         uniqueRequests.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
@@ -641,3 +643,4 @@ export default function InboxPage() {
 }
 
     
+
