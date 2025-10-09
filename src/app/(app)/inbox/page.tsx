@@ -16,10 +16,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase } from "@/firebase";
-import { collection, doc, query, where, serverTimestamp, orderBy, Timestamp, and, or, limit } from "firebase/firestore";
+import { collection, doc, query, where, serverTimestamp, orderBy, Timestamp, and, or, limit, updateDoc, addDoc } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
 function SwapRequestCard({ 
     request,
@@ -292,12 +291,12 @@ function MessagesView({
         if (sentConversations && receivedConversations) {
             const allConversations = [...sentConversations, ...receivedConversations];
             const uniqueConversations = Array.from(new Map(allConversations.map(item => [item.id, item])).values());
-            uniqueConversations.sort((a, b) => b.updatedAt.toMillis() - a.updatedAt.toMillis());
+            uniqueConversations.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
             setConversations(uniqueConversations);
         } else if (sentConversations) {
-             setConversations(sentConversations.sort((a,b) => b.updatedAt.toMillis() - a.updatedAt.toMillis()));
+             setConversations(sentConversations.sort((a,b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0)));
         } else if (receivedConversations) {
-             setConversations(receivedConversations.sort((a,b) => b.updatedAt.toMillis() - a.updatedAt.toMillis()));
+             setConversations(receivedConversations.sort((a,b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0)));
         }
          else {
             setConversations([]);
@@ -332,7 +331,7 @@ function MessagesView({
     const offeredItemRef = useMemoFirebase(() => firestore && selectedConversation ? doc(firestore, 'items', selectedConversation.offeredItemId) : null, [firestore, selectedConversation]);
     const { data: offeredItem } = useDoc<Item>(offeredItemRef);
 
-    const handleSendMessage = (form: HTMLFormElement) => {
+    const handleSendMessage = async (form: HTMLFormElement) => {
         const input = form.querySelector('textarea[name="message"]');
 
         if (input instanceof HTMLTextAreaElement && input.value.trim() !== '' && authUser && selectedConversationId && firestore) {
@@ -343,11 +342,13 @@ function MessagesView({
                 text: input.value.trim(),
             };
             
-            addDocumentNonBlocking(messagesCollection, { ...newMessage, createdAt: serverTimestamp() });
+            const messageData = { ...newMessage, createdAt: serverTimestamp() };
             
             // Also update the parent swapRequest's updatedAt field
             const swapRequestRef = doc(firestore, 'swapRequests', selectedConversationId);
-            updateDocumentNonBlocking(swapRequestRef, { updatedAt: serverTimestamp() });
+            
+            await addDoc(messagesCollection, messageData);
+            await updateDoc(swapRequestRef, { updatedAt: serverTimestamp() });
 
             input.value = '';
         }
@@ -520,12 +521,12 @@ function SwapRequestsView({
         if (receivedRequests && sentRequests) {
             const allRequests = [...receivedRequests, ...sentRequests];
             const uniqueRequests = Array.from(new Map(allRequests.map(item => [item.id, item])).values());
-            uniqueRequests.sort((a, b) => b.updatedAt.toMillis() - a.updatedAt.toMillis());
+            uniqueRequests.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
             setSwapRequests(uniqueRequests);
         } else if (receivedRequests) {
-            setSwapRequests(receivedRequests.sort((a,b) => b.updatedAt.toMillis() - a.updatedAt.toMillis()));
+            setSwapRequests(receivedRequests.sort((a,b) => b.createdAt.toMillis() - a.createdAt.toMillis()));
         } else if (sentRequests) {
-            setSwapRequests(sentRequests.sort((a,b) => b.updatedAt.toMillis() - a.updatedAt.toMillis()));
+            setSwapRequests(sentRequests.sort((a,b) => b.createdAt.toMillis() - a.createdAt.toMillis()));
         } else {
             setSwapRequests([]);
         }
@@ -536,7 +537,7 @@ function SwapRequestsView({
         if (!firestore) return;
         const requestRef = doc(firestore, 'swapRequests', id);
         try {
-            await updateDocumentNonBlocking(requestRef, { status, updatedAt: serverTimestamp() });
+            await updateDoc(requestRef, { status, updatedAt: serverTimestamp() });
             
             if (status === 'accepted') {
                 toast({
