@@ -5,7 +5,6 @@ import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Item } from "@/lib/types";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Edit, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,8 @@ type ItemCardProps = {
 };
 
 export function ItemCard({ item, index, onSelect, onEdit, isOwner = false }: ItemCardProps) {
-  const image = PlaceHolderImages.find(p => p.id === item.images[0]);
+  // Use the first image in the array. It could be a data URI or a URL.
+  const image = item.images[0];
   
   const conditionVariant = {
     'Like New': 'default',
@@ -52,12 +52,11 @@ export function ItemCard({ item, index, onSelect, onEdit, isOwner = false }: Ite
         <div className="relative aspect-[4/3] w-full">
             {image && (
               <Image
-                src={image.imageUrl}
+                src={image}
                 alt={item.title}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                data-ai-hint={image.imageHint}
               />
             )}
             {item.matchStrength && (

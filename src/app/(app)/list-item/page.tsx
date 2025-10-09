@@ -5,9 +5,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
-import { useAuth, useFirestore, useUser } from "@/firebase";
+import { useFirestore, useUser } from "@/firebase";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { collection, serverTimestamp } from "firebase/firestore";
+import { useState, useRef, ChangeEvent } from "react";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { categories, pakistaniCities } from "@/lib/data";
-import { Upload } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import type { Item } from "@/lib/types";
 
 const formSchema = z.object({
@@ -29,7 +31,7 @@ const formSchema = z.object({
   city: z.string({ required_error: "Please select a city." }),
   condition: z.enum(["Like New", "Good", "Fair"]),
   desiredKeywords: z.string().min(3, "Please enter at least one keyword."),
-  desiredCategories: z.string().optional(), // For now, we'll keep this simple
+  desiredCategories: z.string().optional(),
 });
 
 export default function ListItemPage() {
@@ -37,6 +39,8 @@ export default function ListItemPage() {
   const firestore = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,6 +52,24 @@ export default function ListItemPage() {
     },
   });
 
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImagePreview(null);
+    if(fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!firestore || !user) {
       toast({
@@ -57,15 +79,25 @@ export default function ListItemPage() {
       });
       return;
     }
+    
+    if (!imagePreview) {
+        toast({
+            variant: "destructive",
+            title: "Image Required",
+            description: "Please upload an image for your item.",
+        });
+        return;
+    }
 
     try {
       const itemsCollection = collection(firestore, 'items');
       
+      // For now, we will store the image as a data URI. 
+      // In a production app, you'd upload to Firebase Storage and store the URL.
       const newItem: Omit<Item, 'id' | 'createdAt' | 'updatedAt'> = {
         title: values.title,
         description: values.description,
-        // For now, assign a default placeholder image.
-        images: ['item-cricket-ball-1'], 
+        images: [imagePreview], 
         category: values.category,
         condition: values.condition,
         city: values.city,
@@ -141,16 +173,43 @@ export default function ListItemPage() {
               />
 
               <div className="grid gap-3">
-                <Label>Upload Photos (Coming Soon)</Label>
-                <div className="flex items-center justify-center w-full">
-                  <div className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-not-allowed bg-secondary/50 opacity-60">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
-                      <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Image Upload Not Available</span></p>
-                      <p className="text-xs text-muted-foreground">A default image will be used for now.</p>
+                <Label>Upload Photo</Label>
+                {imagePreview ? (
+                    <div className="relative w-full h-64 rounded-lg overflow-hidden border">
+                        <Image src={imagePreview} alt="Item preview" fill className="object-cover" />
+                        <Button 
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 rounded-full h-8 w-8"
+                            onClick={removeImage}
+                        >
+                           <X className="h-4 w-4" />
+                           <span className="sr-only">Remove image</span>
+                        </Button>
                     </div>
-                  </div>
-                </div>
+                ) : (
+                    <div 
+                        className="flex items-center justify-center w-full"
+                        onClick={() => fileInputRef.current?.click()}
+                    >
+                      <div className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary/50">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="w-8 h-8 mb-4 text-muted-foreground" />
+                          <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                          <p className="text-xs text-muted-foreground">PNG, JPG, or GIF</p>
+                        </div>
+                        <Input 
+                            ref={fileInputRef}
+                            id="dropzone-file" 
+                            type="file" 
+                            className="hidden" 
+                            accept="image/png, image/jpeg, image/gif"
+                            onChange={handleImageChange}
+                        />
+                      </div>
+                    </div>
+                )}
               </div>
               
               <div className="grid md:grid-cols-2 gap-6">
@@ -282,5 +341,3 @@ export default function ListItemPage() {
     </div>
   );
 }
-
-    

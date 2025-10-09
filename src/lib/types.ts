@@ -23,8 +23,8 @@ export type User = {
   name: string;
   avatarUrl: string;
   city: string;
-  bio?: string;
-  preferences?: string[];
+  bio: string;
+  preferences: string[];
   email?: string;
   createdAt: Timestamp;
 };

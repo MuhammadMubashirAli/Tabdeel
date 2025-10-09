@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MapPin, Send } from 'lucide-react';
 import type { Item, User } from '@/lib/types';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { SwapRequestDialog } from './swap-request-dialog';
 import { useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
@@ -35,8 +34,8 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
 
   const { data: owner, isLoading: isOwnerLoading } = useDoc<User>(ownerRef);
 
-  const ownerAvatar = PlaceHolderImages.find(p => p.id === owner?.avatarUrl);
-  const images = item.images.map(id => PlaceHolderImages.find(p => p.id === id)).filter(Boolean);
+  const ownerAvatar = owner?.avatarUrl; // This can now be a data URI
+  const images = item.images; // This is now an array of data URIs or URLs
 
   const conditionVariant = {
     'Like New': 'default',
@@ -45,6 +44,8 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
   } as const;
   
   const isOwnerOfItem = currentUser?.uid === item.ownerId;
+
+  const getInitials = (name: string | undefined) => name ? name.split(' ').map(n => n[0]).join('') : 'U';
 
   return (
     <>
@@ -58,7 +59,7 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
                   {images.map((image, index) => (
                     <CarouselItem key={index} className="flex items-center justify-center">
                       <div className="relative w-full h-[400px]">
-                        {image && <Image src={image.imageUrl} alt={item.title} fill className="object-contain" data-ai-hint={image.imageHint} />}
+                        {image && <Image src={image} alt={item.title} fill className="object-contain" />}
                       </div>
                     </CarouselItem>
                   ))}
@@ -103,12 +104,12 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
                      {owner && (
                         <div className="flex items-center gap-3">
                             <Avatar>
-                                {ownerAvatar && <AvatarImage src={ownerAvatar.imageUrl} alt={owner.name} data-ai-hint={ownerAvatar.imageHint} />}
-                                <AvatarFallback>{owner.name.charAt(0)}</AvatarFallback>
+                                {ownerAvatar && <AvatarImage src={ownerAvatar} alt={owner.name} />}
+                                <AvatarFallback>{getInitials(owner.name)}</AvatarFallback>
                             </Avatar>
                             <div>
                                 <p className="font-medium">{owner.name}</p>
-                                {owner.createdAt && <p className="text-sm text-muted-foreground">Member since {formatDistanceToNow(new Date(owner.createdAt), { addSuffix: true })}</p>}
+                                {owner.createdAt && <p className="text-sm text-muted-foreground">Member since {formatDistanceToNow(owner.createdAt.toDate(), { addSuffix: true })}</p>}
                             </div>
                         </div>
                      )}

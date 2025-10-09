@@ -4,7 +4,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, CornerDownLeft, ThumbsDown, ArrowDown, MessageSquare } from "lucide-react";
@@ -48,8 +47,8 @@ function SwapRequestCard({
   // Determine which item is "yours" and which is "theirs" from the current user's perspective
   const yourItem = isReceiver ? requestedItem : offeredItem;
   const theirItem = isReceiver ? offeredItem : requestedItem;
-  const yourItemImage = yourItem ? PlaceHolderImages.find(p => p.id === yourItem.images[0]) : null;
-  const theirItemImage = theirItem ? PlaceHolderImages.find(p => p.id === theirItem.images[0]) : null;
+  const yourItemImage = yourItem?.images[0];
+  const theirItemImage = theirItem?.images[0];
   
   const isLoading = otherUserLoading || requestedItemLoading || offeredItemLoading;
 
@@ -111,7 +110,7 @@ function SwapRequestCard({
             <p className="font-semibold text-sm w-full text-center md:text-left">You Get</p>
              <div className="flex items-center gap-4">
                 <div className="w-24 h-24 rounded-lg overflow-hidden relative border shrink-0">
-                    {theirItemImage && <Image src={theirItemImage.imageUrl} alt={theirItem.title} fill className="object-cover" data-ai-hint={theirItemImage.imageHint} />}
+                    {theirItemImage && <Image src={theirItemImage} alt={theirItem.title} fill className="object-cover" />}
                 </div>
                 <div className="text-left">
                     <p className="text-sm font-medium">{theirItem.title}</p>
@@ -130,7 +129,7 @@ function SwapRequestCard({
             <p className="font-semibold text-sm w-full text-center md:text-left">You Give</p>
             <div className="flex items-center gap-4">
                 <div className="w-24 h-24 rounded-lg overflow-hidden relative border shrink-0">
-                    {yourItemImage && <Image src={yourItemImage.imageUrl} alt={yourItem.title} fill className="object-cover" data-ai-hint={yourItemImage.imageHint}/>}
+                    {yourItemImage && <Image src={yourItemImage} alt={yourItem.title} fill className="object-cover" />}
                 </div>
                 <div className="text-left">
                     <p className="text-sm font-medium">{yourItem.title}</p>
@@ -178,7 +177,6 @@ function ConversationListItem({
 }) {
     const firestore = useFirestore();
     
-    // Correctly determine the other user's ID
     const otherUserId = currentUserId === conversation.requesterId ? conversation.targetOwnerId : conversation.requesterId;
 
     const otherUserRef = useMemoFirebase(() => firestore && otherUserId ? doc(firestore, 'users', otherUserId) : null, [firestore, otherUserId]);
@@ -195,6 +193,8 @@ function ConversationListItem({
 
     const { data: lastMessageArr } = useCollection<Message>(lastMessageQuery);
     const lastMessage = lastMessageArr?.[0];
+    
+    const getInitials = (name: string | undefined) => name ? name.split(' ').map(n => n[0]).join('') : 'U';
 
     if (isUserLoading) {
         return (
@@ -212,7 +212,7 @@ function ConversationListItem({
         return null; // Or some fallback UI
     }
     
-    const participantAvatar = PlaceHolderImages.find(p => p.id === otherUser.avatarUrl);
+    const participantAvatar = otherUser.avatarUrl;
     
     return (
         <button
@@ -224,8 +224,8 @@ function ConversationListItem({
             onClick={onClick}
         >
             <Avatar>
-                {participantAvatar && <AvatarImage src={participantAvatar.imageUrl} alt={otherUser.name} data-ai-hint={participantAvatar.imageHint} />}
-                <AvatarFallback>{otherUser.name.charAt(0)}</AvatarFallback>
+                {participantAvatar && <AvatarImage src={participantAvatar} alt={otherUser.name} />}
+                <AvatarFallback>{getInitials(otherUser.name)}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
@@ -254,15 +254,12 @@ function MessagesView({
     const [conversations, setConversations] = useState<SwapRequest[]>([]);
     const [conversationsLoading, setConversationsLoading] = useState(true);
 
-    // Get full user profile from 'users' collection
     const userProfileRef = useMemoFirebase(() => {
         if (!firestore || !authUser) return null;
         return doc(firestore, 'users', authUser.uid);
     }, [firestore, authUser]);
     const { data: currentUser, isLoading: isUserLoading } = useDoc<User>(userProfileRef);
 
-    // --- NEW QUERIES ---
-    // 1. Fetch accepted swap requests where the user is the requester
     const sentConversationsQuery = useMemoFirebase(() => {
         if (!authUser || !firestore) return null;
         return query(
@@ -273,7 +270,6 @@ function MessagesView({
     }, [authUser, firestore]);
     const { data: sentConversations, isLoading: sentLoading } = useCollection<SwapRequest>(sentConversationsQuery);
 
-    // 2. Fetch accepted swap requests where the user is the target
     const receivedConversationsQuery = useMemoFirebase(() => {
         if (!authUser || !firestore) return null;
         return query(
@@ -284,7 +280,6 @@ function MessagesView({
     }, [authUser, firestore]);
     const { data: receivedConversations, isLoading: receivedLoading } = useCollection<SwapRequest>(receivedConversationsQuery);
     
-    // 3. Combine and sort the conversations
     useEffect(() => {
         if (!sentLoading && !receivedLoading) {
             const allConversations = [
@@ -298,8 +293,6 @@ function MessagesView({
         }
     }, [sentConversations, receivedConversations, sentLoading, receivedLoading]);
 
-
-    // Fetch messages for the selected conversation
     const messagesQuery = useMemoFirebase(() => {
         if (!firestore || !selectedConversationId) return null;
         return query(
@@ -311,7 +304,6 @@ function MessagesView({
     const { data: messages, isLoading: messagesLoading } = useCollection<Message>(messagesQuery);
     const selectedConversation = useMemo(() => conversations?.find(c => c.id === selectedConversationId), [conversations, selectedConversationId]);
     
-    // Fetch details for the selected conversation (other user and items)
     const otherUserId = useMemo(() => {
       if (!selectedConversation || !authUser) return null;
       return selectedConversation.requesterId === authUser.uid ? selectedConversation.targetOwnerId : selectedConversation.requesterId;
@@ -331,7 +323,7 @@ function MessagesView({
 
         if (input instanceof HTMLTextAreaElement && input.value.trim() !== '' && authUser && selectedConversationId && firestore) {
             const messagesCollection = collection(firestore, 'swapRequests', selectedConversationId, 'messages');
-            const newMessage: Omit<Message, 'id'|'createdAt'> = {
+            const newMessage: Omit<Message, 'id' | 'createdAt'> = {
                 senderId: authUser.uid,
                 swapRequestId: selectedConversationId,
                 text: input.value.trim(),
@@ -339,7 +331,6 @@ function MessagesView({
             
             const messageData = { ...newMessage, createdAt: serverTimestamp() };
             
-            // Also update the parent swapRequest's updatedAt field
             const swapRequestRef = doc(firestore, 'swapRequests', selectedConversationId);
             
             await addDoc(messagesCollection, messageData);
@@ -350,6 +341,7 @@ function MessagesView({
     };
     
     const isMobileChatView = selectedConversationId !== null;
+    const getInitials = (name: string | undefined) => name ? name.split(' ').map(n => n[0]).join('') : 'U';
 
     if (conversationsLoading || isUserLoading || !currentUser) {
         return (
@@ -406,8 +398,8 @@ function MessagesView({
                                     <ArrowLeft />
                                 </Button>
                                 <Avatar>
-                                    <AvatarImage src={PlaceHolderImages.find(p => p.id === otherUser.avatarUrl)?.imageUrl} />
-                                    <AvatarFallback>{otherUser.name.charAt(0)}</AvatarFallback>
+                                    <AvatarImage src={otherUser.avatarUrl} />
+                                    <AvatarFallback>{getInitials(otherUser.name)}</AvatarFallback>
                                 </Avatar>
                                 <div>
                                     <p className="font-semibold">{otherUser.name}</p>
@@ -421,13 +413,12 @@ function MessagesView({
                                 {messages && messages.map(msg => {
                                     const isSent = msg.senderId === authUser?.uid;
                                     const sender = isSent ? currentUser : otherUser;
-                                    const senderAvatar = PlaceHolderImages.find(p => p.id === (sender?.avatarUrl));
                                     return (
                                         <div key={msg.id} className={cn("flex items-end gap-2", isSent ? "justify-end" : "justify-start")}>
                                             {!isSent && (
                                                 <Avatar className="size-8">
-                                                    {senderAvatar && <AvatarImage src={senderAvatar.imageUrl} alt={sender.name!} data-ai-hint={senderAvatar.imageHint} />}
-                                                    <AvatarFallback>{sender.name?.charAt(0)}</AvatarFallback>
+                                                    {sender?.avatarUrl && <AvatarImage src={sender.avatarUrl} alt={sender.name!} />}
+                                                    <AvatarFallback>{getInitials(sender?.name)}</AvatarFallback>
                                                 </Avatar>
                                             )}
                                             <div className={cn(
@@ -441,8 +432,8 @@ function MessagesView({
                                             </div>
                                              {isSent && (
                                                 <Avatar className="size-8">
-                                                    {senderAvatar && <AvatarImage src={senderAvatar.imageUrl} alt={sender.name!} data-ai-hint={senderAvatar.imageHint} />}
-                                                    <AvatarFallback>{sender.name?.charAt(0)}</AvatarFallback>
+                                                    {sender?.avatarUrl && <AvatarImage src={sender.avatarUrl} alt={sender.name!} />}
+                                                    <AvatarFallback>{getInitials(sender?.name)}</AvatarFallback>
                                                 </Avatar>
                                             )}
                                         </div>
@@ -496,13 +487,11 @@ function SwapRequestsView({
     const [swapRequests, setSwapRequests] = useState<SwapRequest[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Query for requests where the user is the receiver
     const receivedRequestsQuery = useMemoFirebase(() => {
         if (!firestore || !user) return null;
         return query(collection(firestore, 'swapRequests'), where('targetOwnerId', '==', user.uid));
     }, [firestore, user]);
 
-    // Query for requests where the user is the sender
     const sentRequestsQuery = useMemoFirebase(() => {
         if (!firestore || !user) return null;
         return query(collection(firestore, 'swapRequests'), where('requesterId', '==', user.uid));
