@@ -8,6 +8,7 @@ import type { Item } from "@/lib/types";
 import { Edit, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 type ItemCardProps = {
   item: Item;
@@ -18,8 +19,10 @@ type ItemCardProps = {
 };
 
 export function ItemCard({ item, index, onSelect, onEdit, isOwner = false }: ItemCardProps) {
-  // Use the first image in the array. It could be a data URI or a URL.
-  const image = item.images[0];
+  // Check if the image source is a data URI or a placeholder ID
+  const imageSource = item.images[0];
+  const isDataUri = imageSource && imageSource.startsWith('data:');
+  const image = isDataUri ? imageSource : PlaceHolderImages.find(p => p.id === imageSource)?.imageUrl;
   
   const conditionVariant = {
     'Like New': 'default',

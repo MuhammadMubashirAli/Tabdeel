@@ -15,6 +15,7 @@ import { useDoc, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 type ItemDetailDialogProps = {
   item: Item;
@@ -34,8 +35,14 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
 
   const { data: owner, isLoading: isOwnerLoading } = useDoc<User>(ownerRef);
 
-  const ownerAvatar = owner?.avatarUrl; // This can now be a data URI
-  const images = item.images; // This is now an array of data URIs or URLs
+  const ownerAvatarId = owner?.avatarUrl;
+  const ownerAvatarIsDataUri = ownerAvatarId && ownerAvatarId.startsWith('data:');
+  const ownerAvatar = ownerAvatarIsDataUri ? ownerAvatarId : PlaceHolderImages.find(p => p.id === ownerAvatarId)?.imageUrl;
+
+  const images = item.images.map(imgSrc => {
+    const isDataUri = imgSrc && imgSrc.startsWith('data:');
+    return isDataUri ? imgSrc : PlaceHolderImages.find(p => p.id === imgSrc)?.imageUrl;
+  }).filter(Boolean) as string[];
 
   const conditionVariant = {
     'Like New': 'default',
