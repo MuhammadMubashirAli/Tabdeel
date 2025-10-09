@@ -8,7 +8,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { categories, pakistaniCities } from "@/lib/data";
 import type { Item } from "@/lib/types";
 import { ListFilter, X } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from 'next/navigation';
 import { ItemDetailDialog } from "@/app/components/item-detail-dialog";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
@@ -18,12 +19,16 @@ import { Badge } from "@/components/ui/badge";
 const conditions: Item['condition'][] = ['Like New', 'Good', 'Fair'];
 
 export default function ExplorePage() {
+  const searchParams = useSearchParams();
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  
   const [filters, setFilters] = useState({
     category: 'all',
     city: 'all',
     condition: 'all',
+    search: '',
   });
+
   const firestore = useFirestore();
 
   const itemsQuery = useMemoFirebase(() => {
@@ -32,16 +37,23 @@ export default function ExplorePage() {
   }, [firestore]);
 
   const { data: allItems, isLoading } = useCollection<Item>(itemsQuery);
+  
+  // Update filters when URL search params change
+  useEffect(() => {
+    const search = searchParams.get('search') || '';
+    setFilters(prev => ({ ...prev, search }));
+  }, [searchParams]);
 
-  const handleFilterChange = (type: 'category' | 'city' | 'condition', value: string) => {
+
+  const handleFilterChange = (type: keyof typeof filters, value: string) => {
     setFilters(prev => ({ ...prev, [type]: value }));
   };
   
   const resetFilters = () => {
-    setFilters({ category: 'all', city: 'all', condition: 'all' });
+    setFilters({ category: 'all', city: 'all', condition: 'all', search: filters.search });
   };
 
-  const activeFilterCount = Object.values(filters).filter(v => v !== 'all').length;
+  const activeFilterCount = Object.entries(filters).filter(([key, value]) => key !== 'search' && value !== 'all').length;
 
   const filteredItems = useMemo(() => {
     if (!allItems) return [];
@@ -49,7 +61,13 @@ export default function ExplorePage() {
       const categoryMatch = filters.category === 'all' || item.category === filters.category;
       const cityMatch = filters.city === 'all' || item.city === filters.city;
       const conditionMatch = filters.condition === 'all' || item.condition === filters.condition;
-      return categoryMatch && cityMatch && conditionMatch;
+      
+      const searchMatch = filters.search === '' || 
+        item.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+        item.description.toLowerCase().includes(filters.search.toLowerCase()) ||
+        item.category.toLowerCase().includes(filters.search.toLowerCase());
+
+      return categoryMatch && cityMatch && conditionMatch && searchMatch;
     });
   }, [allItems, filters]);
 
@@ -109,6 +127,13 @@ export default function ExplorePage() {
             </DropdownMenu>
           </div>
         </div>
+        
+        {filters.search && (
+          <div className="text-sm text-muted-foreground">
+            Showing {filteredItems.length} results for <strong>&quot;{filters.search}&quot;</strong>
+          </div>
+        )}
+
         {isLoading && (
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {Array.from({ length: 8 }).map((_, index) => (
@@ -134,7 +159,7 @@ export default function ExplorePage() {
         {!isLoading && filteredItems.length === 0 && (
           <div className="text-center py-12 col-span-full">
             <p className="text-muted-foreground">
-                {activeFilterCount > 0 ? "No items match your filters." : "No items have been listed yet. Be the first!"}
+                {activeFilterCount > 0 || filters.search ? "No items match your criteria." : "No items have been listed yet. Be the first!"}
             </p>
           </div>
         )}

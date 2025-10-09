@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MainNav } from "@/app/components/main-nav";
 import { UserNav } from "@/app/components/user-nav";
 import { Wordmark } from "@/app/components/logo";
@@ -9,7 +9,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/firebase";
-import { useEffect } from "react";
+import { useEffect, FormEvent } from "react";
 
 export default function AppLayout({
   children,
@@ -18,12 +18,33 @@ export default function AppLayout({
 }) {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentSearch = searchParams.get('search') || '';
 
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.replace('/login');
     }
   }, [user, isUserLoading, router]);
+
+  const handleSearch = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const searchQuery = formData.get('search') as string;
+    
+    // Create new query params
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('search', searchQuery);
+
+    // If we are not on the explore page, navigate to it. Otherwise, just update the params.
+    if (pathname !== '/explore') {
+      router.push(`/explore?${params.toString()}`);
+    } else {
+      router.replace(`/explore?${params.toString()}`);
+    }
+  };
+
 
   if (isUserLoading || !user) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
@@ -47,13 +68,16 @@ export default function AppLayout({
         <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
            {/* Mobile Nav is the bottom bar */}
           <div className="w-full flex-1">
-            <form>
+            <form onSubmit={handleSearch}>
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
+                  key={currentSearch} // Re-mount component when search changes
                   type="search"
+                  name="search"
                   placeholder="Search items..."
                   className="w-full appearance-none bg-background pl-8 shadow-none md:w-2/3 lg:w-1/3"
+                  defaultValue={currentSearch}
                 />
               </div>
             </form>
