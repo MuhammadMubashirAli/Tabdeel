@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, CornerDownLeft, ThumbsDown, ArrowDown, MessageSquare } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { Message, SwapRequest, User, Item } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,8 +44,6 @@ function SwapRequestCard({
   const { data: otherUser, isLoading: otherUserLoading } = useDoc<User>(otherUserRef);
   const { data: requestedItem, isLoading: requestedItemLoading } = useDoc<Item>(requestedItemRef);
   const { data: offeredItem, isLoading: offeredItemLoading } = useDoc<Item>(offeredItemRef);
-
-  const otherUserAvatar = PlaceHolderImages.find(p => p.id === otherUser?.avatarUrl);
 
   // Determine which item is "yours" and which is "theirs" from the current user's perspective
   const yourItem = isReceiver ? requestedItem : offeredItem;
@@ -171,17 +169,18 @@ function SwapRequestCard({
 function ConversationListItem({ 
     conversation, 
     onClick, 
-    isSelected
+    isSelected,
+    currentUserId
 }: { 
     conversation: SwapRequest, 
     onClick: () => void, 
-    isSelected: boolean
+    isSelected: boolean,
+    currentUserId: string
 }) {
     const firestore = useFirestore();
-    const { user: authUser } = useUser();
     
     // Correctly determine the other user's ID
-    const otherUserId = authUser?.uid === conversation.requesterId ? conversation.targetOwnerId : conversation.requesterId;
+    const otherUserId = currentUserId === conversation.requesterId ? conversation.targetOwnerId : conversation.requesterId;
 
     const otherUserRef = useMemoFirebase(() => firestore && otherUserId ? doc(firestore, 'users', otherUserId) : null, [firestore, otherUserId]);
     const { data: otherUser, isLoading: isUserLoading } = useDoc<User>(otherUserRef);
@@ -362,6 +361,7 @@ function MessagesView({
                                 conversation={convo}
                                 onClick={() => setSelectedConversationId(convo.id!)}
                                 isSelected={selectedConversationId === convo.id}
+                                currentUserId={authUser!.uid}
                             />
                         )) : (
                             <div className="p-4 text-center text-sm text-muted-foreground">No active conversations.</div>
@@ -466,21 +466,40 @@ function SwapRequestsView({
     const { user } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
+    const [swapRequests, setSwapRequests] = useState<SwapRequest[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Query for all requests where the user is either the sender or receiver
-    const swapRequestsQuery = useMemoFirebase(() => {
+    // Query for requests where the user is the receiver
+    const receivedRequestsQuery = useMemoFirebase(() => {
         if (!firestore || !user) return null;
-        return query(
-            collection(firestore, 'swapRequests'), 
-            or(
-                where('targetOwnerId', '==', user.uid),
-                where('requesterId', '==', user.uid)
-            ),
-            orderBy('updatedAt', 'desc')
-        );
+        return query(collection(firestore, 'swapRequests'), where('targetOwnerId', '==', user.uid));
     }, [firestore, user]);
 
-    const { data: swapRequests, isLoading } = useCollection<SwapRequest>(swapRequestsQuery);
+    // Query for requests where the user is the sender
+    const sentRequestsQuery = useMemoFirebase(() => {
+        if (!firestore || !user) return null;
+        return query(collection(firestore, 'swapRequests'), where('requesterId', '==', user.uid));
+    }, [firestore, user]);
+
+    const { data: receivedRequests, isLoading: receivedLoading } = useCollection<SwapRequest>(receivedRequestsQuery);
+    const { data: sentRequests, isLoading: sentLoading } = useCollection<SwapRequest>(sentRequestsQuery);
+
+    useEffect(() => {
+        setIsLoading(receivedLoading || sentLoading);
+        if (receivedRequests && sentRequests) {
+            const allRequests = [...receivedRequests, ...sentRequests];
+            const uniqueRequests = Array.from(new Map(allRequests.map(item => [item.id, item])).values());
+            uniqueRequests.sort((a, b) => b.updatedAt.toMillis() - a.updatedAt.toMillis());
+            setSwapRequests(uniqueRequests);
+        } else if (receivedRequests) {
+            setSwapRequests(receivedRequests);
+        } else if (sentRequests) {
+            setSwapRequests(sentRequests);
+        } else {
+            setSwapRequests([]);
+        }
+
+    }, [receivedRequests, sentRequests, receivedLoading, sentLoading]);
     
     const handleUpdateRequest = async (id: string, status: 'accepted' | 'declined') => {
         if (!firestore) return;
@@ -491,6 +510,10 @@ function SwapRequestsView({
                 title: `Request ${status}`,
                 description: `The swap request has been ${status}.`,
             });
+
+             if (status === 'accepted') {
+                handleStartConversation(id);
+            }
         } catch (error) {
             console.error(`Error updating request:`, error);
             toast({
@@ -564,7 +587,7 @@ export default function InboxPage() {
             </TabsList>
             <TabsContent value="requests">
                <SwapRequestsView setActiveTab={setActiveTab} setSelectedConversationId={setSelectedConversationId} />
-            </TabsContent>
+            </Tabs-content>
             <TabsContent value="messages">
                  <MessagesView selectedConversationId={selectedConversationId} setSelectedConversationId={setSelectedConversationId} />
             </TabsContent>
