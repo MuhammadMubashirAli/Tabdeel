@@ -15,11 +15,11 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
-import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
-import { collection, doc, query, where, updateDoc, serverTimestamp, or, orderBy, Timestamp, and, limit } from "firebase/firestore";
+import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase } from "@/firebase";
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { collection, doc, query, where, serverTimestamp, or, orderBy, Timestamp, and, limit } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
 
 function SwapRequestCard({ 
@@ -155,7 +155,7 @@ function ConversationListItem({
     currentUser: User
 }) {
     const firestore = useFirestore();
-    const otherUserId = conversation.requesterId === currentUser.id ? conversation.targetOwnerId : conversation.requesterId;
+    const otherUserId = currentUser.id === conversation.requesterId ? conversation.targetOwnerId : conversation.requesterId;
 
     const otherUserRef = useMemoFirebase(() => firestore ? doc(firestore, 'users', otherUserId) : null, [firestore, otherUserId]);
     const { data: otherUser, isLoading: isUserLoading } = useDoc<User>(otherUserRef);
@@ -172,7 +172,7 @@ function ConversationListItem({
     const { data: lastMessageArr } = useCollection<Message>(lastMessageQuery);
     const lastMessage = lastMessageArr?.[0];
 
-    if (isUserLoading || !otherUser) {
+    if (isUserLoading) {
         return (
              <div className="flex items-start gap-4 p-4">
                 <Skeleton className="size-12 rounded-full" />
@@ -184,7 +184,11 @@ function ConversationListItem({
         );
     }
     
-    const participantAvatar = PlaceHolderImages.find(p => p.id === otherUser?.avatarUrl);
+    if (!otherUser) {
+        return null; // Or some fallback UI
+    }
+    
+    const participantAvatar = PlaceHolderImages.find(p => p.id === otherUser.avatarUrl);
     
     return (
         <button
@@ -215,9 +219,17 @@ function ConversationListItem({
 }
 
 function MessagesView() {
-    const { user: currentUser } = useUser();
+    const { user: authUser } = useUser();
     const firestore = useFirestore();
     const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+
+    // Get full user profile from 'users' collection
+    const userProfileRef = useMemoFirebase(() => {
+        if (!firestore || !authUser) return null;
+        return doc(firestore, 'users', authUser.uid);
+    }, [firestore, authUser]);
+    const { data: currentUser, isLoading: isUserLoading } = useDoc<User>(userProfileRef);
+
 
     // 1. Fetch all accepted swap requests where the current user is involved
     const conversationsQuery = useMemoFirebase(() => {
@@ -227,8 +239,8 @@ function MessagesView() {
             and(
                 where('status', '==', 'accepted'),
                 or(
-                    where('requesterId', '==', currentUser.uid),
-                    where('targetOwnerId', '==', currentUser.uid)
+                    where('requesterId', '==', currentUser.id),
+                    where('targetOwnerId', '==', currentUser.id)
                 )
             )
         );
@@ -251,7 +263,7 @@ function MessagesView() {
     // 3. Fetch details for the selected conversation (other user and item)
     const otherUserId = useMemo(() => {
       if (!selectedConversation || !currentUser) return null;
-      return selectedConversation.requesterId === currentUser.uid ? selectedConversation.targetOwnerId : selectedConversation.requesterId;
+      return selectedConversation.requesterId === currentUser.id ? selectedConversation.targetOwnerId : selectedConversation.requesterId;
     }, [selectedConversation, currentUser]);
 
     const otherUserRef = useMemoFirebase(() => firestore && otherUserId ? doc(firestore, 'users', otherUserId) : null, [firestore, otherUserId]);
@@ -260,7 +272,7 @@ function MessagesView() {
     const itemInvolvedId = useMemo(() => {
       if (!selectedConversation || !currentUser) return null;
       // Show the item the current user will receive
-      return selectedConversation.requesterId === currentUser.uid ? selectedConversation.offeredItemId : selectedConversation.targetItemId;
+      return selectedConversation.requesterId === currentUser.id ? selectedConversation.targetItemId : selectedConversation.offeredItemId;
     }, [selectedConversation, currentUser]);
 
     const itemInvolvedRef = useMemoFirebase(() => firestore && itemInvolvedId ? doc(firestore, 'items', itemInvolvedId) : null, [firestore, itemInvolvedId]);
@@ -273,7 +285,7 @@ function MessagesView() {
         if (input instanceof HTMLTextAreaElement && input.value.trim() !== '' && currentUser && selectedConversationId && firestore) {
             const messagesCollection = collection(firestore, 'swapRequests', selectedConversationId, 'messages');
             const newMessage: Omit<Message, 'id' | 'createdAt'> = {
-                senderId: currentUser.uid,
+                senderId: currentUser.id,
                 swapRequestId: selectedConversationId,
                 text: input.value.trim(),
                 createdAt: serverTimestamp(),
@@ -286,7 +298,7 @@ function MessagesView() {
     
     const isMobileChatView = selectedConversationId !== null;
 
-    if (conversationsLoading || !currentUser) {
+    if (conversationsLoading || isUserLoading || !currentUser) {
         return (
             <Card className="h-[calc(100vh-200px)] overflow-hidden">
                 <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] h-full">
@@ -323,7 +335,7 @@ function MessagesView() {
                                 conversation={convo}
                                 onClick={() => setSelectedConversationId(convo.id!)}
                                 isSelected={selectedConversationId === convo.id}
-                                currentUser={currentUser as User}
+                                currentUser={currentUser}
                             />
                         )) : (
                             <div className="p-4 text-center text-sm text-muted-foreground">No active conversations.</div>
@@ -346,7 +358,7 @@ function MessagesView() {
                                 </Avatar>
                                 <div>
                                     <p className="font-semibold">{otherUser.name}</p>
-                                    <p className="text-sm text-muted-foreground">Regarding: {itemInvolved.title}</p>
+                                    <p className="text-sm text-muted-foreground">Regarding: {selectedConversation.requesterId === currentUser.id ? itemInvolved.title : targetItem.title}</p>
                                 </div>
                             </div>
                             
@@ -354,9 +366,9 @@ function MessagesView() {
                             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                                 {messagesLoading && <div className="text-center text-muted-foreground">Loading messages...</div>}
                                 {messages && messages.map(msg => {
-                                    const isSent = msg.senderId === currentUser.uid;
+                                    const isSent = msg.senderId === currentUser.id;
                                     const sender = isSent ? currentUser : otherUser;
-                                    const senderAvatar = PlaceHolderImages.find(p => p.id === (isSent ? (currentUser as User).avatarUrl : otherUser.avatarUrl));
+                                    const senderAvatar = PlaceHolderImages.find(p => p.id === (isSent ? currentUser.avatarUrl : otherUser.avatarUrl));
                                     return (
                                         <div key={msg.id} className={cn("flex items-end gap-2", isSent ? "justify-end" : "justify-start")}>
                                             {!isSent && (
@@ -370,9 +382,9 @@ function MessagesView() {
                                                 isSent ? "bg-primary text-primary-foreground" : "bg-muted"
                                             )}>
                                                 <p className="text-sm">{msg.text}</p>
-                                                <p className={cn("text-xs mt-1", isSent ? "text-primary-foreground/70" : "text-muted-foreground/70")}>
-                                                     {msg.createdAt && formatDistanceToNow((msg.createdAt as Timestamp).toDate(), { addSuffix: true })}
-                                                </p>
+                                                {msg.createdAt && <p className={cn("text-xs mt-1", isSent ? "text-primary-foreground/70" : "text-muted-foreground/70")}>
+                                                     {formatDistanceToNow((msg.createdAt as Timestamp).toDate(), { addSuffix: true })}
+                                                </p>}
                                             </div>
                                              {isSent && (
                                                 <Avatar className="size-8">
@@ -439,7 +451,7 @@ function SwapRequestsView() {
         const requestRef = doc(firestore, 'swapRequests', id);
         try {
             // Non-blocking update
-            updateDocumentNonBlocking(requestRef, { status });
+            updateDocumentNonBlocking(requestRef, { status, updatedAt: serverTimestamp() });
             toast({
                 title: `Request ${status}`,
                 description: `The swap request has been ${status}.`,
@@ -492,6 +504,11 @@ function SwapRequestsView() {
 
 
 export default function InboxPage() {
+  const { user, isUserLoading } = useUser();
+  if (isUserLoading) {
+      return <div>Loading...</div>
+  }
+
   return (
     <div className="space-y-6">
         <h1 className="text-2xl font-bold tracking-tight">Messages & Requests</h1>
