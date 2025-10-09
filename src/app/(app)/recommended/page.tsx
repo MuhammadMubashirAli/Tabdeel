@@ -59,6 +59,7 @@ export default function RecommendedPage() {
           userCity: userProfile.city,
           userPreferences: [], // This can be expanded later
           userListedItemIds: userItems.map(item => item.id!),
+          allItems: allItems,
         });
 
         // 5. Filter and set recommended items
