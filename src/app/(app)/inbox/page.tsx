@@ -15,10 +15,11 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
-import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking } from "@/firebase";
-import { collection, doc, query, where, updateDoc, serverTimestamp, or, orderBy, Timestamp, and } from "firebase/firestore";
+import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
+import { collection, doc, query, where, updateDoc, serverTimestamp, or, orderBy, Timestamp, and, limit } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
 
 function SwapRequestCard({ 
@@ -146,20 +147,30 @@ function ConversationListItem({
     conversation, 
     onClick, 
     isSelected,
-    currentUser,
-    lastMessage
+    currentUser
 }: { 
     conversation: SwapRequest, 
     onClick: () => void, 
     isSelected: boolean,
-    currentUser: User,
-    lastMessage?: Message
+    currentUser: User
 }) {
     const firestore = useFirestore();
     const otherUserId = conversation.requesterId === currentUser.id ? conversation.targetOwnerId : conversation.requesterId;
 
     const otherUserRef = useMemoFirebase(() => firestore ? doc(firestore, 'users', otherUserId) : null, [firestore, otherUserId]);
     const { data: otherUser, isLoading: isUserLoading } = useDoc<User>(otherUserRef);
+
+    const lastMessageQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'swapRequests', conversation.id!, 'messages'),
+            orderBy('createdAt', 'desc'),
+            limit(1)
+        );
+    }, [firestore, conversation.id]);
+
+    const { data: lastMessageArr } = useCollection<Message>(lastMessageQuery);
+    const lastMessage = lastMessageArr?.[0];
 
     if (isUserLoading || !otherUser) {
         return (
@@ -256,26 +267,24 @@ function MessagesView() {
     const { data: itemInvolved } = useDoc<Item>(itemInvolvedRef);
     
 
-    const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const form = e.currentTarget;
+    const handleSendMessage = (form: HTMLFormElement) => {
         const input = form.querySelector('textarea[name="message"]');
 
         if (input instanceof HTMLTextAreaElement && input.value.trim() !== '' && currentUser && selectedConversationId && firestore) {
             const messagesCollection = collection(firestore, 'swapRequests', selectedConversationId, 'messages');
-            const newMessage: Omit<Message, 'id'> = {
+            const newMessage: Omit<Message, 'id' | 'createdAt'> = {
                 senderId: currentUser.uid,
                 swapRequestId: selectedConversationId,
                 text: input.value.trim(),
                 createdAt: serverTimestamp(),
             };
             
-            await addDocumentNonBlocking(messagesCollection, newMessage);
+            addDocumentNonBlocking(messagesCollection, newMessage);
             input.value = '';
         }
     };
     
-    const isMobileView = selectedConversationId !== null;
+    const isMobileChatView = selectedConversationId !== null;
 
     if (conversationsLoading || !currentUser) {
         return (
@@ -300,7 +309,7 @@ function MessagesView() {
                 {/* Conversation List - Hidden on mobile when a chat is open */}
                 <div className={cn(
                     "border-r flex-col h-full overflow-x-hidden",
-                    isMobileView ? "hidden md:flex" : "flex"
+                    isMobileChatView ? "hidden md:flex" : "flex"
                 )}>
                     <CardHeader>
                         <CardTitle>Messages</CardTitle>
@@ -323,7 +332,7 @@ function MessagesView() {
                 </div>
 
                 {/* Message View - Hidden on mobile until a chat is selected */}
-                <div className={cn("flex-col h-full", isMobileView ? "flex" : "hidden md:flex")}>
+                <div className={cn("flex-col h-full", isMobileChatView ? "flex" : "hidden md:flex")}>
                     {selectedConversation && otherUser && itemInvolved ? (
                         <>
                             {/* Header */}
@@ -378,7 +387,7 @@ function MessagesView() {
 
                             {/* Input */}
                             <div className="p-4 border-t">
-                                <form className="relative" onSubmit={handleSendMessage}>
+                                <form className="relative" onSubmit={(e) => { e.preventDefault(); handleSendMessage(e.currentTarget); }}>
                                     <Textarea
                                         name="message"
                                         placeholder="Type your message..."
@@ -429,7 +438,8 @@ function SwapRequestsView() {
         if (!firestore) return;
         const requestRef = doc(firestore, 'swapRequests', id);
         try {
-            await updateDoc(requestRef, { status });
+            // Non-blocking update
+            updateDocumentNonBlocking(requestRef, { status });
             toast({
                 title: `Request ${status}`,
                 description: `The swap request has been ${status}.`,
@@ -500,3 +510,5 @@ export default function InboxPage() {
     </div>
   );
 }
+
+    
