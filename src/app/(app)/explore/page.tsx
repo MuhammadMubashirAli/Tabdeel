@@ -7,17 +7,23 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadio
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { categories, pakistaniCities } from "@/lib/data";
 import type { Item } from "@/lib/types";
-import { ListFilter } from "lucide-react";
-import { useState } from "react";
+import { ListFilter, X } from "lucide-react";
+import { useState, useMemo } from "react";
 import { ItemDetailDialog } from "@/app/components/item-detail-dialog";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 const conditions: Item['condition'][] = ['Like New', 'Good', 'Fair'];
 
 export default function ExplorePage() {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [filters, setFilters] = useState({
+    category: 'all',
+    city: 'all',
+    condition: 'all',
+  });
   const firestore = useFirestore();
 
   const itemsQuery = useMemoFirebase(() => {
@@ -27,44 +33,78 @@ export default function ExplorePage() {
 
   const { data: allItems, isLoading } = useCollection<Item>(itemsQuery);
 
+  const handleFilterChange = (type: 'category' | 'city' | 'condition', value: string) => {
+    setFilters(prev => ({ ...prev, [type]: value }));
+  };
+  
+  const resetFilters = () => {
+    setFilters({ category: 'all', city: 'all', condition: 'all' });
+  };
+
+  const activeFilterCount = Object.values(filters).filter(v => v !== 'all').length;
+
+  const filteredItems = useMemo(() => {
+    if (!allItems) return [];
+    return allItems.filter(item => {
+      const categoryMatch = filters.category === 'all' || item.category === filters.category;
+      const cityMatch = filters.city === 'all' || item.city === filters.city;
+      const conditionMatch = filters.condition === 'all' || item.condition === filters.condition;
+      return categoryMatch && cityMatch && conditionMatch;
+    });
+  }, [allItems, filters]);
+
   return (
     <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-tight">Explore Items</h1>
           <div className="flex items-center gap-2">
-          <DropdownMenu>
+            <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 gap-1 border-primary">
+                <Button variant="outline" size="sm" className="h-8 gap-1 border-primary relative">
                   <ListFilter className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     Filter
                   </span>
+                   {activeFilterCount > 0 && (
+                    <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{activeFilterCount}</Badge>
+                  )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                  <ScrollArea className="h-96">
-                      <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuRadioGroup value="all" className="px-2">
-                          <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
-                          {categories.map(c => <DropdownMenuRadioItem key={c} value={c.toLowerCase()}>{c}</DropdownMenuRadioItem>)}
-                      </DropdownMenuRadioGroup>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuLabel>Filter by City</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuRadioGroup value="all" className="px-2">
-                          <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
-                          {pakistaniCities.map(c => <DropdownMenuRadioItem key={c} value={c.toLowerCase()}>{c}</DropdownMenuRadioItem>)}
-                      </DropdownMenuRadioGroup>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuLabel>Filter by Condition</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuRadioGroup value="all" className="px-2">
-                          <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
-                          {conditions.map(c => <DropdownMenuRadioItem key={c} value={c.toLowerCase().replace(' ', '-')}>{c}</DropdownMenuRadioItem>)}
-                      </DropdownMenuRadioGroup>
-                  </ScrollArea>
+                <ScrollArea className="h-96">
+                  <DropdownMenuLabel>Filter by Category</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup value={filters.category} onValueChange={(v) => handleFilterChange('category', v)} className="px-2">
+                    <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
+                    {categories.map(c => <DropdownMenuRadioItem key={c} value={c}>{c}</DropdownMenuRadioItem>)}
+                  </DropdownMenuRadioGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Filter by City</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup value={filters.city} onValueChange={(v) => handleFilterChange('city', v)} className="px-2">
+                    <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
+                    {pakistaniCities.map(c => <DropdownMenuRadioItem key={c} value={c}>{c}</DropdownMenuRadioItem>)}
+                  </DropdownMenuRadioGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Filter by Condition</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup value={filters.condition} onValueChange={(v) => handleFilterChange('condition', v)} className="px-2">
+                    <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
+                    {conditions.map(c => <DropdownMenuRadioItem key={c} value={c}>{c}</DropdownMenuRadioItem>)}
+                  </DropdownMenuRadioGroup>
+                </ScrollArea>
+                 {activeFilterCount > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <div className="p-1">
+                      <Button onClick={resetFilters} variant="secondary" size="sm" className="w-full">
+                        <X className="mr-2 h-3.5 w-3.5" />
+                        Reset Filters
+                      </Button>
+                    </div>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -84,27 +124,31 @@ export default function ExplorePage() {
             ))}
           </div>
         )}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-          {allItems && allItems.map((item, index) => (
-            <ItemCard key={item.id} item={item} index={index} onSelect={() => setSelectedItem(item)} />
-          ))}
-        </div>
-         {!isLoading && (!allItems || allItems.length === 0) && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No items have been listed yet. Be the first!</p>
+        {!isLoading && filteredItems.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                {filteredItems.map((item, index) => (
+                    <ItemCard key={item.id} item={item} index={index} onSelect={() => setSelectedItem(item)} />
+                ))}
+            </div>
+        )}
+        {!isLoading && filteredItems.length === 0 && (
+          <div className="text-center py-12 col-span-full">
+            <p className="text-muted-foreground">
+                {activeFilterCount > 0 ? "No items match your filters." : "No items have been listed yet. Be the first!"}
+            </p>
           </div>
         )}
       </div>
       {selectedItem && (
-          <ItemDetailDialog 
-              item={selectedItem} 
-              open={!!selectedItem} 
-              onOpenChange={(isOpen) => {
-                  if (!isOpen) {
-                      setSelectedItem(null);
-                  }
-              }} 
-          />
+        <ItemDetailDialog
+          item={selectedItem}
+          open={!!selectedItem}
+          onOpenChange={(isOpen) => {
+            if (!isOpen) {
+              setSelectedItem(null);
+            }
+          }}
+        />
       )}
     </>
   );
