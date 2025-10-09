@@ -241,10 +241,12 @@ function MessagesView({
         if (!authUser || !firestore) return null;
         return query(
             collection(firestore, 'swapRequests'),
-            where('status', '==', 'accepted'),
-            or(
-                where('requesterId', '==', authUser.uid),
-                where('targetOwnerId', '==', authUser.uid)
+            and(
+                where('status', '==', 'accepted'),
+                or(
+                    where('requesterId', '==', authUser.uid),
+                    where('targetOwnerId', '==', authUser.uid)
+                )
             )
         );
     }, [authUser, firestore]);
@@ -538,5 +540,7 @@ export default function InboxPage() {
     </div>
   );
 }
+
+    
 
     
