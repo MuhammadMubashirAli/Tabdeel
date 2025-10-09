@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase } from "@/firebase";
-import { collection, doc, query, where, serverTimestamp, orderBy, Timestamp, and, or, limit, updateDoc, addDoc } from "firebase/firestore";
+import { collection, doc, query, where, serverTimestamp, orderBy, Timestamp, updateDoc, addDoc, limit } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
@@ -140,14 +140,13 @@ function SwapRequestCard({
           </div>
         </div>
       </CardContent>
-      {/* --- DYNAMIC BUTTONS --- */}
       {request.status === 'pending' && isReceiver && (
           <div className="flex items-center p-4 border-t bg-muted/40">
-            <Button size="sm" variant="outline" className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/50" onClick={() => onDecline(request.id!)}>
+            <Button size="sm" variant="destructive" className="hover:bg-destructive/90" onClick={() => onDecline(request.id!)}>
                 <ThumbsDown className="mr-2" />
                 Decline
             </Button>
-            <Button size="sm" className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => onAccept(request.id!)}>
+            <Button size="sm" className="ml-auto" onClick={() => onAccept(request.id!)}>
                 Accept
                 <Check className="mr-2" />
             </Button>
@@ -288,19 +287,13 @@ function MessagesView({
     // 3. Combine and sort the conversations
     useEffect(() => {
         setConversationsLoading(sentLoading || receivedLoading);
-        if (sentConversations && receivedConversations) {
-            const allConversations = [...sentConversations, ...receivedConversations];
-            const uniqueConversations = Array.from(new Map(allConversations.map(item => [item.id, item])).values());
-            uniqueConversations.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
-            setConversations(uniqueConversations);
-        } else if (sentConversations) {
-             setConversations(sentConversations.sort((a,b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0)));
-        } else if (receivedConversations) {
-             setConversations(receivedConversations.sort((a,b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0)));
-        }
-         else {
-            setConversations([]);
-        }
+        const allConversations = [
+            ...(sentConversations || []), 
+            ...(receivedConversations || [])
+        ];
+        const uniqueConversations = Array.from(new Map(allConversations.map(item => [item.id, item])).values());
+        uniqueConversations.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
+        setConversations(uniqueConversations);
     }, [sentConversations, receivedConversations, sentLoading, receivedLoading]);
 
 
@@ -518,19 +511,10 @@ function SwapRequestsView({
 
     useEffect(() => {
         setIsLoading(receivedLoading || sentLoading);
-        if (receivedRequests && sentRequests) {
-            const allRequests = [...receivedRequests, ...sentRequests];
-            const uniqueRequests = Array.from(new Map(allRequests.map(item => [item.id, item])).values());
-            uniqueRequests.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
-            setSwapRequests(uniqueRequests);
-        } else if (receivedRequests) {
-            setSwapRequests(receivedRequests.sort((a,b) => b.createdAt.toMillis() - a.createdAt.toMillis()));
-        } else if (sentRequests) {
-            setSwapRequests(sentRequests.sort((a,b) => b.createdAt.toMillis() - a.createdAt.toMillis()));
-        } else {
-            setSwapRequests([]);
-        }
-
+        const allRequests = [...(receivedRequests || []), ...(sentRequests || [])];
+        const uniqueRequests = Array.from(new Map(allRequests.map(item => [item.id, item])).values());
+        uniqueRequests.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+        setSwapRequests(uniqueRequests);
     }, [receivedRequests, sentRequests, receivedLoading, sentLoading]);
     
     const handleUpdateRequest = async (id: string, status: 'accepted' | 'declined') => {
@@ -655,3 +639,5 @@ export default function InboxPage() {
     </div>
   );
 }
+
+    
