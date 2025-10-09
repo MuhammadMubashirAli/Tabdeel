@@ -1,3 +1,4 @@
+
 import type { Timestamp } from 'firebase/firestore';
 
 export type Item = {
@@ -12,8 +13,8 @@ export type Item = {
   desiredCategories: string[];
   status: 'active' | 'exchanged' | 'removed';
   ownerId: string;
-  createdAt: Timestamp | object;
-  updatedAt: Timestamp | object;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
   matchStrength?: 'Good match' | 'Mutual interest' | 'Nearby';
 };
 
@@ -46,7 +47,7 @@ export type Message = {
   swapRequestId: string;
   senderId: string;
   text: string;
-  createdAt: Timestamp | object;
+  createdAt: Timestamp | Date;
 };
 
 export type SwapRequest = {
@@ -57,8 +58,8 @@ export type SwapRequest = {
   offeredItemId: string;
   status: 'pending' | 'accepted' | 'declined';
   message?: string;
-  createdAt: Timestamp | object;
-  updatedAt: Timestamp | object;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 };
 
 
@@ -69,3 +70,5 @@ export type Conversation = {
     lastMessage: Message;
     unreadCount: number;
 }
+
+    

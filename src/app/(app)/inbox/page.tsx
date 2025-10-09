@@ -3,7 +3,6 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { users, items, swapRequests, conversations as initialConversations, activeConversationMessages } from "@/lib/data";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,24 +10,57 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, CornerDownLeft, ThumbsDown, ArrowDown } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
-import type { Conversation, Message, SwapRequest, User } from "@/lib/types";
+import type { Conversation, Message, SwapRequest, User, Item } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
+import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase } from "@/firebase";
+import { collection, doc, query, where } from "firebase/firestore";
+import { Skeleton } from "@/components/ui/skeleton";
+import { conversations as initialConversations, activeConversationMessages, users } from "@/lib/data";
 
 
 function SwapRequestCard({ request }: { request: SwapRequest }) {
-  const fromUser = users.find(u => u.id === request.fromUserId);
-  const toUser = users.find(u => u.id === request.toUserId);
-  const requestedItem = items.find(i => i.id === request.requestedItemId);
-  const offeredItem = items.find(i => i.id === request.offeredItemId);
+  const firestore = useFirestore();
+
+  const fromUserRef = useMemoFirebase(() => firestore ? doc(firestore, 'users', request.requesterId) : null, [firestore, request.requesterId]);
+  const requestedItemRef = useMemoFirebase(() => firestore ? doc(firestore, 'items', request.targetItemId) : null, [firestore, request.targetItemId]);
+  const offeredItemRef = useMemoFirebase(() => firestore ? doc(firestore, 'items', request.offeredItemId) : null, [firestore, request.offeredItemId]);
+
+  const { data: fromUser, isLoading: fromUserLoading } = useDoc<User>(fromUserRef);
+  const { data: requestedItem, isLoading: requestedItemLoading } = useDoc<Item>(requestedItemRef);
+  const { data: offeredItem, isLoading: offeredItemLoading } = useDoc<Item>(offeredItemRef);
 
   const fromUserAvatar = PlaceHolderImages.find(p => p.id === fromUser?.avatarUrl);
-  const requestedItemImage = PlaceHolderImages.find(p => p.id === requestedItem?.images[0]);
-  const offeredItemImage = PlaceHolderImages.find(p => p.id === offeredItem?.images[0]);
+  const requestedItemImage = requestedItem ? PlaceHolderImages.find(p => p.id === requestedItem.images[0]) : null;
+  const offeredItemImage = offeredItem ? PlaceHolderImages.find(p => p.id === offeredItem.images[0]) : null;
+  
+  const isLoading = fromUserLoading || requestedItemLoading || offeredItemLoading;
 
-  if (!fromUser || !toUser || !requestedItem || !offeredItem) return null;
+  if (isLoading) {
+    return (
+        <Card className="overflow-hidden">
+            <CardHeader className="flex flex-row items-start gap-4 space-y-0 p-4 bg-muted/40">
+                <Skeleton className="w-10 h-10 rounded-full" />
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-3 w-24" />
+                </div>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+                 <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center justify-items-center gap-4">
+                    <Skeleton className="h-24 w-full" />
+                    <ArrowLeft className="size-6 text-muted-foreground hidden md:block rotate-180" />
+                    <ArrowDown className="size-6 text-muted-foreground md:hidden" />
+                    <Skeleton className="h-24 w-full" />
+                </div>
+            </CardContent>
+        </Card>
+    )
+  }
+
+  if (!fromUser || !requestedItem || !offeredItem) return null;
 
   return (
     <Card className="overflow-hidden">
@@ -41,9 +73,9 @@ function SwapRequestCard({ request }: { request: SwapRequest }) {
           <p className="font-semibold">
             <span className="font-bold">{fromUser.name}</span> wants to swap with you
           </p>
-          <p className="text-sm text-muted-foreground">
-            {formatDistanceToNow(new Date(request.createdAt), { addSuffix: true })}
-          </p>
+           {request.createdAt && <p className="text-sm text-muted-foreground">
+            {formatDistanceToNow(request.createdAt.toDate(), { addSuffix: true })}
+          </p>}
         </div>
       </CardHeader>
       <CardContent className="p-4 space-y-4">
@@ -119,8 +151,9 @@ function MessagesView() {
             const newMessage: Message = {
                 id: `msg-${Date.now()}`,
                 senderId: currentUser.id,
+                swapRequestId: '', // This needs to be associated with a real swap request
                 text: input.value.trim(),
-                timestamp: new Date().toISOString(),
+                createdAt: new Date(),
             };
 
             // Update messages for the current conversation
@@ -158,7 +191,7 @@ function MessagesView() {
                     </CardHeader>
                     <Separator />
                     <div className="flex-1 overflow-y-auto">
-                        {conversations.sort((a, b) => new Date(b.lastMessage.timestamp).getTime() - new Date(a.lastMessage.timestamp).getTime()).map(convo => {
+                        {conversations.sort((a, b) => new Date(b.lastMessage.createdAt as Date).getTime() - new Date(a.lastMessage.createdAt as Date).getTime()).map(convo => {
                             const participantAvatar = PlaceHolderImages.find(p => p.id === convo.participant.avatarUrl);
                             return (
                                 <button
@@ -176,7 +209,7 @@ function MessagesView() {
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between">
                                             <p className="font-semibold truncate">{convo.participant.name}</p>
-                                            <p className="text-xs text-muted-foreground flex-shrink-0 ml-2">{formatDistanceToNow(new Date(convo.lastMessage.timestamp), { addSuffix: true })}</p>
+                                            <p className="text-xs text-muted-foreground flex-shrink-0 ml-2">{formatDistanceToNow(new Date(convo.lastMessage.createdAt as Date), { addSuffix: true })}</p>
                                         </div>
                                         <p className="text-sm text-muted-foreground truncate">{convo.lastMessage.text}</p>
                                     </div>
@@ -226,7 +259,7 @@ function MessagesView() {
                                             )}>
                                                 <p className="text-sm">{msg.text}</p>
                                                 <p className={cn("text-xs mt-1", isSent ? "text-primary-foreground/70" : "text-muted-foreground/70")}>
-                                                    {formatDistanceToNow(new Date(msg.timestamp), { addSuffix: true })}
+                                                    {formatDistanceToNow(new Date(msg.createdAt as Date), { addSuffix: true })}
                                                 </p>
                                             </div>
                                              {isSent && (
@@ -272,6 +305,46 @@ function MessagesView() {
     );
 }
 
+function SwapRequestsView() {
+    const { user } = useUser();
+    const firestore = useFirestore();
+
+    const swapRequestsQuery = useMemoFirebase(() => {
+        if (!firestore || !user) return null;
+        return query(collection(firestore, 'swapRequests'), where('targetOwnerId', '==', user.uid));
+    }, [firestore, user]);
+
+    const { data: swapRequests, isLoading } = useCollection<SwapRequest>(swapRequestsQuery);
+    
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Swap Requests</CardTitle>
+                <CardDescription>
+                    Incoming offers for your items. Review and respond to them here.
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {isLoading && (
+                    <>
+                        <Skeleton className="h-48 w-full" />
+                        <Skeleton className="h-48 w-full" />
+                    </>
+                )}
+                {!isLoading && swapRequests && swapRequests.length > 0 ? (
+                    swapRequests.map(req => <SwapRequestCard key={req.id} request={req} />)
+                ) : (
+                    !isLoading && (
+                        <div className="text-center py-12">
+                            <p className="text-muted-foreground">You have no new swap requests.</p>
+                        </div>
+                    )
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
 
 export default function InboxPage() {
   return (
@@ -283,23 +356,7 @@ export default function InboxPage() {
                 <TabsTrigger value="messages">Messages</TabsTrigger>
             </TabsList>
             <TabsContent value="requests">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Swap Requests</CardTitle>
-                        <CardDescription>
-                            Incoming offers for your items. Review and respond to them here.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {swapRequests.length > 0 ? (
-                            swapRequests.map(req => <SwapRequestCard key={req.id} request={req} />)
-                        ) : (
-                            <div className="text-center py-12">
-                                <p className="text-muted-foreground">You have no new swap requests.</p>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+               <SwapRequestsView />
             </TabsContent>
             <TabsContent value="messages">
                  <MessagesView />
@@ -308,3 +365,5 @@ export default function InboxPage() {
     </div>
   );
 }
+
+    
