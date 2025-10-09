@@ -8,7 +8,7 @@ import type { Item } from "@/lib/types";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Edit, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 
 type ItemCardProps = {
   item: Item;
