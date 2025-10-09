@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
 import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking } from "@/firebase";
-import { collection, doc, query, where, updateDoc, serverTimestamp, or, orderBy, Timestamp } from "firebase/firestore";
+import { collection, doc, query, where, updateDoc, serverTimestamp, or, orderBy, Timestamp, and } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 
@@ -213,10 +213,12 @@ function MessagesView() {
         if (!currentUser || !firestore) return null;
         return query(
             collection(firestore, 'swapRequests'),
-            where('status', '==', 'accepted'),
-            or(
-                where('requesterId', '==', currentUser.uid),
-                where('targetOwnerId', '==', currentUser.uid)
+            and(
+                where('status', '==', 'accepted'),
+                or(
+                    where('requesterId', '==', currentUser.uid),
+                    where('targetOwnerId', '==', currentUser.uid)
+                )
             )
         );
     }, [currentUser, firestore]);
@@ -498,9 +500,3 @@ export default function InboxPage() {
     </div>
   );
 }
-
-    
-
-    
-
-    
