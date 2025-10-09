@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from "next/link"
@@ -18,11 +19,10 @@ import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Wordmark } from "../components/logo"
 import { useAuth, useUser, setDocumentNonBlocking, useFirestore } from "@/firebase";
-import { initiateEmailSignUp } from "@/firebase/non-blocking-login";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc } from "firebase/firestore";
+import { doc, serverTimestamp } from "firebase/firestore";
 
 
 const formSchema = z.object({
@@ -79,7 +79,9 @@ export default function SignupPage() {
             email: firebaseUser.email,
             avatarUrl: 'user-avatar-1', // Default avatar
             city: '', // Default city
-            createdAt: new Date().toISOString(),
+            bio: '', // Default bio
+            preferences: [], // Default preferences
+            createdAt: serverTimestamp(),
         };
 
         setDocumentNonBlocking(userDocRef, userProfileData, { merge: true });

@@ -14,9 +14,10 @@ import { Edit, MapPin } from "lucide-react";
 import type { Item, User } from "@/lib/types";
 import { Skeleton } from '@/components/ui/skeleton';
 import { EditProfileDialog } from '@/app/components/edit-profile-dialog';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function ProfilePage() {
-  const { user: authUser } = useUser();
+  const { user: authUser, isUserLoading: isAuthLoading } = useUser();
   const firestore = useFirestore();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -40,7 +41,11 @@ export default function ProfilePage() {
     return name.split(' ').map(n => n[0]).join('');
   }
   
-  if (isProfileLoading || areItemsLoading) {
+  const userAvatar = PlaceHolderImages.find(p => p.id === userProfile?.avatarUrl);
+
+  const isLoading = isAuthLoading || isProfileLoading || areItemsLoading;
+
+  if (isLoading) {
     return (
         <div className="space-y-6">
              <Card>
@@ -69,7 +74,7 @@ export default function ProfilePage() {
   if (!userProfile) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">Could not load user profile.</p>
+        <p className="text-muted-foreground">Could not load user profile. Try signing up again.</p>
       </div>
     )
   }
@@ -80,7 +85,7 @@ export default function ProfilePage() {
         <Card>
           <CardContent className="p-6 flex flex-col sm:flex-row items-center gap-6">
               <Avatar className="h-24 w-24">
-                  <AvatarImage src={userProfile.avatarUrl} alt={userProfile.name} />
+                  <AvatarImage src={userAvatar?.imageUrl || userProfile.avatarUrl} alt={userProfile.name} />
                   <AvatarFallback>{getInitials(userProfile.name)}</AvatarFallback>
               </Avatar>
               <div className="text-center sm:text-left flex-grow">

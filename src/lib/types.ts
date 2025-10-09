@@ -26,7 +26,7 @@ export type User = {
   bio?: string;
   preferences?: string[];
   email?: string;
-  createdAt?: string;
+  createdAt: Timestamp;
 };
 
 export type Testimonial = {
@@ -71,5 +71,3 @@ export type Conversation = {
     lastMessage: Message;
     unreadCount: number;
 }
-
-    
