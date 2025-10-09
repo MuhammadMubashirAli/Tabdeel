@@ -286,14 +286,16 @@ function MessagesView({
     
     // 3. Combine and sort the conversations
     useEffect(() => {
-        setConversationsLoading(sentLoading || receivedLoading);
-        const allConversations = [
-            ...(sentConversations || []), 
-            ...(receivedConversations || [])
-        ];
-        const uniqueConversations = Array.from(new Map(allConversations.map(item => [item.id, item])).values());
-        uniqueConversations.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
-        setConversations(uniqueConversations);
+        if (!sentLoading && !receivedLoading) {
+            const allConversations = [
+                ...(sentConversations || []), 
+                ...(receivedConversations || [])
+            ];
+            const uniqueConversations = Array.from(new Map(allConversations.map(item => [item.id, item])).values());
+            uniqueConversations.sort((a, b) => (b.updatedAt?.toMillis() || 0) - (a.updatedAt?.toMillis() || 0));
+            setConversations(uniqueConversations);
+            setConversationsLoading(false);
+        }
     }, [sentConversations, receivedConversations, sentLoading, receivedLoading]);
 
 
@@ -510,13 +512,16 @@ function SwapRequestsView({
     const { data: sentRequests, isLoading: sentLoading } = useCollection<SwapRequest>(sentRequestsQuery);
 
     useEffect(() => {
-        setIsLoading(receivedLoading || sentLoading);
-        if (receivedLoading || sentLoading) return;
-
+        if (receivedLoading || sentLoading) {
+            setIsLoading(true);
+            return;
+        }
+        
         const allRequests = [...(receivedRequests || []), ...(sentRequests || [])];
         const uniqueRequests = Array.from(new Map(allRequests.map(item => [item.id, item])).values());
         uniqueRequests.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
         setSwapRequests(uniqueRequests);
+        setIsLoading(false);
     }, [receivedRequests, sentRequests, receivedLoading, sentLoading]);
     
     const handleUpdateRequest = async (id: string, status: 'accepted' | 'declined') => {
@@ -641,5 +646,7 @@ export default function InboxPage() {
     </div>
   );
 }
+
+    
 
     
