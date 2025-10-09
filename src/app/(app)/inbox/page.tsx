@@ -9,16 +9,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Check, CornerDownLeft, ThumbsDown, ArrowDown } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
-import type { Conversation, Message, SwapRequest, User, Item } from "@/lib/types";
+import { useState, useMemo } from "react";
+import type { Message, SwapRequest, User, Item } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
-import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
-import { collection, doc, query, where, updateDoc } from "firebase/firestore";
+import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking } from "@/firebase";
+import { collection, doc, query, where, updateDoc, serverTimestamp, or, orderBy, Timestamp } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
-import { conversations as initialConversations, activeConversationMessages, users } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 
 
@@ -143,48 +142,155 @@ function SwapRequestCard({
 }
 
 
+function ConversationListItem({ 
+    conversation, 
+    onClick, 
+    isSelected,
+    currentUser,
+    lastMessage
+}: { 
+    conversation: SwapRequest, 
+    onClick: () => void, 
+    isSelected: boolean,
+    currentUser: User,
+    lastMessage?: Message
+}) {
+    const firestore = useFirestore();
+    const otherUserId = conversation.requesterId === currentUser.id ? conversation.targetOwnerId : conversation.requesterId;
+
+    const otherUserRef = useMemoFirebase(() => firestore ? doc(firestore, 'users', otherUserId) : null, [firestore, otherUserId]);
+    const { data: otherUser, isLoading: isUserLoading } = useDoc<User>(otherUserRef);
+
+    if (isUserLoading || !otherUser) {
+        return (
+             <div className="flex items-start gap-4 p-4">
+                <Skeleton className="size-12 rounded-full" />
+                <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-full" />
+                </div>
+            </div>
+        );
+    }
+    
+    const participantAvatar = PlaceHolderImages.find(p => p.id === otherUser?.avatarUrl);
+    
+    return (
+        <button
+            key={conversation.id}
+            className={cn(
+                "flex w-full items-start gap-4 p-4 text-left transition-colors hover:bg-muted/50",
+                isSelected && "bg-muted"
+            )}
+            onClick={onClick}
+        >
+            <Avatar>
+                {participantAvatar && <AvatarImage src={participantAvatar.imageUrl} alt={otherUser.name} data-ai-hint={participantAvatar.imageHint} />}
+                <AvatarFallback>{otherUser.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                    <p className="font-semibold truncate">{otherUser.name}</p>
+                    {lastMessage?.createdAt && (
+                        <p className="text-xs text-muted-foreground flex-shrink-0 ml-2">
+                           {formatDistanceToNow((lastMessage.createdAt as Timestamp).toDate(), { addSuffix: true })}
+                        </p>
+                    )}
+                </div>
+                <p className="text-sm text-muted-foreground truncate">{lastMessage?.text || "Accepted swap request."}</p>
+            </div>
+        </button>
+    )
+}
+
 function MessagesView() {
-    const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
+    const { user: currentUser } = useUser();
+    const firestore = useFirestore();
     const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
-    const [messages, setMessages] = useState<{[key: string]: Message[]}>({ 'conv-1': activeConversationMessages, 'conv-2': [] });
+
+    // 1. Fetch all accepted swap requests where the current user is involved
+    const conversationsQuery = useMemoFirebase(() => {
+        if (!currentUser || !firestore) return null;
+        return query(
+            collection(firestore, 'swapRequests'),
+            where('status', '==', 'accepted'),
+            or(
+                where('requesterId', '==', currentUser.uid),
+                where('targetOwnerId', '==', currentUser.uid)
+            )
+        );
+    }, [currentUser, firestore]);
     
-    const currentUser = users.find(u => u.id === 'user-2');
-    const selectedConversation = conversations.find(c => c.id === selectedConversationId);
+    const { data: conversations, isLoading: conversationsLoading } = useCollection<SwapRequest>(conversationsQuery);
     
-    const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
+    // 2. Fetch messages for the selected conversation
+    const messagesQuery = useMemoFirebase(() => {
+        if (!firestore || !selectedConversationId) return null;
+        return query(
+            collection(firestore, 'swapRequests', selectedConversationId, 'messages'),
+            orderBy('createdAt', 'asc')
+        );
+    }, [firestore, selectedConversationId]);
+
+    const { data: messages, isLoading: messagesLoading } = useCollection<Message>(messagesQuery);
+    const selectedConversation = useMemo(() => conversations?.find(c => c.id === selectedConversationId), [conversations, selectedConversationId]);
+    
+    // 3. Fetch details for the selected conversation (other user and item)
+    const otherUserId = useMemo(() => {
+      if (!selectedConversation || !currentUser) return null;
+      return selectedConversation.requesterId === currentUser.uid ? selectedConversation.targetOwnerId : selectedConversation.requesterId;
+    }, [selectedConversation, currentUser]);
+
+    const otherUserRef = useMemoFirebase(() => firestore && otherUserId ? doc(firestore, 'users', otherUserId) : null, [firestore, otherUserId]);
+    const { data: otherUser } = useDoc<User>(otherUserRef);
+
+    const itemInvolvedId = useMemo(() => {
+      if (!selectedConversation || !currentUser) return null;
+      // Show the item the current user will receive
+      return selectedConversation.requesterId === currentUser.uid ? selectedConversation.offeredItemId : selectedConversation.targetItemId;
+    }, [selectedConversation, currentUser]);
+
+    const itemInvolvedRef = useMemoFirebase(() => firestore && itemInvolvedId ? doc(firestore, 'items', itemInvolvedId) : null, [firestore, itemInvolvedId]);
+    const { data: itemInvolved } = useDoc<Item>(itemInvolvedRef);
+    
+
+    const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.currentTarget;
         const input = form.querySelector('textarea[name="message"]');
 
-        if (input instanceof HTMLTextAreaElement && input.value.trim() !== '' && currentUser && selectedConversation) {
-            const newMessage: Message = {
-                id: `msg-${Date.now()}`,
-                senderId: currentUser.id,
-                swapRequestId: '', // This needs to be associated with a real swap request
+        if (input instanceof HTMLTextAreaElement && input.value.trim() !== '' && currentUser && selectedConversationId && firestore) {
+            const messagesCollection = collection(firestore, 'swapRequests', selectedConversationId, 'messages');
+            const newMessage: Omit<Message, 'id'> = {
+                senderId: currentUser.uid,
+                swapRequestId: selectedConversationId,
                 text: input.value.trim(),
-                createdAt: new Date(),
+                createdAt: serverTimestamp(),
             };
-
-            // Update messages for the current conversation
-            setMessages(prev => ({
-                ...prev,
-                [selectedConversation.id]: [...(prev[selectedConversation.id] || []), newMessage]
-            }));
             
-            // Update the last message in the conversation list
-            setConversations(prev => prev.map(c => 
-                c.id === selectedConversation.id ? { ...c, lastMessage: newMessage } : c
-            ));
-            
+            await addDocumentNonBlocking(messagesCollection, newMessage);
             input.value = '';
         }
     };
     
-    // Mobile-specific view management
     const isMobileView = selectedConversationId !== null;
-    const currentMessages = selectedConversationId ? messages[selectedConversationId] || [] : [];
 
-    if (!currentUser) return null;
+    if (conversationsLoading || !currentUser) {
+        return (
+            <Card className="h-[calc(100vh-200px)] overflow-hidden">
+                <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] h-full">
+                    <div className="border-r h-full overflow-y-auto p-4 space-y-4">
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
+                    </div>
+                     <div className="hidden md:flex flex-col items-center justify-center h-full">
+                        <p className="text-muted-foreground">Loading conversations...</p>
+                    </div>
+                </div>
+            </Card>
+        )
+    }
 
     return (
         <Card className="h-[calc(100vh-200px)] overflow-hidden">
@@ -200,38 +306,23 @@ function MessagesView() {
                     </CardHeader>
                     <Separator />
                     <div className="flex-1 overflow-y-auto">
-                        {conversations.sort((a, b) => new Date(b.lastMessage.createdAt as Date).getTime() - new Date(a.lastMessage.createdAt as Date).getTime()).map(convo => {
-                            const participantAvatar = PlaceHolderImages.find(p => p.id === convo.participant.avatarUrl);
-                            return (
-                                <button
-                                    key={convo.id}
-                                    className={cn(
-                                        "flex w-full items-start gap-4 p-4 text-left transition-colors hover:bg-muted/50",
-                                        selectedConversationId === convo.id && "bg-muted"
-                                    )}
-                                    onClick={() => setSelectedConversationId(convo.id)}
-                                >
-                                    <Avatar>
-                                        {participantAvatar && <AvatarImage src={participantAvatar.imageUrl} alt={convo.participant.name} data-ai-hint={participantAvatar.imageHint} />}
-                                        <AvatarFallback>{convo.participant.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between">
-                                            <p className="font-semibold truncate">{convo.participant.name}</p>
-                                            <p className="text-xs text-muted-foreground flex-shrink-0 ml-2">{formatDistanceToNow(new Date(convo.lastMessage.createdAt as Date), { addSuffix: true })}</p>
-                                        </div>
-                                        <p className="text-sm text-muted-foreground truncate">{convo.lastMessage.text}</p>
-                                    </div>
-                                    {convo.unreadCount > 0 && <Badge className="bg-primary text-primary-foreground">{convo.unreadCount}</Badge>}
-                                </button>
-                            )
-                        })}
+                        {conversations && conversations.length > 0 ? conversations.map(convo => (
+                            <ConversationListItem 
+                                key={convo.id}
+                                conversation={convo}
+                                onClick={() => setSelectedConversationId(convo.id!)}
+                                isSelected={selectedConversationId === convo.id}
+                                currentUser={currentUser as User}
+                            />
+                        )) : (
+                            <div className="p-4 text-center text-sm text-muted-foreground">No active conversations.</div>
+                        )}
                     </div>
                 </div>
 
                 {/* Message View - Hidden on mobile until a chat is selected */}
                 <div className={cn("flex-col h-full", isMobileView ? "flex" : "hidden md:flex")}>
-                    {selectedConversation ? (
+                    {selectedConversation && otherUser && itemInvolved ? (
                         <>
                             {/* Header */}
                             <div className="flex items-center gap-4 p-3 border-b">
@@ -239,27 +330,28 @@ function MessagesView() {
                                     <ArrowLeft />
                                 </Button>
                                 <Avatar>
-                                    <AvatarImage src={PlaceHolderImages.find(p => p.id === selectedConversation.participant.avatarUrl)?.imageUrl} />
-                                    <AvatarFallback>{selectedConversation.participant.name.charAt(0)}</AvatarFallback>
+                                    <AvatarImage src={PlaceHolderImages.find(p => p.id === otherUser.avatarUrl)?.imageUrl} />
+                                    <AvatarFallback>{otherUser.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="font-semibold">{selectedConversation.participant.name}</p>
-                                    <p className="text-sm text-muted-foreground">Regarding: {selectedConversation.item.title}</p>
+                                    <p className="font-semibold">{otherUser.name}</p>
+                                    <p className="text-sm text-muted-foreground">Regarding: {itemInvolved.title}</p>
                                 </div>
                             </div>
                             
                             {/* Messages */}
                             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                {currentMessages.map(msg => {
-                                    const isSent = msg.senderId === currentUser.id;
-                                    const sender = isSent ? currentUser : selectedConversation.participant;
-                                    const senderAvatar = PlaceHolderImages.find(p => p.id === sender.avatarUrl);
+                                {messagesLoading && <div className="text-center text-muted-foreground">Loading messages...</div>}
+                                {messages && messages.map(msg => {
+                                    const isSent = msg.senderId === currentUser.uid;
+                                    const sender = isSent ? currentUser : otherUser;
+                                    const senderAvatar = PlaceHolderImages.find(p => p.id === (isSent ? (currentUser as User).avatarUrl : otherUser.avatarUrl));
                                     return (
                                         <div key={msg.id} className={cn("flex items-end gap-2", isSent ? "justify-end" : "justify-start")}>
                                             {!isSent && (
                                                 <Avatar className="size-8">
-                                                    {senderAvatar && <AvatarImage src={senderAvatar.imageUrl} alt={sender.name} data-ai-hint={senderAvatar.imageHint} />}
-                                                    <AvatarFallback>{sender.name.charAt(0)}</AvatarFallback>
+                                                    {senderAvatar && <AvatarImage src={senderAvatar.imageUrl} alt={sender.name!} data-ai-hint={senderAvatar.imageHint} />}
+                                                    <AvatarFallback>{sender.name?.charAt(0)}</AvatarFallback>
                                                 </Avatar>
                                             )}
                                             <div className={cn(
@@ -268,13 +360,13 @@ function MessagesView() {
                                             )}>
                                                 <p className="text-sm">{msg.text}</p>
                                                 <p className={cn("text-xs mt-1", isSent ? "text-primary-foreground/70" : "text-muted-foreground/70")}>
-                                                    {formatDistanceToNow(new Date(msg.createdAt as Date), { addSuffix: true })}
+                                                     {msg.createdAt && formatDistanceToNow((msg.createdAt as Timestamp).toDate(), { addSuffix: true })}
                                                 </p>
                                             </div>
                                              {isSent && (
                                                 <Avatar className="size-8">
-                                                    {senderAvatar && <AvatarImage src={senderAvatar.imageUrl} alt={sender.name} data-ai-hint={senderAvatar.imageHint} />}
-                                                    <AvatarFallback>{sender.name.charAt(0)}</AvatarFallback>
+                                                    {senderAvatar && <AvatarImage src={senderAvatar.imageUrl} alt={sender.name!} data-ai-hint={senderAvatar.imageHint} />}
+                                                    <AvatarFallback>{sender.name?.charAt(0)}</AvatarFallback>
                                                 </Avatar>
                                             )}
                                         </div>
@@ -293,7 +385,8 @@ function MessagesView() {
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter' && !e.shiftKey) {
                                                 e.preventDefault();
-                                                handleSendMessage(e.currentTarget.form as HTMLFormElement);
+                                                const form = e.currentTarget.form as HTMLFormElement;
+                                                if (form) handleSendMessage(form);
                                             }
                                         }}
                                     />
@@ -329,7 +422,7 @@ function SwapRequestsView() {
     }, [firestore, user]);
 
     const { data: swapRequests, isLoading } = useCollection<SwapRequest>(swapRequestsQuery);
-
+    
     const handleUpdateRequest = async (id: string, status: 'accepted' | 'declined') => {
         if (!firestore) return;
         const requestRef = doc(firestore, 'swapRequests', id);
@@ -405,6 +498,8 @@ export default function InboxPage() {
     </div>
   );
 }
+
+    
 
     
 
