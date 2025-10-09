@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -144,13 +145,11 @@ function SwapRequestCard({
 function ConversationListItem({ 
     conversation, 
     onClick, 
-    isSelected,
-    currentUser
+    isSelected
 }: { 
     conversation: SwapRequest, 
     onClick: () => void, 
-    isSelected: boolean,
-    currentUser: User
+    isSelected: boolean
 }) {
     const firestore = useFirestore();
     const { user: authUser } = useUser();
@@ -242,12 +241,10 @@ function MessagesView({
         if (!authUser || !firestore) return null;
         return query(
             collection(firestore, 'swapRequests'),
-            and(
-                where('status', '==', 'accepted'),
-                or(
-                    where('requesterId', '==', authUser.uid),
-                    where('targetOwnerId', '==', authUser.uid)
-                )
+            where('status', '==', 'accepted'),
+            or(
+                where('requesterId', '==', authUser.uid),
+                where('targetOwnerId', '==', authUser.uid)
             )
         );
     }, [authUser, firestore]);
@@ -337,7 +334,6 @@ function MessagesView({
                                 conversation={convo}
                                 onClick={() => setSelectedConversationId(convo.id!)}
                                 isSelected={selectedConversationId === convo.id}
-                                currentUser={currentUser}
                             />
                         )) : (
                             <div className="p-4 text-center text-sm text-muted-foreground">No active conversations.</div>
@@ -542,3 +538,5 @@ export default function InboxPage() {
     </div>
   );
 }
+
+    
