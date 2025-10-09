@@ -171,9 +171,6 @@ export default function SignupPage() {
               <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? 'Creating...' : 'Create an account'}
               </Button>
-              <Button variant="outline" className="w-full" disabled>
-                Sign up with Google
-              </Button>
             </form>
           </Form>
           <div className="mt-4 text-center text-sm">
