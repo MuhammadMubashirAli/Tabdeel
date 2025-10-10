@@ -57,6 +57,14 @@ function SwapRequestCard({
   
   const isLoading = otherUserLoading || requestedItemLoading || offeredItemLoading;
 
+  const formatTimestamp = (timestamp: any) => {
+    if (timestamp && typeof timestamp.toDate === 'function') {
+      return timestamp.toDate();
+    }
+    // Fallback for string or number timestamps
+    return new Date(timestamp);
+  }
+
   if (isLoading) {
     return (
         <Card className="overflow-hidden">
@@ -96,7 +104,7 @@ function SwapRequestCard({
              {isReceiver ? 'Received Request' : 'Sent Request'} {isReceiver ? 'from' : 'to'} <span className="font-bold">{otherUser.name}</span>
           </p>
            {request.createdAt && <p className="text-xs text-muted-foreground">
-            {formatDistanceToNow(request.createdAt.toDate(), { addSuffix: true })}
+            {formatDistanceToNow(formatTimestamp(request.createdAt), { addSuffix: true })}
           </p>}
         </div>
         <Badge variant={statusBadgeVariant[request.status]} className="capitalize">
@@ -201,6 +209,13 @@ function ConversationListItem({
     
     const getInitials = (name: string | undefined) => name ? name.split(' ').map(n => n[0]).join('') : 'U';
 
+    const formatTimestamp = (timestamp: any) => {
+        if (timestamp && typeof timestamp.toDate === 'function') {
+            return timestamp.toDate();
+        }
+        return new Date(timestamp);
+    }
+
     if (isUserLoading) {
         return (
              <div className="flex items-start gap-4 p-4">
@@ -237,7 +252,7 @@ function ConversationListItem({
                     <p className="font-semibold truncate">{otherUser.name}</p>
                     {lastMessage?.createdAt && (
                         <p className="text-xs text-muted-foreground flex-shrink-0 ml-2">
-                           {formatDistanceToNow((lastMessage.createdAt as Timestamp).toDate(), { addSuffix: true })}
+                           {formatDistanceToNow(formatTimestamp(lastMessage.createdAt), { addSuffix: true })}
                         </p>
                     )}
                 </div>
@@ -347,6 +362,13 @@ function MessagesView({
     
     const isMobileChatView = selectedConversationId !== null;
     const getInitials = (name: string | undefined) => name ? name.split(' ').map(n => n[0]).join('') : 'U';
+    
+    const formatTimestamp = (timestamp: any) => {
+        if (timestamp && typeof timestamp.toDate === 'function') {
+            return timestamp.toDate();
+        }
+        return new Date(timestamp);
+    }
 
     if (conversationsLoading || isUserLoading || !currentUser) {
         return (
@@ -432,7 +454,7 @@ function MessagesView({
                                             )}>
                                                 <p className="text-sm">{msg.text}</p>
                                                 {msg.createdAt && <p className={cn("text-xs mt-1", isSent ? "text-primary-foreground/70" : "text-muted-foreground/70")}>
-                                                     {formatDistanceToNow((msg.createdAt as Timestamp).toDate(), { addSuffix: true })}
+                                                     {formatDistanceToNow(formatTimestamp(msg.createdAt), { addSuffix: true })}
                                                 </p>}
                                             </div>
                                              {isSent && (
@@ -513,8 +535,14 @@ function SwapRequestsView({
         
         const allRequests = [...(receivedRequests || []), ...(sentRequests || [])];
         const uniqueRequests = Array.from(new Map(allRequests.map(item => [item.id, item])).values());
-        uniqueRequests.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
-        setSwapRequests(uniqueRequests);
+        
+        const sortedRequests = uniqueRequests.sort((a, b) => {
+            const timeA = a.createdAt && typeof a.createdAt.toMillis === 'function' ? a.createdAt.toMillis() : 0;
+            const timeB = b.createdAt && typeof b.createdAt.toMillis === 'function' ? b.createdAt.toMillis() : 0;
+            return timeB - timeA;
+        });
+        
+        setSwapRequests(sortedRequests);
         setIsLoading(false);
     }, [receivedRequests, sentRequests, receivedLoading, sentLoading]);
     

@@ -53,6 +53,14 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
 
   const getInitials = (name: string | undefined) => name ? name.split(' ').map(n => n[0]).join('') : 'U';
 
+  const formatTimestamp = (timestamp: any) => {
+    if (timestamp && typeof timestamp.toDate === 'function') {
+      return timestamp.toDate();
+    }
+    // Fallback for string or number timestamps
+    return new Date(timestamp);
+  }
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -115,7 +123,7 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
                             </Avatar>
                             <div>
                                 <p className="font-medium">{owner.name}</p>
-                                {owner.createdAt && <p className="text-sm text-muted-foreground">Member since {formatDistanceToNow(owner.createdAt.toDate(), { addSuffix: true })}</p>}
+                                {owner.createdAt && <p className="text-sm text-muted-foreground">Member since {formatDistanceToNow(formatTimestamp(owner.createdAt), { addSuffix: true })}</p>}
                             </div>
                         </div>
                      )}
