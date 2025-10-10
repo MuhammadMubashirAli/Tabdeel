@@ -35,9 +35,8 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
 
   const { data: owner, isLoading: isOwnerLoading } = useDoc<User>(ownerRef);
 
-  const ownerAvatarId = owner?.avatarUrl;
-  const ownerAvatarIsDataUri = ownerAvatarId && ownerAvatarId.startsWith('data:');
-  const ownerAvatar = ownerAvatarIsDataUri ? ownerAvatarId : PlaceHolderImages.find(p => p.id === ownerAvatarId)?.imageUrl;
+  const ownerAvatarSrc = owner?.avatarUrl;
+  const ownerAvatar = ownerAvatarSrc?.startsWith('data:') ? ownerAvatarSrc : PlaceHolderImages.find(p => p.id === ownerAvatarSrc)?.imageUrl;
 
   const images = item.images.map(imgSrc => {
     const isDataUri = imgSrc && imgSrc.startsWith('data:');

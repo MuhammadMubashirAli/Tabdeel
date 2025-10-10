@@ -48,7 +48,7 @@ export type Message = {
   swapRequestId: string;
   senderId: string;
   text: string;
-  createdAt: Timestamp | Date;
+  createdAt: Timestamp | ReturnType<typeof serverTimestamp>;
 };
 
 export type SwapRequest = {

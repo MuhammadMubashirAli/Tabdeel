@@ -14,10 +14,11 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNow } from "date-fns";
-import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase } from "@/firebase";
+import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking, addDocumentNonBlocking } from "@/firebase";
 import { collection, doc, query, where, serverTimestamp, orderBy, Timestamp, updateDoc, addDoc, limit } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 function SwapRequestCard({ 
     request,
@@ -47,8 +48,12 @@ function SwapRequestCard({
   // Determine which item is "yours" and which is "theirs" from the current user's perspective
   const yourItem = isReceiver ? requestedItem : offeredItem;
   const theirItem = isReceiver ? offeredItem : requestedItem;
-  const yourItemImage = yourItem?.images[0];
-  const theirItemImage = theirItem?.images[0];
+
+  const yourItemImageSrc = yourItem?.images?.[0];
+  const theirItemImageSrc = theirItem?.images?.[0];
+
+  const yourItemImage = yourItemImageSrc?.startsWith('data:') ? yourItemImageSrc : PlaceHolderImages.find(p => p.id === yourItemImageSrc)?.imageUrl;
+  const theirItemImage = theirItemImageSrc?.startsWith('data:') ? theirItemImageSrc : PlaceHolderImages.find(p => p.id === theirItemImageSrc)?.imageUrl;
   
   const isLoading = otherUserLoading || requestedItemLoading || offeredItemLoading;
 
@@ -333,8 +338,8 @@ function MessagesView({
             
             const swapRequestRef = doc(firestore, 'swapRequests', selectedConversationId);
             
-            await addDoc(messagesCollection, messageData);
-            await updateDoc(swapRequestRef, { updatedAt: serverTimestamp() });
+            await addDocumentNonBlocking(messagesCollection, messageData);
+            await updateDocumentNonBlocking(swapRequestRef, { updatedAt: serverTimestamp() });
 
             input.value = '';
         }
@@ -517,7 +522,7 @@ function SwapRequestsView({
         if (!firestore) return;
         const requestRef = doc(firestore, 'swapRequests', id);
         try {
-            await updateDoc(requestRef, { status, updatedAt: serverTimestamp() });
+            await updateDocumentNonBlocking(requestRef, { status, updatedAt: serverTimestamp() });
             
             if (status === 'accepted') {
                 toast({
@@ -635,7 +640,3 @@ export default function InboxPage() {
     </div>
   );
 }
-
-    
-
-    
