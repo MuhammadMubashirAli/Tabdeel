@@ -3,13 +3,27 @@
 
 import { useState, useEffect } from 'react';
 import { useCollection, useDoc, useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { collection, query, where, doc, getDocs } from 'firebase/firestore';
+import { collection, query, where, doc, getDocs, Timestamp } from 'firebase/firestore';
 
 import { ItemCard } from '@/app/components/item-card';
 import { ItemDetailDialog } from '@/app/components/item-detail-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Item, User } from '@/lib/types';
 import { recommendItemsBasedOnInterests } from '@/ai/flows/recommend-items-based-on-interests';
+
+// Helper to convert Firestore Timestamps to ISO strings
+const serializeItems = (items: Item[]): Item[] => {
+  return items.map(item => {
+    const newItem = { ...item };
+    if (newItem.createdAt instanceof Timestamp) {
+      newItem.createdAt = newItem.createdAt.toDate().toISOString() as any;
+    }
+    if (newItem.updatedAt instanceof Timestamp) {
+      newItem.updatedAt = newItem.updatedAt.toDate().toISOString() as any;
+    }
+    return newItem;
+  });
+};
 
 export default function RecommendedPage() {
   const { user: authUser, isUserLoading: isAuthUserLoading } = useUser();
@@ -53,13 +67,17 @@ export default function RecommendedPage() {
             return;
         }
 
+        // Serialize data before sending to the server action
+        const serializableUserItems = serializeItems(userItems || []);
+        const serializableAllItems = serializeItems(allItems);
+
         // 4. Call AI flow
         const aiRecommendations = await recommendItemsBasedOnInterests({
           userId: authUser.uid,
           userCity: userProfile.city,
           userPreferences: userProfile.preferences || [],
-          userItems: userItems, // Pass the full userItems array
-          allItems: allItems,
+          userItems: serializableUserItems,
+          allItems: serializableAllItems,
         });
 
         // 5. Filter and set recommended items
