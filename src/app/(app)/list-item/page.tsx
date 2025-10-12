@@ -21,9 +21,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { categories } from "@/lib/data";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Sparkles, Loader2 } from "lucide-react";
 import type { Item } from "@/lib/types";
 import { CityCombobox } from "@/app/components/city-combobox";
+import { suggestItemCategoriesAndTags } from "@/ai/flows/suggest-item-categories-and-tags";
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters."),
@@ -42,6 +43,7 @@ export default function ListItemPage() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isSuggestingCategory, setIsSuggestingCategory] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,11 +60,59 @@ export default function ListItemPage() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        const dataUri = reader.result as string;
+        setImagePreview(dataUri);
+        // Trigger AI suggestion
+        getAiSuggestion(dataUri);
       };
       reader.readAsDataURL(file);
     }
   };
+
+  const getAiSuggestion = async (photoDataUri: string) => {
+    const description = form.getValues('description');
+    if (!photoDataUri) return;
+
+    setIsSuggestingCategory(true);
+    try {
+      const result = await suggestItemCategoriesAndTags({
+        photoDataUri,
+        description: description || 'No description provided yet.',
+      });
+
+      if (result && result.category) {
+        // Find a matching category from our predefined list (case-insensitive)
+        const matchedCategory = categories.find(c => c.toLowerCase() === result.category.toLowerCase());
+        
+        if (matchedCategory) {
+          form.setValue('category', matchedCategory, { shouldValidate: true });
+          toast({
+            title: "AI Suggestion",
+            description: (
+              <div className="flex items-center">
+                <Sparkles className="mr-2 text-yellow-400" />
+                <span>We've suggested a category for you!</span>
+              </div>
+            ),
+          });
+        }
+      }
+      // We are not using tags for now, but you could use them to populate keywords
+      // if (result.tags) {
+      //   form.setValue('desiredKeywords', result.tags.join(', '));
+      // }
+    } catch (error) {
+      console.error("Error getting AI suggestion:", error);
+      toast({
+        variant: "destructive",
+        title: "AI Suggestion Failed",
+        description: "Could not get an AI suggestion. Please select a category manually.",
+      });
+    } finally {
+      setIsSuggestingCategory(false);
+    }
+  };
+
 
   const removeImage = () => {
     setImagePreview(null);
@@ -93,8 +143,6 @@ export default function ListItemPage() {
     try {
       const itemsCollection = collection(firestore, 'items');
       
-      // For now, we will store the image as a data URI. 
-      // In a production app, you'd upload to Firebase Storage and store the URL.
       const newItem: Omit<Item, 'id' | 'createdAt' | 'updatedAt'> = {
         title: values.title,
         description: values.description,
@@ -220,7 +268,13 @@ export default function ListItemPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Category</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                       {isSuggestingCategory && (
+                        <div className="flex items-center text-xs text-muted-foreground">
+                            <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                            AI is suggesting a category...
+                        </div>
+                      )}
+                      <Select onValueChange={field.onChange} value={field.value} disabled={isSuggestingCategory}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a category" />
@@ -327,7 +381,7 @@ export default function ListItemPage() {
                   )}
                 />
               
-              <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
+              <Button type="submit" size="lg" disabled={form.formState.isSubmitting || isSuggestingCategory}>
                 {form.formState.isSubmitting ? 'Listing...' : 'List My Item'}
               </Button>
 
@@ -338,3 +392,5 @@ export default function ListItemPage() {
     </div>
   );
 }
+
+    
