@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview This file defines a Genkit flow for suggesting an item category based on the item title and uploaded images.
+ * @fileOverview This file defines a Genkit flow for suggesting an item category and description based on the item title and uploaded images.
  *
  * - suggestItemCategory - A function that handles the item categorization process.
  * - SuggestItemCategoryInput - The input type for the suggestItemCategory function.
@@ -24,6 +24,7 @@ export type SuggestItemCategoryInput = z.infer<typeof SuggestItemCategoryInputSc
 
 const SuggestItemCategoryOutputSchema = z.object({
   category: z.string().describe('The suggested category for the item.'),
+  description: z.string().describe('A two-line suggested description for the item based on the image.'),
 });
 export type SuggestItemCategoryOutput = z.infer<typeof SuggestItemCategoryOutputSchema>;
 
@@ -37,9 +38,9 @@ const prompt = ai.definePrompt({
   name: 'suggestItemCategoryPrompt',
   input: {schema: SuggestItemCategoryInputSchema},
   output: {schema: SuggestItemCategoryOutputSchema},
-  prompt: `You are an expert in item categorization.
+  prompt: `You are an expert in item categorization and copywriting for a barter marketplace.
 
-  Given the following item title, photo, and a list of available categories, suggest the single most appropriate category for the item.
+  Given the following item title, photo, and a list of available categories, suggest the single most appropriate category for the item. Also, write a compelling, concise, two-line description for the item based on the image.
 
   Title: {{{title}}}
   Photo: {{media url=photoDataUri}}
@@ -47,10 +48,7 @@ const prompt = ai.definePrompt({
   You MUST choose one of the following categories:
   {{{json availableCategories}}}
 
-  Please provide the category in the following JSON format:
-  {
-    "category": "suggested category"
-  }`,
+  Please provide the category and description in the following JSON format:`,
 });
 
 const suggestItemCategoryFlow = ai.defineFlow(
@@ -64,3 +62,4 @@ const suggestItemCategoryFlow = ai.defineFlow(
     return output!;
   }
 );
+

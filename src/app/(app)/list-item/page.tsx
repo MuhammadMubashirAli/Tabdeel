@@ -83,28 +83,33 @@ export default function ListItemPage() {
         availableCategories: categories,
       });
 
-      if (result && result.category) {
-        const matchedCategory = categories.find(c => c.toLowerCase() === result.category.toLowerCase());
-        
-        if (matchedCategory) {
-          form.setValue('category', matchedCategory, { shouldValidate: true });
-          toast({
-            title: "AI Suggestion",
-            description: (
-              <div className="flex items-center">
-                <Sparkles className="mr-2 text-yellow-400" />
-                <span>We've suggested a category for you!</span>
-              </div>
-            ),
-          });
+      if (result) {
+        if (result.category) {
+          const matchedCategory = categories.find(c => c.toLowerCase() === result.category.toLowerCase());
+          if (matchedCategory) {
+            form.setValue('category', matchedCategory, { shouldValidate: true });
+          }
         }
+        if (result.description) {
+            form.setValue('description', result.description, { shouldValidate: true });
+        }
+
+        toast({
+          title: "AI Suggestions Added!",
+          description: (
+            <div className="flex items-center">
+              <Sparkles className="mr-2 text-yellow-400" />
+              <span>We've suggested a category and description for you!</span>
+            </div>
+          ),
+        });
       }
     } catch (error) {
       console.error("Error getting AI suggestion:", error);
       toast({
         variant: "destructive",
         title: "AI Suggestion Failed",
-        description: "Could not get an AI suggestion. Please select a category manually.",
+        description: "Could not get an AI suggestion. Please fill details manually.",
       });
     } finally {
       setIsSuggestingCategory(false);
@@ -267,7 +272,7 @@ export default function ListItemPage() {
                      {isSuggestingCategory && (
                       <div className="flex items-center text-xs text-muted-foreground">
                           <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                          AI is suggesting a category...
+                          AI is suggesting details...
                       </div>
                     )}
                     <Select onValueChange={field.onChange} value={field.value} disabled={isSuggestingCategory}>
@@ -370,3 +375,4 @@ export default function ListItemPage() {
     </div>
   );
 }
+
