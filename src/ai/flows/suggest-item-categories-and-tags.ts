@@ -25,6 +25,7 @@ export type SuggestItemCategoryInput = z.infer<typeof SuggestItemCategoryInputSc
 const SuggestItemCategoryOutputSchema = z.object({
   category: z.string().describe('The suggested category for the item.'),
   description: z.string().describe('A two-line suggested description for the item based on the image.'),
+  desiredCategory: z.string().describe('A suggested category the user might want in exchange for their item.'),
 });
 export type SuggestItemCategoryOutput = z.infer<typeof SuggestItemCategoryOutputSchema>;
 
@@ -40,15 +41,18 @@ const prompt = ai.definePrompt({
   output: {schema: SuggestItemCategoryOutputSchema},
   prompt: `You are an expert in item categorization and copywriting for a barter marketplace.
 
-  Given the following item title, photo, and a list of available categories, suggest the single most appropriate category for the item. Also, write a compelling, concise, two-line description for the item based on the image.
+  Given the following item title, photo, and a list of available categories, perform the following tasks:
+  1. Suggest the single most appropriate category for the item.
+  2. Write a compelling, concise, two-line description for the item based on the image and title.
+  3. Suggest a plausible category of items that the owner of this item might want in exchange. For example, if the item is a 'Cricket Bat', a good desired category might be 'Sports Equipment' or 'Electronics'.
 
   Title: {{{title}}}
   Photo: {{media url=photoDataUri}}
   
-  You MUST choose one of the following categories:
+  You MUST choose one of the following categories for both the item's category and the desired category:
   {{{json availableCategories}}}
 
-  Please provide the category and description in the following JSON format:`,
+  Please provide the response in the specified JSON format.`,
 });
 
 const suggestItemCategoryFlow = ai.defineFlow(
@@ -62,4 +66,5 @@ const suggestItemCategoryFlow = ai.defineFlow(
     return output!;
   }
 );
+
 

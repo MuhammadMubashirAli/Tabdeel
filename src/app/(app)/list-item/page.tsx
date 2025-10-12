@@ -93,13 +93,19 @@ export default function ListItemPage() {
         if (result.description) {
             form.setValue('description', result.description, { shouldValidate: true });
         }
+         if (result.desiredCategory) {
+          const matchedDesiredCategory = categories.find(c => c.toLowerCase() === result.desiredCategory.toLowerCase());
+          if (matchedDesiredCategory) {
+            form.setValue('desiredCategories', matchedDesiredCategory, { shouldValidate: true });
+          }
+        }
 
         toast({
           title: "AI Suggestions Added!",
           description: (
             <div className="flex items-center">
               <Sparkles className="mr-2 text-yellow-400" />
-              <span>We've suggested a category and description for you!</span>
+              <span>We've suggested a category, description, and desired category for you!</span>
             </div>
           ),
         });
@@ -347,8 +353,8 @@ export default function ListItemPage() {
                   name="desiredCategories"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Desired Category (Optional)</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormLabel>Desired Category</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a desired category" />
