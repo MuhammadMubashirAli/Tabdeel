@@ -43,7 +43,7 @@ export default function RecommendedPage() {
   // 2. Get current user's listed items
   const userItemsQuery = useMemoFirebase(() => {
     if (!firestore || !authUser) return null;
-    return query(collection(firestore, 'items'), where('ownerId', '==', authUser.uid));
+    return query(collection(firestore, 'items'), where('ownerId', '==', authUser.uid), where('status', '==', 'active'));
   }, [firestore, authUser]);
   const { data: userItems, isLoading: areUserItemsLoading } = useCollection<Item>(userItemsQuery);
 
@@ -56,8 +56,12 @@ export default function RecommendedPage() {
       setIsLoading(true);
 
       try {
-        // 3. Get all other items
-        const allItemsQuery = query(collection(firestore, 'items'), where('ownerId', '!=', authUser.uid));
+        // 3. Get all other active items
+        const allItemsQuery = query(
+            collection(firestore, 'items'), 
+            where('ownerId', '!=', authUser.uid),
+            where('status', '==', 'active')
+        );
         const allItemsSnapshot = await getDocs(allItemsQuery);
         const allItems = allItemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Item));
 

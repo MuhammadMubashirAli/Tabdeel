@@ -12,7 +12,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from 'next/navigation';
 import { ItemDetailDialog } from "@/app/components/item-detail-dialog";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { collection, query, where } from "firebase/firestore";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
@@ -33,7 +33,7 @@ export default function ExplorePage() {
 
   const itemsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return collection(firestore, 'items');
+    return query(collection(firestore, 'items'), where('status', '==', 'active'));
   }, [firestore]);
 
   const { data: allItems, isLoading } = useCollection<Item>(itemsQuery);
