@@ -158,6 +158,14 @@ export const categories = [
   'Musical Instruments',
   'Outdoor Gear',
   'Toys & Games',
+  'Health & Beauty',
+  'Automotive',
+  'Baby & Kids',
+  'Collectibles & Art',
+  'Crafts',
+  'Pet Supplies',
+  'Jewelry & Watches',
+  'Services',
   'Other',
 ];
 
