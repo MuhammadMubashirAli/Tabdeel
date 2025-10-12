@@ -203,20 +203,6 @@ export default function ListItemPage() {
                   </FormItem>
                 )}
               />
-              
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Describe your item in detail..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               <div className="grid gap-3">
                 <Label>Upload Photo</Label>
@@ -257,6 +243,20 @@ export default function ListItemPage() {
                     </div>
                 )}
               </div>
+              
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Describe your item in detail..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               <FormField
                 control={form.control}
@@ -370,5 +370,3 @@ export default function ListItemPage() {
     </div>
   );
 }
-
-    
