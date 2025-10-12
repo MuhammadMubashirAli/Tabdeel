@@ -7,7 +7,7 @@ import * as z from "zod";
 import { useRouter } from "next/navigation";
 import { useFirestore, useUser, useDoc, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
 import { collection, serverTimestamp, doc } from "firebase/firestore";
-import { useState, useRef, ChangeEvent } from "react";
+import { useState, useRef, ChangeEvent, useEffect } from "react";
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import { categories } from "@/lib/data";
 import { Upload, X, Sparkles, Loader2 } from "lucide-react";
 import type { Item, User } from "@/lib/types";
 import { suggestItemCategory } from "@/ai/flows/suggest-item-categories-and-tags";
+import { suggestDesiredCategory } from "@/ai/flows/suggest-desired-category";
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters."),
@@ -40,7 +41,10 @@ export default function ListItemPage() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isSuggestingCategory, setIsSuggestingCategory] = useState(false);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [isSuggestingDesired, setIsSuggestingDesired] = useState(false);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
 
   const userDocRef = useMemoFirebase(() => {
     if (!firestore || !authUser) return null;
@@ -75,7 +79,7 @@ export default function ListItemPage() {
     const title = form.getValues('title');
     if (!photoDataUri) return;
 
-    setIsSuggestingCategory(true);
+    setIsSuggesting(true);
     try {
       const result = await suggestItemCategory({
         photoDataUri,
@@ -93,19 +97,13 @@ export default function ListItemPage() {
         if (result.description) {
             form.setValue('description', result.description, { shouldValidate: true });
         }
-         if (result.desiredCategory) {
-          const matchedDesiredCategory = categories.find(c => c.toLowerCase() === result.desiredCategory.toLowerCase());
-          if (matchedDesiredCategory) {
-            form.setValue('desiredCategories', matchedDesiredCategory, { shouldValidate: true });
-          }
-        }
-
+        
         toast({
           title: "AI Suggestions Added!",
           description: (
             <div className="flex items-center">
               <Sparkles className="mr-2 text-yellow-400" />
-              <span>We've suggested a category, description, and desired category for you!</span>
+              <span>We've suggested a category and description for you!</span>
             </div>
           ),
         });
@@ -118,9 +116,48 @@ export default function ListItemPage() {
         description: "Could not get an AI suggestion. Please fill details manually.",
       });
     } finally {
-      setIsSuggestingCategory(false);
+      setIsSuggesting(false);
     }
   };
+
+  const getDesiredCategorySuggestion = async (keywords: string) => {
+    if (!keywords || keywords.length < 5) return;
+    setIsSuggestingDesired(true);
+    try {
+        const result = await suggestDesiredCategory({
+            keywords,
+            availableCategories: categories,
+        });
+        if (result && result.desiredCategory) {
+            const matchedCategory = categories.find(c => c.toLowerCase() === result.desiredCategory.toLowerCase());
+            if (matchedCategory) {
+                form.setValue('desiredCategories', matchedCategory, { shouldValidate: true });
+            }
+        }
+    } catch (error) {
+        console.error("Error getting desired category suggestion:", error);
+    } finally {
+        setIsSuggestingDesired(false);
+    }
+  };
+  
+  const handleKeywordsChange = (e: ChangeEvent<HTMLInputElement>) => {
+    form.setValue('desiredKeywords', e.target.value);
+    if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+    }
+    debounceTimeoutRef.current = setTimeout(() => {
+        getDesiredCategorySuggestion(e.target.value);
+    }, 1000); // 1-second delay
+  };
+
+  useEffect(() => {
+      return () => {
+          if (debounceTimeoutRef.current) {
+              clearTimeout(debounceTimeoutRef.current);
+          }
+      };
+  }, []);
 
   const removeImage = () => {
     setImagePreview(null);
@@ -255,19 +292,16 @@ export default function ListItemPage() {
                 )}
               </div>
 
-              <FormField
+               <FormField
                 control={form.control}
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category</FormLabel>
-                     {isSuggestingCategory && (
-                      <div className="flex items-center text-xs text-muted-foreground">
-                          <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                          AI is suggesting details...
-                      </div>
-                    )}
-                    <Select onValueChange={field.onChange} value={field.value} disabled={isSuggestingCategory}>
+                    <FormLabel className="flex items-center gap-2">
+                        Category
+                        {isSuggesting && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={isSuggesting}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
@@ -340,7 +374,11 @@ export default function ListItemPage() {
                   <FormItem>
                     <FormLabel>What do you want in exchange? (Keywords)</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Football, gaming chair, headphones" {...field} />
+                      <Input 
+                        placeholder="e.g. Football, gaming chair, headphones" 
+                        {...field}
+                        onChange={handleKeywordsChange}
+                       />
                     </FormControl>
                      <p className="text-xs text-muted-foreground">List some keywords for items you're interested in.</p>
                     <FormMessage />
@@ -353,8 +391,11 @@ export default function ListItemPage() {
                   name="desiredCategories"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Desired Category</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                       <FormLabel className="flex items-center gap-2">
+                        Desired Category
+                        {isSuggestingDesired && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value} disabled={isSuggestingDesired}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a desired category" />
@@ -364,13 +405,13 @@ export default function ListItemPage() {
                           {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">This helps our AI find better matches for you.</p>
+                      <p className="text-xs text-muted-foreground">Our AI suggests a category based on your keywords.</p>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               
-              <Button type="submit" size="lg" disabled={form.formState.isSubmitting || isSuggestingCategory}>
+              <Button type="submit" size="lg" disabled={form.formState.isSubmitting || isSuggesting || isSuggestingDesired}>
                 {form.formState.isSubmitting ? 'Listing...' : 'List My Item'}
               </Button>
 
