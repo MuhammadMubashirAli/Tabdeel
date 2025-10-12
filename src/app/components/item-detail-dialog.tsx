@@ -64,15 +64,15 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl w-full p-0">
-          <div className="grid md:grid-cols-2 gap-0">
+        <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] flex flex-col">
+          <div className="grid md:grid-cols-2 gap-0 flex-1 min-h-0">
             {/* Left side: Image Carousel */}
-            <div className="w-full md:rounded-l-lg overflow-hidden h-[400px] md:h-auto flex items-center justify-center bg-muted">
+            <div className="w-full md:rounded-l-lg overflow-hidden h-[300px] md:h-auto flex items-center justify-center bg-muted/50">
               <Carousel className="w-full h-full max-w-sm">
                 <CarouselContent>
                   {images.map((image, index) => (
                     <CarouselItem key={index} className="flex items-center justify-center">
-                      <div className="relative w-full h-[400px]">
+                      <div className="relative w-full h-[300px] md:h-[500px]">
                         {image && <Image src={image} alt={item.title} fill className="object-contain" />}
                       </div>
                     </CarouselItem>
@@ -88,7 +88,7 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
             </div>
 
             {/* Right side: Details */}
-            <div className="flex flex-col p-6 max-h-[90vh] md:max-h-none">
+            <div className="flex flex-col p-6 min-h-0">
               <DialogHeader className="mb-4">
                 <DialogTitle className="text-3xl font-headline mb-2">{item.title}</DialogTitle>
                 <DialogDescription className="flex items-center gap-1 text-muted-foreground">
