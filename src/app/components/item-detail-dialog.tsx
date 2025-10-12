@@ -65,97 +65,97 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] flex flex-col">
+        <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] flex">
            <ScrollArea className="w-full">
-            <div className="grid md:grid-cols-2 gap-0 flex-1 min-h-0">
-                {/* Left side: Image Carousel */}
-                <div className="w-full md:rounded-l-lg overflow-hidden h-[300px] md:h-auto flex items-center justify-center bg-muted/50 md:sticky md:top-0">
-                  <Carousel className="w-full h-full max-w-sm">
-                    <CarouselContent>
-                      {images.map((image, index) => (
-                        <CarouselItem key={index} className="flex items-center justify-center">
-                          <div className="relative w-full h-[300px] md:h-[500px]">
-                            {image && <Image src={image} alt={item.title} fill className="object-contain" />}
-                          </div>
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                    {images.length > 1 && (
-                        <>
-                            <CarouselPrevious className="absolute left-4" />
-                            <CarouselNext className="absolute right-4" />
-                        </>
-                    )}
-                  </Carousel>
-                </div>
-
-                {/* Right side: Details */}
-                <div className="flex flex-col p-6 min-h-0">
-                  <DialogHeader className="mb-4">
-                    <DialogTitle className="text-3xl font-headline mb-2">{item.title}</DialogTitle>
-                    <DialogDescription className="flex items-center gap-1 text-muted-foreground">
-                      <MapPin className="size-4" /> {item.city}
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  <div className="space-y-4 flex-grow pr-2">
-                    <div className="flex items-center gap-4">
-                      <Badge variant={conditionVariant[item.condition]}>{item.condition}</Badge>
-                      <span className="text-sm text-muted-foreground">{item.category}</span>
-                    </div>
-
-                    <p className="text-foreground">{item.description}</p>
-                    
-                    <div>
-                        <h4 className="font-semibold mb-2">Owner</h4>
-                        {isOwnerLoading && (
-                            <div className="flex items-center gap-3">
-                                <Skeleton className="h-10 w-10 rounded-full" />
-                                <div className='space-y-2'>
-                                    <Skeleton className="h-4 w-24" />
-                                    <Skeleton className="h-3 w-32" />
-                                </div>
-                            </div>
-                        )}
-                         {owner && (
-                            <div className="flex items-center gap-3">
-                                <Avatar>
-                                    {ownerAvatar && <AvatarImage src={ownerAvatar} alt={owner.name} />}
-                                    <AvatarFallback>{getInitials(owner.name)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="font-medium">{owner.name}</p>
-                                    {owner.createdAt && <p className="text-sm text-muted-foreground">Member since {formatDistanceToNow(formatTimestamp(owner.createdAt), { addSuffix: true })}</p>}
-                                </div>
-                            </div>
-                         )}
-                    </div>
-
-                    <div>
-                        <h4 className="font-semibold mb-2">Looking for</h4>
-                        <div className="flex flex-wrap gap-2">
-                            {item.desiredKeywords.split(',').map(keyword => (
-                                <Badge key={keyword} variant="outline">{keyword.trim()}</Badge>
-                            ))}
+            <div className="md:grid md:grid-cols-2 md:gap-6">
+              {/* Left side: Image Carousel */}
+              <div className="w-full md:rounded-l-lg overflow-hidden h-[300px] md:h-[550px] flex items-center justify-center bg-muted/50 md:sticky md:top-0">
+                <Carousel className="w-full h-full max-w-md">
+                  <CarouselContent>
+                    {images.map((image, index) => (
+                      <CarouselItem key={index} className="flex items-center justify-center">
+                        <div className="relative w-full h-[300px] md:h-full">
+                          {image && <Image src={image} alt={item.title} fill className="object-contain" />}
                         </div>
-                    </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  {images.length > 1 && (
+                      <>
+                          <CarouselPrevious className="absolute left-4" />
+                          <CarouselNext className="absolute right-4" />
+                      </>
+                  )}
+                </Carousel>
+              </div>
 
+              {/* Right side: Details */}
+              <div className="flex flex-col p-6">
+                <DialogHeader className="mb-4">
+                  <DialogTitle className="text-3xl font-headline mb-2">{item.title}</DialogTitle>
+                  <DialogDescription className="flex items-center gap-1 text-muted-foreground">
+                    <MapPin className="size-4" /> {item.city}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-6 flex-grow">
+                  <div className="flex items-center gap-4">
+                    <Badge variant={conditionVariant[item.condition]}>{item.condition}</Badge>
+                    <span className="text-sm text-muted-foreground">{item.category}</span>
                   </div>
 
-                  <DialogFooter className="mt-6 pt-6 border-t">
-                    <Button 
-                        variant="outline" 
-                        onClick={() => onOpenChange(false)}>
-                            Close
-                    </Button>
-                    {!isOwnerOfItem && (
-                        <Button onClick={() => setIsSwapRequestOpen(true)} className="bg-primary hover:bg-primary/90">
-                            <Send className="mr-2" />
-                            Request Swap
-                        </Button>
-                    )}
-                  </DialogFooter>
+                  <p className="text-foreground">{item.description}</p>
+                  
+                  <div>
+                      <h4 className="font-semibold mb-2">Owner</h4>
+                      {isOwnerLoading && (
+                          <div className="flex items-center gap-3">
+                              <Skeleton className="h-10 w-10 rounded-full" />
+                              <div className='space-y-2'>
+                                  <Skeleton className="h-4 w-24" />
+                                  <Skeleton className="h-3 w-32" />
+                              </div>
+                          </div>
+                      )}
+                       {owner && (
+                          <div className="flex items-center gap-3">
+                              <Avatar>
+                                  {ownerAvatar && <AvatarImage src={ownerAvatar} alt={owner.name} />}
+                                  <AvatarFallback>{getInitials(owner.name)}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                  <p className="font-medium">{owner.name}</p>
+                                  {owner.createdAt && <p className="text-sm text-muted-foreground">Member since {formatDistanceToNow(formatTimestamp(owner.createdAt), { addSuffix: true })}</p>}
+                              </div>
+                          </div>
+                       )}
+                  </div>
+
+                  <div>
+                      <h4 className="font-semibold mb-2">Looking for</h4>
+                      <div className="flex flex-wrap gap-2">
+                          {item.desiredKeywords.split(',').map(keyword => (
+                              <Badge key={keyword} variant="outline">{keyword.trim()}</Badge>
+                          ))}
+                      </div>
+                  </div>
+
                 </div>
+
+                <DialogFooter className="mt-6 pt-6 border-t">
+                  <Button 
+                      variant="outline" 
+                      onClick={() => onOpenChange(false)}>
+                          Close
+                  </Button>
+                  {!isOwnerOfItem && (
+                      <Button onClick={() => setIsSwapRequestOpen(true)} className="bg-primary hover:bg-primary/90">
+                          <Send className="mr-2" />
+                          Request Swap
+                      </Button>
+                  )}
+                </DialogFooter>
+              </div>
             </div>
            </ScrollArea>
         </DialogContent>
