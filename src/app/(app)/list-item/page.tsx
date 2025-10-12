@@ -73,14 +73,14 @@ export default function ListItemPage() {
   };
 
   const getAiSuggestion = async (photoDataUri: string) => {
-    const description = form.getValues('description');
+    const title = form.getValues('title');
     if (!photoDataUri) return;
 
     setIsSuggestingCategory(true);
     try {
       const result = await suggestItemCategoriesAndTags({
         photoDataUri,
-        description: description || 'No description provided yet.',
+        title: title || 'No title provided yet.',
       });
 
       if (result && result.category) {
@@ -140,13 +140,12 @@ export default function ListItemPage() {
     try {
       const itemsCollection = collection(firestore, 'items');
       
-      const newItem: Omit<Item, 'id' | 'createdAt' | 'updatedAt'> = {
+      const newItem: Omit<Item, 'id' | 'createdAt' | 'updatedAt' | 'city'> = {
         title: values.title,
         description: values.description,
         images: [imagePreview], 
         category: values.category,
         condition: values.condition,
-        city: userProfile.city, // Set city from user's profile
         desiredKeywords: values.desiredKeywords,
         desiredCategories: values.desiredCategories ? [values.desiredCategories] : [],
         status: 'active',
@@ -155,6 +154,7 @@ export default function ListItemPage() {
 
       const docData = {
           ...newItem,
+          city: userProfile.city,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
       }

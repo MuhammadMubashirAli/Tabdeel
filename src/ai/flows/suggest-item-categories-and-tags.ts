@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview This file defines a Genkit flow for suggesting item categories and tags based on the item description and uploaded images.
+ * @fileOverview This file defines a Genkit flow for suggesting item categories and tags based on the item title and uploaded images.
  *
  * - suggestItemCategoriesAndTags - A function that handles the item categorization and tagging process.
  * - SuggestItemCategoriesAndTagsInput - The input type for the suggestItemCategoriesAndTags function.
@@ -11,7 +11,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const SuggestItemCategoriesAndTagsInputSchema = z.object({
-  description: z.string().describe('The description of the item.'),
+  title: z.string().describe('The title of the item.'),
   photoDataUri: z
     .string()
     .describe(
@@ -38,9 +38,9 @@ const prompt = ai.definePrompt({
   output: {schema: SuggestItemCategoriesAndTagsOutputSchema},
   prompt: `You are an expert in item categorization and tagging.
 
-  Given the following item description and photo, suggest a category and a list of tags for the item.
+  Given the following item title and photo, suggest a category and a list of tags for the item.
 
-  Description: {{{description}}}
+  Title: {{{title}}}
   Photo: {{media url=photoDataUri}}
 
   Please provide the category and tags in the following JSON format:
