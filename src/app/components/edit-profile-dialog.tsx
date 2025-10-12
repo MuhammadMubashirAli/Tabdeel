@@ -25,8 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
-import { pakistaniCities } from '@/lib/data';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CityCombobox } from './city-combobox';
 
 type EditProfileDialogProps = {
   user: User;
@@ -52,6 +51,7 @@ export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialo
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
     reset,
   } = useForm({
@@ -177,18 +177,14 @@ export function EditProfileDialog({ user, open, onOpenChange }: EditProfileDialo
 
           <div className="space-y-2">
             <Label htmlFor="city">City</Label>
-            <Controller
+             <Controller
                 name="city"
                 control={control}
                 render={({ field }) => (
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select your city" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {pakistaniCities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
+                    <CityCombobox
+                        value={field.value}
+                        onChange={(value) => setValue('city', value, { shouldValidate: true })}
+                    />
                 )}
             />
             {errors.city && <p className="text-sm text-destructive">{errors.city.message}</p>}

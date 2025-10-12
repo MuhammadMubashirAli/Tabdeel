@@ -19,7 +19,8 @@ export const items: Item[] = [
     desiredCategories: ['Electronics'],
     status: 'active',
     ownerId: 'user-1',
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) as any,
+    updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) as any,
     matchStrength: 'Good match',
   },
   {
@@ -34,7 +35,8 @@ export const items: Item[] = [
     desiredCategories: ['Electronics', 'Furniture'],
     status: 'active',
     ownerId: 'user-2',
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) as any,
+    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) as any,
     matchStrength: 'Mutual interest',
   },
   {
@@ -49,7 +51,8 @@ export const items: Item[] = [
     desiredCategories: ['Sports Equipment'],
     status: 'active',
     ownerId: 'user-3',
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) as any,
+    updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) as any,
     matchStrength: 'Nearby',
   },
   {
@@ -64,7 +67,8 @@ export const items: Item[] = [
     desiredCategories: ['Books'],
     status: 'active',
     ownerId: 'user-3',
-    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000) as any,
+    updatedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000) as any,
   },
   {
     id: 'item-5',
@@ -78,7 +82,8 @@ export const items: Item[] = [
     desiredCategories: ['Electronics'],
     status: 'active',
     ownerId: 'user-1',
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) as any,
+    updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) as any,
   },
   {
     id: 'item-6',
@@ -92,7 +97,8 @@ export const items: Item[] = [
     desiredCategories: ['Outdoor Gear'],
     status: 'active',
     ownerId: 'user-2',
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) as any,
+    updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000) as any,
   },
 ];
 
@@ -156,36 +162,39 @@ export const categories = [
 ];
 
 export const pakistaniCities = [
-  "Karachi", "Lahore", "Faisalabad", "Rawalpindi", "Gujranwala", "Peshawar", "Multan", "Hyderabad", "Islamabad", "Quetta", "Sialkot", "Bahawalpur"
-]
+    "Karachi", "Lahore", "Faisalabad", "Rawalpindi", "Gujranwala", "Peshawar", "Multan", "Hyderabad", "Islamabad", "Quetta", "Sialkot", "Bahawalpur", "Sargodha", "Larkana", "Sukkur", "Sheikhupura", "Rahim Yar Khan", "Jhang", "Dera Ghazi Khan", "Gujrat", "Sahiwal", "Wah Cantonment", "Mardan", "Kasur", "Okara", "Mingaora", "Nawabshah", "Chiniot", "Kotri", "Kamoke", "Hafizabad", "Sadiqabad", "Mirpur Khas", "Burewala", "Kohat", "Khanewal", "Dera Ismail Khan", "Turbat", "Muzaffargarh", "Abbottabad", "Mandi Bahauddin", "Shikarpur", "Jacobabad", "Jhelum", "Khanpur", "Khairpur", "Khuzdar", "Pakpattan", "Hub", "Gojra", "Dadu", "Muridke", "Bahawalnagar", "Samundri", "Tando Allahyar", "Tando Adam", "Jaranwala", "Chishtian", "Attock", "Vehari", "Kot Abdul Malik", "Ferozwala", "Chakwal", "Gwadar"
+];
+
 
 export const swapRequests: SwapRequest[] = [
   {
     id: 'req-1',
-    fromUserId: 'user-1',
-    toUserId: 'user-2',
-    requestedItemId: 'item-2', // Ahmed Ali's Guitar
+    requesterId: 'user-1',
+    targetOwnerId: 'user-2',
+    targetItemId: 'item-2', // Ahmed Ali's Guitar
     offeredItemId: 'item-1', // Ahmed Khan's Cricket Ball
     status: 'pending',
-    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000) as any,
+    updatedAt: new Date(Date.now() - 1 * 60 * 60 * 1000) as any,
     message: "Hey! I saw you're looking for sports gear. Would you be interested in swapping your guitar for my vintage cricket ball?",
   },
   {
     id: 'req-2',
-    fromUserId: 'user-3',
-    toUserId: 'user-2',
-    requestedItemId: 'item-6', // Ahmed Ali's Backpack
+    requesterId: 'user-3',
+    targetOwnerId: 'user-2',
+    targetItemId: 'item-6', // Ahmed Ali's Backpack
     offeredItemId: 'item-4', // Zainab's Books
     status: 'pending',
-    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000) as any,
+    updatedAt: new Date(Date.now() - 5 * 60 * 60 * 1000) as any,
     message: "Hi, I'm interested in your hiking backpack. I have a set of fantasy novels if you're into reading.",
   }
 ];
 
 const conversationMessages: Message[] = [
-    { id: 'msg-1', senderId: 'user-1', text: 'Hey, is the guitar still available?', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString() },
-    { id: 'msg-2', senderId: 'user-2', text: 'Yes it is! What are you thinking of offering?', timestamp: new Date(Date.now() - 4 * 60 * 1000).toISOString() },
-    { id: 'msg-3', senderId: 'user-1', text: 'I have a vintage leather cricket ball, interested?', timestamp: new Date(Date.now() - 3 * 60 * 1000).toISOString() },
+    { id: 'msg-1', swapRequestId: 'req-1', senderId: 'user-1', text: 'Hey, is the guitar still available?', createdAt: new Date(Date.now() - 5 * 60 * 1000) as any },
+    { id: 'msg-2', swapRequestId: 'req-1', senderId: 'user-2', text: 'Yes it is! What are you thinking of offering?', createdAt: new Date(Date.now() - 4 * 60 * 1000) as any },
+    { id: 'msg-3', swapRequestId: 'req-1', senderId: 'user-1', text: 'I have a vintage leather cricket ball, interested?', createdAt: new Date(Date.now() - 3 * 60 * 1000) as any },
 ];
 
 export const conversations: Conversation[] = [
@@ -202,9 +211,10 @@ export const conversations: Conversation[] = [
         item: items.find(i => i.id === 'item-5')!,
         lastMessage: {
             id: 'msg-4',
+            swapRequestId: 'req-2',
             senderId: 'user-3',
             text: 'I can meet tomorrow to trade the speaker.',
-            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+            createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000) as any
         },
         unreadCount: 2
     },

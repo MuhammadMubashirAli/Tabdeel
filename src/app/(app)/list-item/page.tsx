@@ -20,9 +20,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { categories, pakistaniCities } from "@/lib/data";
+import { categories } from "@/lib/data";
 import { Upload, X } from "lucide-react";
 import type { Item } from "@/lib/types";
+import { CityCombobox } from "@/app/components/city-combobox";
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters."),
@@ -240,16 +241,12 @@ export default function ListItemPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>City</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select your city" />
-                          </SelectTrigger>
+                            <CityCombobox
+                                value={field.value}
+                                onChange={(value) => form.setValue('city', value, { shouldValidate: true })}
+                            />
                         </FormControl>
-                        <SelectContent>
-                          {pakistaniCities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -259,7 +256,7 @@ export default function ListItemPage() {
               <FormField
                 control={form.control}
                 name="condition"
-                render={({ field }) => (
+                render={({ field })=> (
                   <FormItem className="space-y-3">
                     <FormLabel>Condition</FormLabel>
                     <FormControl>
