@@ -40,6 +40,10 @@ export default function ProfilePage() {
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<User>(userDocRef);
   const { data: userItems, isLoading: areItemsLoading } = useCollection<Item>(userItemsQuery);
+  
+  const activeItems = useMemo(() => userItems?.filter(item => item.status === 'active') || [], [userItems]);
+  const exchangedItems = useMemo(() => userItems?.filter(item => item.status === 'exchanged') || [], [userItems]);
+
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return "AA";
@@ -115,13 +119,13 @@ export default function ProfilePage() {
 
         <Tabs defaultValue="listed" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="listed">Listed Items ({userItems?.length || 0})</TabsTrigger>
-                  <TabsTrigger value="history">Exchange History</TabsTrigger>
+                  <TabsTrigger value="listed">Listed Items ({activeItems.length || 0})</TabsTrigger>
+                  <TabsTrigger value="history">Exchange History ({exchangedItems.length || 0})</TabsTrigger>
               </TabsList>
               <TabsContent value="listed">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                      {userItems && userItems.length > 0 ? (
-                          userItems.map((item, index) => (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pt-4">
+                      {activeItems && activeItems.length > 0 ? (
+                          activeItems.map((item, index) => (
                               <ItemCard 
                                 key={item.id} 
                                 item={item} 
@@ -139,17 +143,22 @@ export default function ProfilePage() {
                   </div>
               </TabsContent>
               <TabsContent value="history">
-                   <Card>
-                      <CardHeader>
-                          <CardTitle>Exchange History</CardTitle>
-                          <CardDescription>
-                              Items you have successfully swapped.
-                          </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-2 text-center py-12">
-                         <p className="text-muted-foreground">You have no completed exchanges yet.</p>
-                      </CardContent>
-                  </Card>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pt-4">
+                      {exchangedItems && exchangedItems.length > 0 ? (
+                          exchangedItems.map((item, index) => (
+                              <ItemCard 
+                                key={item.id} 
+                                item={item} 
+                                index={index} 
+                                onSelect={() => setSelectedItem(item)}
+                              />
+                          ))
+                      ) : (
+                           <div className="text-center py-12 col-span-full">
+                              <p className="text-muted-foreground">You have no completed exchanges yet.</p>
+                          </div>
+                      )}
+                  </div>
               </TabsContent>
           </Tabs>
       </div>
