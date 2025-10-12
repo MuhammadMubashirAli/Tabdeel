@@ -56,14 +56,15 @@ export default function RecommendedPage() {
       setIsLoading(true);
 
       try {
-        // 3. Get all other active items
+        // 3. Get all active items, then filter client-side
         const allItemsQuery = query(
             collection(firestore, 'items'), 
-            where('ownerId', '!=', authUser.uid),
             where('status', '==', 'active')
         );
         const allItemsSnapshot = await getDocs(allItemsQuery);
-        const allItems = allItemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Item));
+        const allItems = allItemsSnapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() } as Item))
+            .filter(item => item.ownerId !== authUser.uid); // Filter client-side
 
         if (allItems.length === 0) {
             setRecommendedItems([]);
