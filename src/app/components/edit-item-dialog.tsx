@@ -21,7 +21,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { categories, pakistaniCities } from "@/lib/data";
 import type { Item } from "@/lib/types";
-import { Camera, Trash2 } from "lucide-react";
+import { Camera, Repeat, Trash2 } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 const formSchema = z.object({
@@ -155,6 +155,25 @@ export function EditItemDialog({ item, open, onOpenChange }: EditItemDialogProps
           });
       }
   }
+
+  const handleMarkAsExchanged = async () => {
+    if (!firestore || !item.id) return;
+    const itemDocRef = doc(firestore, 'items', item.id);
+    try {
+        await updateDocumentNonBlocking(itemDocRef, { status: 'exchanged', updatedAt: serverTimestamp() });
+        toast({
+            title: "Item Exchanged!",
+            description: `"${item.title}" has been marked as exchanged.`,
+        });
+        onOpenChange(false);
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: "Could not mark the item as exchanged. Please try again.",
+        });
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -340,27 +359,48 @@ export function EditItemDialog({ item, open, onOpenChange }: EditItemDialogProps
               />
             
             <DialogFooter className="pt-4 border-t mt-4 sm:justify-between">
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button type="button" variant="destructive">
-                            <Trash2 className="mr-2" /> Delete Item
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete your
-                                item listing from our servers.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-                <div className="flex gap-2 justify-end">
+                <div className="flex gap-2">
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button type="button" variant="destructive">
+                                <Trash2 className="mr-2" /> Delete
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete your
+                                    item listing from our servers.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                     <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                           <Button type="button" variant="outline" className="text-primary border-primary hover:bg-primary hover:text-primary-foreground">
+                                <Repeat className="mr-2" /> Mark as Exchanged
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Mark as Exchanged?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will mark your item as exchanged and remove it from public listings. This action cannot be undone.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleMarkAsExchanged}>Yes, Mark as Exchanged</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+                <div className="flex gap-2 justify-end mt-4 sm:mt-0">
                     <DialogClose asChild>
                         <Button type="button" variant="outline">Cancel</Button>
                     </DialogClose>
