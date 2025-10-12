@@ -5,9 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
-import { useFirestore, useUser } from "@/firebase";
+import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
-import { collection, serverTimestamp } from "firebase/firestore";
+import { collection, serverTimestamp, doc } from "firebase/firestore";
 import { useState, useRef, ChangeEvent } from "react";
 import Image from "next/image";
 
@@ -22,15 +22,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { categories } from "@/lib/data";
 import { Upload, X, Sparkles, Loader2 } from "lucide-react";
-import type { Item } from "@/lib/types";
-import { CityCombobox } from "@/app/components/city-combobox";
+import type { Item, User } from "@/lib/types";
 import { suggestItemCategoriesAndTags } from "@/ai/flows/suggest-item-categories-and-tags";
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters."),
   description: z.string().min(10, "Description must be at least 10 characters."),
   category: z.string({ required_error: "Please select a category." }),
-  city: z.string({ required_error: "Please select a city." }),
   condition: z.enum(["Like New", "Good", "Fair"]),
   desiredKeywords: z.string().min(3, "Please enter at least one keyword."),
   desiredCategories: z.string().optional(),
@@ -39,11 +37,17 @@ const formSchema = z.object({
 export default function ListItemPage() {
   const router = useRouter();
   const firestore = useFirestore();
-  const { user } = useUser();
+  const { user: authUser } = useUser();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSuggestingCategory, setIsSuggestingCategory] = useState(false);
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!firestore || !authUser) return null;
+    return doc(firestore, 'users', authUser.uid);
+  }, [firestore, authUser]);
+  const { data: userProfile } = useDoc<User>(userDocRef);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,7 +66,6 @@ export default function ListItemPage() {
       reader.onloadend = () => {
         const dataUri = reader.result as string;
         setImagePreview(dataUri);
-        // Trigger AI suggestion
         getAiSuggestion(dataUri);
       };
       reader.readAsDataURL(file);
@@ -81,7 +84,6 @@ export default function ListItemPage() {
       });
 
       if (result && result.category) {
-        // Find a matching category from our predefined list (case-insensitive)
         const matchedCategory = categories.find(c => c.toLowerCase() === result.category.toLowerCase());
         
         if (matchedCategory) {
@@ -97,10 +99,6 @@ export default function ListItemPage() {
           });
         }
       }
-      // We are not using tags for now, but you could use them to populate keywords
-      // if (result.tags) {
-      //   form.setValue('desiredKeywords', result.tags.join(', '));
-      // }
     } catch (error) {
       console.error("Error getting AI suggestion:", error);
       toast({
@@ -113,7 +111,6 @@ export default function ListItemPage() {
     }
   };
 
-
   const removeImage = () => {
     setImagePreview(null);
     if(fileInputRef.current) {
@@ -122,11 +119,11 @@ export default function ListItemPage() {
   }
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!firestore || !user) {
+    if (!firestore || !authUser || !userProfile) {
       toast({
         variant: "destructive",
         title: "Authentication Error",
-        description: "You must be logged in to list an item.",
+        description: "Could not find user profile. You must be logged in to list an item.",
       });
       return;
     }
@@ -149,11 +146,11 @@ export default function ListItemPage() {
         images: [imagePreview], 
         category: values.category,
         condition: values.condition,
-        city: values.city,
+        city: userProfile.city, // Set city from user's profile
         desiredKeywords: values.desiredKeywords,
         desiredCategories: values.desiredCategories ? [values.desiredCategories] : [],
         status: 'active',
-        ownerId: user.uid,
+        ownerId: authUser.uid,
       };
 
       const docData = {
@@ -261,51 +258,32 @@ export default function ListItemPage() {
                 )}
               </div>
               
-              <div className="grid md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category</FormLabel>
-                       {isSuggestingCategory && (
-                        <div className="flex items-center text-xs text-muted-foreground">
-                            <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                            AI is suggesting a category...
-                        </div>
-                      )}
-                      <Select onValueChange={field.onChange} value={field.value} disabled={isSuggestingCategory}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>City</FormLabel>
-                        <FormControl>
-                            <CityCombobox
-                                value={field.value}
-                                onChange={(value) => form.setValue('city', value, { shouldValidate: true })}
-                            />
-                        </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                     {isSuggestingCategory && (
+                      <div className="flex items-center text-xs text-muted-foreground">
+                          <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                          AI is suggesting a category...
+                      </div>
+                    )}
+                    <Select onValueChange={field.onChange} value={field.value} disabled={isSuggestingCategory}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
@@ -392,3 +370,5 @@ export default function ListItemPage() {
     </div>
   );
 }
+
+    
