@@ -1,60 +1,63 @@
+
 'use server';
 /**
- * @fileOverview This file defines a Genkit flow for suggesting item categories and tags based on the item title and uploaded images.
+ * @fileOverview This file defines a Genkit flow for suggesting an item category based on the item title and uploaded images.
  *
- * - suggestItemCategoriesAndTags - A function that handles the item categorization and tagging process.
- * - SuggestItemCategoriesAndTagsInput - The input type for the suggestItemCategoriesAndTags function.
- * - SuggestItemCategoriesAndTagsOutput - The return type for the suggestItemCategoriesAndTags function.
+ * - suggestItemCategory - A function that handles the item categorization process.
+ * - SuggestItemCategoryInput - The input type for the suggestItemCategory function.
+ * - SuggestItemCategoryOutput - The return type for the suggestItemCategory function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-const SuggestItemCategoriesAndTagsInputSchema = z.object({
+const SuggestItemCategoryInputSchema = z.object({
   title: z.string().describe('The title of the item.'),
   photoDataUri: z
     .string()
     .describe(
       "A photo of the item, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
+  availableCategories: z.array(z.string()).describe('The list of available categories for the item.'),
 });
-export type SuggestItemCategoriesAndTagsInput = z.infer<typeof SuggestItemCategoriesAndTagsInputSchema>;
+export type SuggestItemCategoryInput = z.infer<typeof SuggestItemCategoryInputSchema>;
 
-const SuggestItemCategoriesAndTagsOutputSchema = z.object({
+const SuggestItemCategoryOutputSchema = z.object({
   category: z.string().describe('The suggested category for the item.'),
-  tags: z.array(z.string()).describe('The suggested tags for the item.'),
 });
-export type SuggestItemCategoriesAndTagsOutput = z.infer<typeof SuggestItemCategoriesAndTagsOutputSchema>;
+export type SuggestItemCategoryOutput = z.infer<typeof SuggestItemCategoryOutputSchema>;
 
-export async function suggestItemCategoriesAndTags(
-  input: SuggestItemCategoriesAndTagsInput
-): Promise<SuggestItemCategoriesAndTagsOutput> {
-  return suggestItemCategoriesAndTagsFlow(input);
+export async function suggestItemCategory(
+  input: SuggestItemCategoryInput
+): Promise<SuggestItemCategoryOutput> {
+  return suggestItemCategoryFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'suggestItemCategoriesAndTagsPrompt',
-  input: {schema: SuggestItemCategoriesAndTagsInputSchema},
-  output: {schema: SuggestItemCategoriesAndTagsOutputSchema},
-  prompt: `You are an expert in item categorization and tagging.
+  name: 'suggestItemCategoryPrompt',
+  input: {schema: SuggestItemCategoryInputSchema},
+  output: {schema: SuggestItemCategoryOutputSchema},
+  prompt: `You are an expert in item categorization.
 
-  Given the following item title and photo, suggest a category and a list of tags for the item.
+  Given the following item title, photo, and a list of available categories, suggest the single most appropriate category for the item.
 
   Title: {{{title}}}
   Photo: {{media url=photoDataUri}}
+  
+  You MUST choose one of the following categories:
+  {{{json availableCategories}}}
 
-  Please provide the category and tags in the following JSON format:
+  Please provide the category in the following JSON format:
   {
-    "category": "suggested category",
-    "tags": ["tag1", "tag2", "tag3"]
+    "category": "suggested category"
   }`,
 });
 
-const suggestItemCategoriesAndTagsFlow = ai.defineFlow(
+const suggestItemCategoryFlow = ai.defineFlow(
   {
-    name: 'suggestItemCategoriesAndTagsFlow',
-    inputSchema: SuggestItemCategoriesAndTagsInputSchema,
-    outputSchema: SuggestItemCategoriesAndTagsOutputSchema,
+    name: 'suggestItemCategoryFlow',
+    inputSchema: SuggestItemCategoryInputSchema,
+    outputSchema: SuggestItemCategoryOutputSchema,
   },
   async input => {
     const {output} = await prompt(input);

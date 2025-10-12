@@ -5,8 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
-import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase";
-import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useFirestore, useUser, useDoc, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
 import { collection, serverTimestamp, doc } from "firebase/firestore";
 import { useState, useRef, ChangeEvent } from "react";
 import Image from "next/image";
@@ -23,7 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { categories } from "@/lib/data";
 import { Upload, X, Sparkles, Loader2 } from "lucide-react";
 import type { Item, User } from "@/lib/types";
-import { suggestItemCategoriesAndTags } from "@/ai/flows/suggest-item-categories-and-tags";
+import { suggestItemCategory } from "@/ai/flows/suggest-item-categories-and-tags";
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters."),
@@ -78,9 +77,10 @@ export default function ListItemPage() {
 
     setIsSuggestingCategory(true);
     try {
-      const result = await suggestItemCategoriesAndTags({
+      const result = await suggestItemCategory({
         photoDataUri,
         title: title || 'No title provided yet.',
+        availableCategories: categories,
       });
 
       if (result && result.category) {
