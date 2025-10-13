@@ -32,8 +32,8 @@ export function AboutUs() {
             <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center">
                 <div className="grid md:grid-cols-2 gap-12 items-center flex-grow">
                     <div className="space-y-4 h-full flex flex-col justify-center text-center md:text-left pt-24 md:pt-0">
-                         <div className="mb-8">
-                            <h2 className="text-3xl md:text-4xl font-bold tracking-tighter">Rethinking Ownership in Pakistan</h2>
+                         <div className="mb-4">
+                            <h2 className="text-3xl md:text-4xl font-bold tracking-tighter">Rethinking Ownership <br /> in Pakistan</h2>
                         </div>
                         <div className="text-muted-foreground text-sm md:text-base/relaxed space-y-4 overflow-y-auto">
                             <p>
