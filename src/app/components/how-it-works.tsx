@@ -56,7 +56,7 @@ export function HowItWorks() {
                 <div className="stars-layer" />
                 <div className="container mx-auto px-4 md:px-6 h-full flex flex-col items-center justify-start relative z-10">
                     <div className="w-full text-center pt-6 md:pt-10 absolute top-0">
-                        <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter text-white">Four Simple Steps to Swap</h2>
+                        <h2 className="text-2xl sm:text-4xl font-bold tracking-tighter text-white">Four Simple Steps to Swap</h2>
                     </div>
 
                     <div className="absolute top-[20%] w-full h-3/4">
@@ -69,10 +69,10 @@ export function HowItWorks() {
                             >
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center text-center md:text-left">
                                     <div className="space-y-4 text-white">
-                                        <h3 className={cn("text-2xl md:text-3xl font-bold", index % 2 === 0 ? "text-primary" : "text-accent")}>{step.title}</h3>
-                                        <p className="text-base text-neutral-300">{step.description}</p>
+                                        <h3 className={cn("text-xl md:text-3xl font-bold", index % 2 === 0 ? "text-primary" : "text-accent")}>{step.title}</h3>
+                                        <p className="text-sm text-neutral-300 md:text-base">{step.description}</p>
                                     </div>
-                                    <div className="relative aspect-square w-full max-w-[10rem] sm:max-w-xs mx-auto md:max-w-md">
+                                    <div className="relative aspect-square w-full max-w-48 sm:max-w-xs mx-auto md:max-w-md">
                                         {step.image && (
                                             <Image
                                                 src={step.image}
