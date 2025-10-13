@@ -33,8 +33,8 @@ export function AboutUs() {
         <section id="about" className="w-full h-screen py-24 md:py-24 lg:py-32 bg-card sticky top-0">
             <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center">
                 <div className="grid md:grid-cols-2 gap-12 items-center">
-                    <div className="space-y-4 md:space-y-6 text-center md:text-left pt-12 md:pt-0">
-                         <div className="mb-4">
+                    <div className="space-y-4 md:space-y-6 text-center md:text-left">
+                         <div className="mb-4 pt-12 md:pt-0">
                             <h2 className="text-3xl md:text-4xl font-bold tracking-tighter">
                                 Rethinking Ownership <br /> in Pakistan
                             </h2>
