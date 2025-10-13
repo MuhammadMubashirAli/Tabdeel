@@ -55,11 +55,11 @@ export function HowItWorks() {
             <div className="sticky top-0 h-screen bg-black flex flex-col items-center pt-12 overflow-hidden">
                 <div className="stars-layer" />
                 <div className="container mx-auto px-4 md:px-6 h-full flex flex-col items-center justify-start relative z-10">
-                    <div className="w-full text-center pt-10 absolute top-0">
-                        <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-white">Four Simple Steps to Swap</h2>
+                    <div className="w-full text-center pt-6 md:pt-10 absolute top-0">
+                        <h2 className="text-3xl sm:text-5xl font-bold tracking-tighter text-white">Four Simple Steps to Swap</h2>
                     </div>
 
-                    <div className="absolute top-[28%] w-full h-3/4">
+                    <div className="absolute top-[20%] md:top-[28%] w-full h-3/4">
                         <div className="relative w-full h-full flex items-center justify-center">
                         {steps.map((step, index) => (
                             <motion.div
@@ -69,10 +69,10 @@ export function HowItWorks() {
                             >
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center text-center md:text-left">
                                     <div className="space-y-4 text-white">
-                                        <h3 className={cn("text-4xl font-bold", index % 2 === 0 ? "text-primary" : "text-accent")}>{step.title}</h3>
-                                        <p className="text-lg text-neutral-300">{step.description}</p>
+                                        <h3 className={cn("text-3xl md:text-4xl font-bold", index % 2 === 0 ? "text-primary" : "text-accent")}>{step.title}</h3>
+                                        <p className="text-base md:text-lg text-neutral-300">{step.description}</p>
                                     </div>
-                                    <div className="relative aspect-square w-full max-w-[18rem] sm:max-w-sm mx-auto md:max-w-md">
+                                    <div className="relative aspect-square w-full max-w-[14rem] sm:max-w-sm mx-auto md:max-w-md">
                                         {step.image && (
                                             <Image
                                                 src={step.image}
