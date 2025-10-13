@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { motion } from 'framer-motion';
 import Autoplay from "embla-carousel-autoplay";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const textContent = [
     "Tabdeel, meaning 'change' or 'exchange' in Urdu, was born from a simple idea: what if we could get the things we need without money? In a world of constant consumption, countless items sit unused in our homes. We believe these items have a second life waiting for them.",
@@ -24,8 +25,9 @@ const aboutImages = [
 
 export function AboutUs() {
     const plugin = React.useRef(
-        Autoplay({ delay: 3000, stopOnInteraction: false, stopOnMouseEnter: false })
+        Autoplay({ delay: 4000, stopOnInteraction: false, stopOnMouseEnter: false })
     );
+    const isMobile = useIsMobile();
 
     return (
         <section id="about" className="w-full h-screen py-24 md:py-24 lg:py-32 bg-card sticky top-0">
@@ -46,43 +48,45 @@ export function AboutUs() {
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-center justify-center">
-                         <Carousel
-                            plugins={[plugin.current]}
-                            className="w-full max-w-md mx-auto"
-                            opts={{ loop: true }}
-                         >
-                            <CarouselContent>
-                                {aboutImages.map((image, index) => (
-                                    image && (
-                                        <CarouselItem key={index}>
-                                            <motion.div
-                                                initial={{ opacity: 0 }}
-                                                whileInView={{ opacity: 1 }}
-                                                viewport={{ once: false, amount: 0.5 }}
-                                                transition={{ duration: 1.5 }}
-                                            >
-                                                <Card className="overflow-hidden rounded-lg shadow-lg">
-                                                    <CardContent className="p-0">
-                                                        <div className="relative aspect-[4/3] w-full">
-                                                            <Image
-                                                                src={image.imageUrl}
-                                                                alt={image.description}
-                                                                fill
-                                                                className="object-cover"
-                                                                data-ai-hint={image.imageHint}
-                                                                sizes="(max-width: 768px) 100vw, 50vw"
-                                                            />
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                            </motion.div>
-                                        </CarouselItem>
-                                    )
-                                ))}
-                            </CarouselContent>
-                        </Carousel>
-                    </div>
+                    {!isMobile && (
+                        <div className="flex items-center justify-center">
+                            <Carousel
+                                plugins={[plugin.current]}
+                                className="w-full max-w-md mx-auto"
+                                opts={{ loop: true }}
+                            >
+                                <CarouselContent>
+                                    {aboutImages.map((image, index) => (
+                                        image && (
+                                            <CarouselItem key={index}>
+                                                <motion.div
+                                                    initial={{ opacity: 0 }}
+                                                    whileInView={{ opacity: 1 }}
+                                                    viewport={{ once: false, amount: 0.5 }}
+                                                    transition={{ duration: 1.5 }}
+                                                >
+                                                    <Card className="overflow-hidden rounded-lg shadow-lg">
+                                                        <CardContent className="p-0">
+                                                            <div className="relative aspect-[4/3] w-full">
+                                                                <Image
+                                                                    src={image.imageUrl}
+                                                                    alt={image.description}
+                                                                    fill
+                                                                    className="object-cover"
+                                                                    data-ai-hint={image.imageHint}
+                                                                    sizes="(max-width: 768px) 100vw, 50vw"
+                                                                />
+                                                            </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                </motion.div>
+                                            </CarouselItem>
+                                        )
+                                    ))}
+                                </CarouselContent>
+                            </Carousel>
+                        </div>
+                    )}
                 </div>
             </div>
         </section>
