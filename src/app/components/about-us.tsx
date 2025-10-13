@@ -35,7 +35,7 @@ export function AboutUs() {
                          <div className="mb-8">
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tighter">Rethinking Ownership in Pakistan</h2>
                         </div>
-                        <div className="text-muted-foreground md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed space-y-4 overflow-y-auto">
+                        <div className="text-muted-foreground text-sm md:text-base/relaxed space-y-4 overflow-y-auto">
                             <p>
                                 {textContent[0]}
                             </p>
