@@ -24,18 +24,20 @@ const aboutImages = [
 
 export function AboutUs() {
     const plugin = React.useRef(
-        Autoplay({ delay: 3000, stopOnInteraction: false })
+        Autoplay({ delay: 3000, stopOnInteraction: false, stopOnMouseEnter: false })
     );
 
     return (
         <section id="about" className="w-full h-screen py-24 md:py-24 lg:py-32 bg-card sticky top-0">
             <div className="container mx-auto px-4 md:px-6 h-full flex flex-col justify-center">
-                <div className="grid md:grid-cols-2 gap-12 items-center flex-grow">
-                    <div className="space-y-4 h-full flex flex-col justify-center text-center md:text-left pt-24 md:pt-0">
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                    <div className="space-y-4 md:space-y-6 text-center md:text-left pt-12 md:pt-0">
                          <div className="mb-4">
-                            <h2 className="text-3xl md:text-4xl font-bold tracking-tighter">Rethinking Ownership <br /> in Pakistan</h2>
+                            <h2 className="text-3xl md:text-4xl font-bold tracking-tighter">
+                                Rethinking Ownership <br /> in Pakistan
+                            </h2>
                         </div>
-                        <div className="text-muted-foreground text-sm md:text-base/relaxed space-y-4 overflow-y-auto">
+                        <div className="text-muted-foreground text-sm md:text-base/relaxed space-y-4">
                             <p>
                                 {textContent[0]}
                             </p>
