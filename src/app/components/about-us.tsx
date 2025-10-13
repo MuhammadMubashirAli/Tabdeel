@@ -24,7 +24,7 @@ const aboutImages = [
 
 export function AboutUs() {
     const plugin = React.useRef(
-        Autoplay({ delay: 3000, stopOnInteraction: true })
+        Autoplay({ delay: 3000, stopOnInteraction: false })
     );
 
     return (
@@ -48,8 +48,6 @@ export function AboutUs() {
                          <Carousel
                             plugins={[plugin.current]}
                             className="w-full max-w-md mx-auto"
-                            onMouseEnter={plugin.current.stop}
-                            onMouseLeave={plugin.current.reset}
                             opts={{ loop: true }}
                          >
                             <CarouselContent>
