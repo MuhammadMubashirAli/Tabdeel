@@ -6,6 +6,9 @@ runConfig:
   # more instances in response to increased traffic.
   maxInstances: 1
 
+# The fetch step is required by the build system, even if it's empty.
+fetch: []
+
 build:
   - exec:
       - npm
