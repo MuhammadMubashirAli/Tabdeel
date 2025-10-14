@@ -1,11 +1,6 @@
 # Settings to manage and configure a Firebase App Hosting backend.
 # https://firebase.google.com/docs/app-hosting/configure
 
-runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
-  maxInstances: 1
-
 # The fetch step is required by the build system, even if it's empty.
 fetch: []
 
@@ -17,3 +12,12 @@ build:
       - npm
       - run
       - build
+
+run:
+  # This is the command to start the Next.js server.
+  # App Hosting automatically detects and uses this for Next.js apps.
+  # It's included here for clarity.
+  command: npm start
+  # Increase this value if you'd like to automatically spin up
+  # more instances in response to increased traffic.
+  maxInstances: 1
