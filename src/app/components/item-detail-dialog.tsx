@@ -4,7 +4,6 @@
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -38,17 +37,13 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
 
   const ownerAvatarSrc = owner?.avatarUrl;
   const ownerAvatar = ownerAvatarSrc?.startsWith('data:') ? ownerAvatarSrc : PlaceHolderImages.find(p => p.id === ownerAvatarSrc)?.imageUrl;
-
-  const images = useMemo(() => {
-    if (!item?.images) return [];
-    return item.images.map(imgSrc => {
-      if (!imgSrc) return null;
-      if (imgSrc.startsWith('data:')) {
-        return imgSrc;
-      }
-      const placeholder = PlaceHolderImages.find(p => p.id === imgSrc);
-      return placeholder ? placeholder.imageUrl : null;
-    }).filter(Boolean) as string[];
+  
+  const mainImageSrc = useMemo(() => {
+    if (!item?.images?.[0]) return null;
+    const src = item.images[0];
+    if (src.startsWith('data:')) return src;
+    const placeholder = PlaceHolderImages.find(p => p.id === src);
+    return placeholder ? placeholder.imageUrl : null;
   }, [item]);
 
 
@@ -73,104 +68,97 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] flex flex-col">
-          <div className="md:grid md:grid-cols-2 flex-1 min-h-0">
-            {/* Left side: Image Carousel */}
-            <div className="w-full md:rounded-l-lg overflow-hidden h-[300px] md:h-auto flex items-center justify-center bg-muted/50 md:sticky md:top-0">
-              <Carousel className="w-full h-full max-w-md">
-                <CarouselContent className="h-full">
-                  {images.length > 0 ? (
-                    images.map((image, index) => (
-                      <CarouselItem key={index} className="flex items-center justify-center h-full">
-                        <div className="relative w-full h-full">
-                          {image && <Image src={image} alt={item.title} fill className="object-contain" />}
-                        </div>
-                      </CarouselItem>
-                    ))
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      No image available
-                    </div>
-                  )}
-                </CarouselContent>
-                {images.length > 1 && (
-                    <>
-                        <CarouselPrevious className="absolute left-4" />
-                        <CarouselNext className="absolute right-4" />
-                    </>
-                )}
-              </Carousel>
+        <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] flex flex-col md:grid md:grid-cols-2">
+          
+          {/* Left side: Image */}
+          <div className="w-full h-[300px] md:h-full md:rounded-l-lg overflow-hidden flex items-center justify-center bg-muted/50">
+            <div className="relative w-full h-full">
+              {mainImageSrc ? (
+                <Image 
+                  src={mainImageSrc} 
+                  alt={item.title} 
+                  fill 
+                  className="object-contain" 
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  No image available
+                </div>
+              )}
             </div>
+          </div>
 
-            {/* Right side: Details */}
-            <ScrollArea className="flex-1">
-              <div className="flex flex-col p-6 h-full">
-                <DialogHeader className="mb-4">
-                  <DialogTitle className="text-3xl font-headline mb-2">{item.title}</DialogTitle>
-                  <DialogDescription className="flex items-center gap-1 text-muted-foreground">
-                    <MapPin className="size-4" /> {item.city}
-                  </DialogDescription>
-                </DialogHeader>
+          {/* Right side: Details */}
+          <ScrollArea className="flex-1">
+            <div className="flex flex-col p-6 h-full">
+              <DialogHeader className="mb-4 text-left">
+                <DialogTitle className="text-3xl font-headline mb-2">{item.title}</DialogTitle>
+                <DialogDescription className="flex items-center gap-1 text-muted-foreground">
+                  <MapPin className="size-4" /> {item.city}
+                </DialogDescription>
+              </DialogHeader>
 
-                <div className="space-y-6 flex-grow">
-                  <div className="flex items-center gap-4">
-                    <Badge variant={conditionVariant[item.condition]}>{item.condition}</Badge>
-                    <span className="text-sm text-muted-foreground">{item.category}</span>
-                  </div>
-
-                  <p className="text-foreground">{item.description}</p>
-                  
-                  <div>
-                      <h4 className="font-semibold mb-2">Owner</h4>
-                      {isOwnerLoading && (
-                          <div className="flex items-center gap-3">
-                              <Skeleton className="h-10 w-10 rounded-full" />
-                              <div className='space-y-2'>
-                                  <Skeleton className="h-4 w-24" />
-                                  <Skeleton className="h-3 w-32" />
-                              </div>
-                          </div>
-                      )}
-                       {owner && (
-                          <div className="flex items-center gap-3">
-                              <Avatar>
-                                  {ownerAvatar && <AvatarImage src={ownerAvatar} alt={owner.name} />}
-                                  <AvatarFallback>{getInitials(owner.name)}</AvatarFallback>
-                              </Avatar>
-                              <div>
-                                  <p className="font-medium">{owner.name}</p>
-                                  {owner.createdAt && <p className="text-sm text-muted-foreground">Member since {formatDistanceToNow(formatTimestamp(owner.createdAt), { addSuffix: true })}</p>}
-                              </div>
-                          </div>
-                       )}
-                  </div>
-
-                  <div>
-                      <h4 className="font-semibold mb-2">Looking for</h4>
-                      <div className="flex flex-wrap gap-2">
-                          {item.desiredKeywords.split(',').map(keyword => (
-                              <Badge key={keyword} variant="outline">{keyword.trim()}</Badge>
-                          ))}
-                      </div>
-                  </div>
+              <div className="space-y-6 flex-grow">
+                <div className="flex items-center gap-4">
+                  <Badge variant={conditionVariant[item.condition]}>{item.condition}</Badge>
+                  <span className="text-sm text-muted-foreground">{item.category}</span>
                 </div>
 
-                <DialogFooter className="mt-6 pt-6 border-t sticky bottom-0 bg-background py-4 px-6 -mx-6">
+                <p className="text-foreground">{item.description}</p>
+                
+                <div>
+                    <h4 className="font-semibold mb-2">Owner</h4>
+                    {isOwnerLoading && (
+                        <div className="flex items-center gap-3">
+                            <Skeleton className="h-10 w-10 rounded-full" />
+                            <div className='space-y-2'>
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-3 w-32" />
+                            </div>
+                        </div>
+                    )}
+                     {owner && (
+                        <div className="flex items-center gap-3">
+                            <Avatar>
+                                {ownerAvatar && <AvatarImage src={ownerAvatar} alt={owner.name} />}
+                                <AvatarFallback>{getInitials(owner.name)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="font-medium">{owner.name}</p>
+                                {owner.createdAt && <p className="text-sm text-muted-foreground">Member since {formatDistanceToNow(formatTimestamp(owner.createdAt), { addSuffix: true })}</p>}
+                            </div>
+                        </div>
+                     )}
+                </div>
+
+                <div>
+                    <h4 className="font-semibold mb-2">Looking for</h4>
+                    <div className="flex flex-wrap gap-2">
+                        {item.desiredKeywords.split(',').map(keyword => (
+                            <Badge key={keyword} variant="outline">{keyword.trim()}</Badge>
+                        ))}
+                    </div>
+                </div>
+              </div>
+
+              <DialogFooter className="mt-6 pt-6 border-t sm:justify-between">
+                <div>
                   <Button 
                       variant="outline" 
                       onClick={() => onOpenChange(false)}>
                           Close
                   </Button>
-                  {!isOwnerOfItem && (
-                      <Button onClick={() => setIsSwapRequestOpen(true)} className="bg-primary hover:bg-primary/90">
-                          <Send className="mr-2" />
-                          Request Swap
-                      </Button>
-                  )}
-                </DialogFooter>
-              </div>
-            </ScrollArea>
-          </div>
+                </div>
+                {!isOwnerOfItem && (
+                    <Button onClick={() => setIsSwapRequestOpen(true)} className="bg-primary hover:bg-primary/90">
+                        <Send className="mr-2" />
+                        Request Swap
+                    </Button>
+                )}
+              </DialogFooter>
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
       
