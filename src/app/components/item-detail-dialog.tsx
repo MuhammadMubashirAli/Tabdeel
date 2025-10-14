@@ -40,8 +40,13 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
   const ownerAvatar = ownerAvatarSrc?.startsWith('data:') ? ownerAvatarSrc : PlaceHolderImages.find(p => p.id === ownerAvatarSrc)?.imageUrl;
 
   const images = item.images.map(imgSrc => {
-    const isDataUri = imgSrc && imgSrc.startsWith('data:');
-    return isDataUri ? imgSrc : PlaceHolderImages.find(p => p.id === imgSrc)?.imageUrl;
+    if (!imgSrc) return null;
+    const isDataUri = imgSrc.startsWith('data:');
+    if (isDataUri) {
+        return imgSrc;
+    }
+    const placeholder = PlaceHolderImages.find(p => p.id === imgSrc);
+    return placeholder ? placeholder.imageUrl : null; // Return null if placeholder not found
   }).filter(Boolean) as string[];
 
   const conditionVariant = {
@@ -72,13 +77,19 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
               <div className="w-full md:rounded-l-lg overflow-hidden h-[300px] md:h-[550px] flex items-center justify-center bg-muted/50 md:sticky md:top-0">
                 <Carousel className="w-full h-full max-w-md">
                   <CarouselContent>
-                    {images.map((image, index) => (
-                      <CarouselItem key={index} className="flex items-center justify-center">
-                        <div className="relative w-full h-[300px] md:h-full">
-                          {image && <Image src={image} alt={item.title} fill className="object-contain" />}
-                        </div>
-                      </CarouselItem>
-                    ))}
+                    {images.length > 0 ? (
+                      images.map((image, index) => (
+                        <CarouselItem key={index} className="flex items-center justify-center">
+                          <div className="relative w-full h-[300px] md:h-full">
+                            {image && <Image src={image} alt={item.title} fill className="object-contain" />}
+                          </div>
+                        </CarouselItem>
+                      ))
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-muted-foreground">
+                        No image available
+                      </div>
+                    )}
                   </CarouselContent>
                   {images.length > 1 && (
                       <>
