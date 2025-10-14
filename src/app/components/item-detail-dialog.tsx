@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -39,15 +39,18 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
   const ownerAvatarSrc = owner?.avatarUrl;
   const ownerAvatar = ownerAvatarSrc?.startsWith('data:') ? ownerAvatarSrc : PlaceHolderImages.find(p => p.id === ownerAvatarSrc)?.imageUrl;
 
-  const images = item.images.map(imgSrc => {
-    if (!imgSrc) return null;
-    const isDataUri = imgSrc.startsWith('data:');
-    if (isDataUri) {
+  const images = useMemo(() => {
+    if (!item?.images) return [];
+    return item.images.map(imgSrc => {
+      if (!imgSrc) return null;
+      if (imgSrc.startsWith('data:')) {
         return imgSrc;
-    }
-    const placeholder = PlaceHolderImages.find(p => p.id === imgSrc);
-    return placeholder ? placeholder.imageUrl : null; // Return null if placeholder not found
-  }).filter(Boolean) as string[];
+      }
+      const placeholder = PlaceHolderImages.find(p => p.id === imgSrc);
+      return placeholder ? placeholder.imageUrl : null;
+    }).filter(Boolean) as string[];
+  }, [item]);
+
 
   const conditionVariant = {
     'Like New': 'default',
