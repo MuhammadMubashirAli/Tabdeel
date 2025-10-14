@@ -73,38 +73,38 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] flex">
-           <ScrollArea className="w-full">
-            <div className="md:grid md:grid-cols-2 md:gap-6">
-              {/* Left side: Image Carousel */}
-              <div className="w-full md:rounded-l-lg overflow-hidden h-[300px] md:h-[550px] flex items-center justify-center bg-muted/50 md:sticky md:top-0">
-                <Carousel className="w-full h-full max-w-md">
-                  <CarouselContent>
-                    {images.length > 0 ? (
-                      images.map((image, index) => (
-                        <CarouselItem key={index} className="flex items-center justify-center">
-                          <div className="relative w-full h-[300px] md:h-full">
-                            {image && <Image src={image} alt={item.title} fill className="object-contain" />}
-                          </div>
-                        </CarouselItem>
-                      ))
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-muted-foreground">
-                        No image available
-                      </div>
-                    )}
-                  </CarouselContent>
-                  {images.length > 1 && (
-                      <>
-                          <CarouselPrevious className="absolute left-4" />
-                          <CarouselNext className="absolute right-4" />
-                      </>
+        <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] flex flex-col">
+          <div className="md:grid md:grid-cols-2 flex-1 min-h-0">
+            {/* Left side: Image Carousel */}
+            <div className="w-full md:rounded-l-lg overflow-hidden h-[300px] md:h-auto flex items-center justify-center bg-muted/50 md:sticky md:top-0">
+              <Carousel className="w-full h-full max-w-md">
+                <CarouselContent className="h-full">
+                  {images.length > 0 ? (
+                    images.map((image, index) => (
+                      <CarouselItem key={index} className="flex items-center justify-center h-full">
+                        <div className="relative w-full h-full">
+                          {image && <Image src={image} alt={item.title} fill className="object-contain" />}
+                        </div>
+                      </CarouselItem>
+                    ))
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                      No image available
+                    </div>
                   )}
-                </Carousel>
-              </div>
+                </CarouselContent>
+                {images.length > 1 && (
+                    <>
+                        <CarouselPrevious className="absolute left-4" />
+                        <CarouselNext className="absolute right-4" />
+                    </>
+                )}
+              </Carousel>
+            </div>
 
-              {/* Right side: Details */}
-              <div className="flex flex-col p-6">
+            {/* Right side: Details */}
+            <ScrollArea className="flex-1">
+              <div className="flex flex-col p-6 h-full">
                 <DialogHeader className="mb-4">
                   <DialogTitle className="text-3xl font-headline mb-2">{item.title}</DialogTitle>
                   <DialogDescription className="flex items-center gap-1 text-muted-foreground">
@@ -153,10 +153,9 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
                           ))}
                       </div>
                   </div>
-
                 </div>
 
-                <DialogFooter className="mt-6 pt-6 border-t">
+                <DialogFooter className="mt-6 pt-6 border-t sticky bottom-0 bg-background py-4 px-6 -mx-6">
                   <Button 
                       variant="outline" 
                       onClick={() => onOpenChange(false)}>
@@ -170,8 +169,8 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
                   )}
                 </DialogFooter>
               </div>
-            </div>
-           </ScrollArea>
+            </ScrollArea>
+          </div>
         </DialogContent>
       </Dialog>
       
