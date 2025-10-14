@@ -11,14 +11,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { Item, User } from '@/lib/types';
 import { recommendItemsBasedOnInterests } from '@/ai/flows/recommend-items-based-on-interests';
 
-// Helper to convert Firestore Timestamps to ISO strings
+// Helper to convert Firestore Timestamps to ISO strings safely
 const serializeItems = (items: Item[]): Item[] => {
   return items.map(item => {
     const newItem = { ...item };
-    if (newItem.createdAt instanceof Timestamp) {
+    if (newItem.createdAt && newItem.createdAt instanceof Timestamp) {
       newItem.createdAt = newItem.createdAt.toDate().toISOString() as any;
     }
-    if (newItem.updatedAt instanceof Timestamp) {
+    if (newItem.updatedAt && newItem.updatedAt instanceof Timestamp) {
       newItem.updatedAt = newItem.updatedAt.toDate().toISOString() as any;
     }
     return newItem;

@@ -20,7 +20,7 @@ type ItemCardProps = {
 
 export function ItemCard({ item, index, onSelect, onEdit, isOwner = false }: ItemCardProps) {
   // Check if the image source is a data URI or a placeholder ID
-  const imageSource = item.images[0];
+  const imageSource = item.images && item.images.length > 0 ? item.images[0] : null;
   const isDataUri = imageSource && imageSource.startsWith('data:');
   const image = isDataUri ? imageSource : PlaceHolderImages.find(p => p.id === imageSource)?.imageUrl;
   
@@ -53,7 +53,7 @@ export function ItemCard({ item, index, onSelect, onEdit, isOwner = false }: Ite
     >
       <div className="block">
         <div className="relative aspect-[4/3] w-full">
-            {image && (
+            {image ? (
               <Image
                 src={image}
                 alt={item.title}
@@ -61,6 +61,10 @@ export function ItemCard({ item, index, onSelect, onEdit, isOwner = false }: Ite
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
+            ) : (
+              <div className="flex items-center justify-center h-full bg-muted text-muted-foreground text-sm">
+                No image
+              </div>
             )}
             {item.matchStrength && (
                 <Badge variant="destructive" className="absolute top-2 right-2 bg-accent text-accent-foreground">{item.matchStrength}</Badge>

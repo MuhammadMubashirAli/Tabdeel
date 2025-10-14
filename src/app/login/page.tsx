@@ -58,18 +58,20 @@ export default function LoginPage() {
         return;
     }
     
-    toast({
-      title: "Logging In...",
-      description: "Please wait while we check your credentials.",
-    });
-
     try {
         await signInWithEmailAndPassword(auth, values.email, values.password);
+        toast({
+            title: "Logged In!",
+            description: "Welcome back!",
+        });
         // The onAuthStateChanged listener in the provider will handle the redirect.
     } catch (error: any) {
         let errorMessage = "An unexpected error occurred. Please try again.";
-        if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+        // Handle specific Firebase auth errors for better UX
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
             errorMessage = "Invalid email or password. Please check your credentials and try again.";
+        } else if (error.code === 'auth/too-many-requests') {
+            errorMessage = "Too many failed login attempts. Please try again later.";
         }
         
         toast({
