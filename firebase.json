@@ -1,7 +1,1 @@
-{
-    "build": {
-      "use": "@vibe/next",
-      "steps": ["fetch", "install", "build"]
-    }
-  }
-  
+{}
