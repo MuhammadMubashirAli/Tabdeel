@@ -1,23 +1,21 @@
-# Settings to manage and configure a Firebase App Hosting backend.
-# https://firebase.google.com/docs/app-hosting/configure
-
+# Firebase App Hosting configuration for Next.js
 runtime: nodejs20
 
+fetch:
+  - name: install
+    run:
+      - npm
+      - ci
+
 build:
-  steps:
-    - fetch
-    - exec:
-        - npm
-        - install
-    - exec:
-        - npm
-        - run
-        - build
+  - name: build
+    run:
+      - npm
+      - run
+      - build
 
 run:
-  # Command to start the Next.js server
   command: npm start
-  maxInstances: 1
 
 env:
   - variable: NODE_ENV
