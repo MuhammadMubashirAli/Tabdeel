@@ -1,6 +1,8 @@
 # Settings to manage and configure a Firebase App Hosting backend.
 # https://firebase.google.com/docs/app-hosting/configure
 
+runtime: nodejs20
+
 # The fetch step is required by the build system, even if it's empty.
 fetch: []
 
@@ -21,3 +23,6 @@ run:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+env:
+  - variable: NODE_ENV
+    value: production
