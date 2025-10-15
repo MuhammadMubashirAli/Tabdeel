@@ -1,19 +1,19 @@
-# Firebase App Hosting configuration for Next.js
+# Firebase App Hosting configuration for Next.js in Vibe Studio
 runtime: nodejs20
 
+# Define a dummy fetch step (required for validator)
 fetch:
-  - name: install
+  - name: install-deps
     run:
-      - npm
-      - ci
+      - npm install
 
+# Explicit build steps
 build:
-  - name: build
+  - name: build-next-app
     run:
-      - npm
-      - run
-      - build
+      - npm run build
 
+# Define how to run your app
 run:
   command: npm start
 
