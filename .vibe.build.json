@@ -1,5 +1,19 @@
 {
-    "use": "@vibe/next",
-    "steps": ["fetch", "install", "build"]
+  "buildConfig": {
+    "fetch": [
+      {
+        "name": "install dependencies",
+        "run": ["npm install"]
+      }
+    ],
+    "build": [
+      {
+        "name": "build app",
+        "run": ["npm run build"]
+      }
+    ],
+    "run": {
+      "command": "npm start"
+    }
   }
-  
+}
