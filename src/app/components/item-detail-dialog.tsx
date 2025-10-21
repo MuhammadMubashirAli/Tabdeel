@@ -15,7 +15,6 @@ import { doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 type ItemDetailDialogProps = {
   item: Item;
@@ -68,9 +67,10 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] flex flex-col md:grid md:grid-cols-2">
-            {/* Left side: Image - this will be part of the natural scroll on mobile */}
-            <div className="w-full h-auto md:h-full md:rounded-l-lg overflow-hidden flex items-center justify-center bg-muted/50">
+        <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] overflow-y-auto">
+          <div className="md:grid md:grid-cols-2">
+            {/* Left side: Image */}
+            <div className="w-full h-auto md:h-full flex items-center justify-center bg-muted/50 md:rounded-l-lg">
               <div className="relative aspect-square w-full">
                 {mainImageSrc ? (
                   <Image 
@@ -88,76 +88,75 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
               </div>
             </div>
 
-            {/* Right side: Details - this part becomes scrollable */}
-            <ScrollArea className="w-full h-full">
-              <div className="flex flex-col p-6 h-full">
-                  <DialogHeader className="mb-4 text-left">
-                    <DialogTitle className="text-3xl font-headline mb-2">{item.title}</DialogTitle>
-                    <DialogDescription className="flex items-center gap-1 text-muted-foreground">
-                      <MapPin className="size-4" /> {item.city}
-                    </DialogDescription>
-                  </DialogHeader>
+            {/* Right side: Details */}
+            <div className="flex flex-col p-6">
+                <DialogHeader className="mb-4 text-left">
+                  <DialogTitle className="text-3xl font-headline mb-2">{item.title}</DialogTitle>
+                  <DialogDescription className="flex items-center gap-1 text-muted-foreground">
+                    <MapPin className="size-4" /> {item.city}
+                  </DialogDescription>
+                </DialogHeader>
 
-                  <div className="space-y-6 flex-grow">
-                    <div className="flex items-center gap-4">
-                      <Badge variant={conditionVariant[item.condition]}>{item.condition}</Badge>
-                      <span className="text-sm text-muted-foreground">{item.category}</span>
-                    </div>
-
-                    <p className="text-foreground">{item.description}</p>
-                    
-                    <div>
-                        <h4 className="font-semibold mb-2">Owner</h4>
-                        {isOwnerLoading && (
-                            <div className="flex items-center gap-3">
-                                <Skeleton className="h-10 w-10 rounded-full" />
-                                <div className='space-y-2'>
-                                    <Skeleton className="h-4 w-24" />
-                                    <Skeleton className="h-3 w-32" />
-                                </div>
-                            </div>
-                        )}
-                         {owner && (
-                            <div className="flex items-center gap-3">
-                                <Avatar>
-                                    {ownerAvatar && <AvatarImage src={ownerAvatar} alt={owner.name} />}
-                                    <AvatarFallback>{getInitials(owner.name)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="font-medium">{owner.name}</p>
-                                    {owner.createdAt && <p className="text-sm text-muted-foreground">Member since {formatDistanceToNow(formatTimestamp(owner.createdAt), { addSuffix: true })}</p>}
-                                </div>
-                            </div>
-                         )}
-                    </div>
-
-                    <div>
-                        <h4 className="font-semibold mb-2">Looking for</h4>
-                        <div className="flex flex-wrap gap-2">
-                            {item.desiredKeywords.split(',').map(keyword => (
-                                <Badge key={keyword} variant="outline">{keyword.trim()}</Badge>
-                            ))}
-                        </div>
-                    </div>
+                <div className="space-y-6 flex-grow">
+                  <div className="flex items-center gap-4">
+                    <Badge variant={conditionVariant[item.condition]}>{item.condition}</Badge>
+                    <span className="text-sm text-muted-foreground">{item.category}</span>
                   </div>
 
-                  <DialogFooter className="mt-6 pt-6 border-t sm:justify-between">
-                    <div>
-                      <Button 
-                          variant="outline" 
-                          onClick={() => onOpenChange(false)}>
-                              Close
+                  <p className="text-foreground">{item.description}</p>
+                  
+                  <div>
+                      <h4 className="font-semibold mb-2">Owner</h4>
+                      {isOwnerLoading && (
+                          <div className="flex items-center gap-3">
+                              <Skeleton className="h-10 w-10 rounded-full" />
+                              <div className='space-y-2'>
+                                  <Skeleton className="h-4 w-24" />
+                                  <Skeleton className="h-3 w-32" />
+                              </div>
+                          </div>
+                      )}
+                       {owner && (
+                          <div className="flex items-center gap-3">
+                              <Avatar>
+                                  {ownerAvatar && <AvatarImage src={ownerAvatar} alt={owner.name} />}
+                                  <AvatarFallback>{getInitials(owner.name)}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                                  <p className="font-medium">{owner.name}</p>
+                                  {owner.createdAt && <p className="text-sm text-muted-foreground">Member since {formatDistanceToNow(formatTimestamp(owner.createdAt), { addSuffix: true })}</p>}
+                              </div>
+                          </div>
+                       )}
+                  </div>
+
+                  <div>
+                      <h4 className="font-semibold mb-2">Looking for</h4>
+                      <div className="flex flex-wrap gap-2">
+                          {item.desiredKeywords.split(',').map(keyword => (
+                              <Badge key={keyword} variant="outline">{keyword.trim()}</Badge>
+                          ))}
+                      </div>
+                  </div>
+                </div>
+
+                <DialogFooter className="mt-6 pt-6 border-t sm:justify-between">
+                  <div>
+                    <Button 
+                        variant="outline" 
+                        onClick={() => onOpenChange(false)}>
+                            Close
+                    </Button>
+                  </div>
+                  {!isOwnerOfItem && (
+                      <Button onClick={() => setIsSwapRequestOpen(true)} className="bg-primary hover:bg-primary/90">
+                          <Send className="mr-2" />
+                          Request Swap
                       </Button>
-                    </div>
-                    {!isOwnerOfItem && (
-                        <Button onClick={() => setIsSwapRequestOpen(true)} className="bg-primary hover:bg-primary/90">
-                            <Send className="mr-2" />
-                            Request Swap
-                        </Button>
-                    )}
-                  </DialogFooter>
-              </div>
-          </ScrollArea>
+                  )}
+                </DialogFooter>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
       
