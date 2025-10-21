@@ -69,27 +69,27 @@ export function ItemDetailDialog({ item, open, onOpenChange }: ItemDetailDialogP
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-4xl w-full p-0 max-h-[90vh] flex flex-col md:grid md:grid-cols-2">
-            <ScrollArea className="w-full h-full md:h-auto">
-              {/* Left side: Image */}
-              <div className="w-full h-auto md:h-full md:rounded-l-lg overflow-hidden flex items-center justify-center bg-muted/50">
-                <div className="relative aspect-square w-full">
-                  {mainImageSrc ? (
-                    <Image 
-                      src={mainImageSrc} 
-                      alt={item.title} 
-                      fill 
-                      className="object-contain" 
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      No image available
-                    </div>
-                  )}
-                </div>
+            {/* Left side: Image - this will be part of the natural scroll on mobile */}
+            <div className="w-full h-auto md:h-full md:rounded-l-lg overflow-hidden flex items-center justify-center bg-muted/50">
+              <div className="relative aspect-square w-full">
+                {mainImageSrc ? (
+                  <Image 
+                    src={mainImageSrc} 
+                    alt={item.title} 
+                    fill 
+                    className="object-contain" 
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    No image available
+                  </div>
+                )}
               </div>
+            </div>
 
-              {/* Right side: Details */}
+            {/* Right side: Details - this part becomes scrollable */}
+            <ScrollArea className="w-full h-full">
               <div className="flex flex-col p-6 h-full">
                   <DialogHeader className="mb-4 text-left">
                     <DialogTitle className="text-3xl font-headline mb-2">{item.title}</DialogTitle>
